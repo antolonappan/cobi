@@ -6,9 +6,9 @@ import numpy as np
 import healpy as hp
 from pymaster import mask_apodization
 # Local imports
-from solat_cb import mpi
-from solat_cb.data import SAT_MASK, LAT_MASK, CO_MASK, PS_MASK, GAL_MASK
-from solat_cb.utils import Logger
+from cobi import mpi
+from cobi.data import SAT_MASK, LAT_MASK, CO_MASK, PS_MASK, GAL_MASK
+from cobi.utils import Logger
 class Mask:
     def __init__(self, 
                  libdir: str, 

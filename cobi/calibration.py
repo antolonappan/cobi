@@ -2,7 +2,7 @@ import numpy as np
 from tqdm import tqdm
 from dataclasses import dataclass,field
 from typing import Any, Optional
-from solat_cb.simulation import CMB
+from cobi.simulation import CMB
 import os
 import healpy as hp
 import pickle as pl

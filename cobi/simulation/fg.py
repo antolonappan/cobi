@@ -12,9 +12,9 @@ from pysm3 import units as u
 import matplotlib.pyplot as plt
 from typing import List, Optional
 # Local imports
-from solat_cb import mpi
-from solat_cb.utils import Logger
-from solat_cb.data import BP_PROFILE
+from cobi import mpi
+from cobi.utils import Logger
+from cobi.data import BP_PROFILE
 
 
 

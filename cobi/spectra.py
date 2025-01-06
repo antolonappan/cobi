@@ -4,9 +4,9 @@ import healpy as hp
 import pymaster as nmt
 import os
 from tqdm import tqdm
-from solat_cb.simulation import LATsky, Foreground,Mask, SATsky
-from solat_cb.utils import Logger
-from solat_cb import mpi
+from cobi.simulation import LATsky, Foreground,Mask, SATsky
+from cobi.utils import Logger
+from cobi import mpi
 from typing import Dict, Optional, Any, Union, List, Tuple
 from concurrent.futures import ThreadPoolExecutor
 

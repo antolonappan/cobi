@@ -1,4 +1,4 @@
 """
-solat_cb package
+cobi package
 """
 __version__ = "1.0"

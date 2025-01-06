@@ -2,13 +2,13 @@ import numpy as np
 import healpy as hp
 import os
 from tqdm import tqdm
-from solat_cb import mpi
+from cobi import mpi
 from typing import Union, List, Optional
 
-from solat_cb.simulation import CMB, Foreground, Mask, Noise
-from solat_cb.utils import Logger, inrad
-from solat_cb.utils import cli, deconvolveQU
-from solat_cb.simulation import HILC
+from cobi.simulation import CMB, Foreground, Mask, Noise
+from cobi.utils import Logger, inrad
+from cobi.utils import cli, deconvolveQU
+from cobi.simulation import HILC
 
 
 class SkySimulation:

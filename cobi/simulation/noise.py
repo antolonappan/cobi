@@ -3,8 +3,8 @@ import healpy as hp
 from typing import Dict, Optional, Any, Union, List, Tuple
 from so_models_v3 import SO_Noise_Calculator_Public_v3_1_1 as so_models
 
-from solat_cb import mpi
-from solat_cb.utils import Logger
+from cobi import mpi
+from cobi.utils import Logger
 
 #atm_noise or atm_corr, same for the noise map as well
 

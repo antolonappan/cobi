@@ -8,8 +8,8 @@ from healpy import read_map
 from typing import Any, Optional
 from dataclasses import dataclass,field
 # Local imports
-from solat_cb.utils import download_file
-from solat_cb import mpi
+from cobi.utils import download_file
+from cobi import mpi
 
 @dataclass
 class Data:
@@ -49,7 +49,7 @@ class Data:
 
     @property
     def url(self) -> str:
-        return f"https://github.com/antolonappan/solat_cb/releases/download/1.0/{self.filename}"
+        return f"https://github.com/antolonappan/cobi/releases/download/1.0/{self.filename}"
     
     
 
@@ -86,3 +86,4 @@ PS_MASK = Data('binary_comb_PS_mask_N1024.fits')
 BP_PROFILE = Data('bp_profile.pkl')
 CAMB_INI = Data('cb.ini')
 SPECTRA = Data('spectra.pkl')
+ISO_TD_SPECTRA = Data('iso_time_dep.pkl')
