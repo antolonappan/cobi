@@ -39,25 +39,24 @@ class CMB:
         self.beta   = beta
         self.mass   = mass
         self.Acb    = Acb
-        assert model in ["iso", "aniso"], "model should be 'iso' or 'aniso'"
+        assert model in ["iso", "iso_td","aniso"], "model should be 'iso' or 'aniso'"
         self.model  = model
         if self.model == "aniso":
             self.logger.log("Anisotropic cosmic birefringence model selected", level="info")
             assert self.Acb is not None, "Acb should be provided for anisotropic model"
         if self.model == "iso":
-            self.logger.log("Isotropic cosmic birefringence model selected", level="info")
-            assert (self.beta is not None)  or (self.mass is not None), "beta or mass should be provided for isotropic model"
-            if self.mass is not None:
-                assert self.mass in [1,1.5,6.4], "mass should be 1, 1.59 or 6.36"
-                self.logger.log(f"Time dependent component with axion mass = {self.mass} * 10^-28 eV selected", level="info")
-            else:
-                self.logger.log(f"Constant component with rotation angle beta = {self.beta} degrees selected", level="info")
+            self.logger.log("Isotropic(constant) cosmic birefringence model selected", level="info")
+            assert self.beta is not None, "beta should be provided for isotropic model"
+        if self.model == "iso_td":
+            assert self.mass in [1,1.5,6.4], "mass should be 1, 1.59 or 6.36"
+            self.logger.log("Isotropic(time dep.) cosmic birefringence model selected", level="info")
 
         
         self.lensing = lensing
 
         self.__set_workspace__()
         self.__set_seeds__()
+        self.verbose = verbose if verbose is not None else False
    
     def __set_seeds__(self) -> None:
         """
@@ -74,12 +73,13 @@ class CMB:
         """
         lens = "lensed" if self.lensing else "gaussian"
         if self.model == "iso":
-            if self.beta is not None:
-                model = f"iso_beta_{str(self.beta).replace('.','p')}"
-            if self.mass is not None:
-                model = f"iso_mass_{str(self.mass).replace('.','p')}"
-        else:
+            model = f"iso_beta_{str(self.beta).replace('.','p')}"
+        elif self.model == "iso_td":
+            model = f"iso_mass_{str(self.mass).replace('.','p')}"
+        elif self.model == "aniso":
             model = f"aniso_alpha_{str(self.Acb)}"
+        else:
+            raise ValueError("Model not implemented yet, only 'iso', 'iso_td', and 'aniso' are supported")
 
 
         self.cmbdir = os.path.join(self.basedir, 'CMB', lens, model, 'cmb')
@@ -91,6 +91,18 @@ class CMB:
             self.alphadir = os.path.join(self.basedir, 'CMB', lens, model, 'alpha')
             os.makedirs(self.alphadir, exist_ok=True)
     
+    def __dl2cl__(self, arr: np.ndarray) -> np.ndarray:
+        """
+        Convert Dl to Cl.
+        """
+        tcmb = 2.7255e6
+        l = np.arange(len(arr))
+        dl = l * (l + 1) / (2 * np.pi)
+        arr = arr * tcmb ** 2 / (dl + 1e-30)
+        arr[0] = 0
+        arr[1] = 0
+        return arr
+    
     def __td_eb__(self) -> np.ndarray:
         """
         Read the E and B mode power spectra from the CMB power spectra data.
@@ -98,8 +110,17 @@ class CMB:
         ISO_TD_SPECTRA.directory = self.basedir
         m = str(self.mass).replace('.','p')
         spectra = ISO_TD_SPECTRA.data[m]
-        return spectra[:self.lmax + 1,5]
-        
+        eb = np.zeros(self.lmax + 1)
+        eb[2:] = spectra[:self.lmax + 1 - 2, 5]
+        return self.__dl2cl__(eb)
+    
+    def __td_tb__(self) -> np.ndarray:
+        ISO_TD_SPECTRA.directory = self.basedir
+        m = str(self.mass).replace('.', 'p')
+        spectra = ISO_TD_SPECTRA.data[m]
+        tb = np.zeros(self.lmax + 1)
+        tb[2:] = spectra[:self.lmax + 1 - 2, 6]
+        return self.__dl2cl__(tb)      
         
     def compute_powers(self) -> Dict[str, Any]:
         """
@@ -275,7 +296,36 @@ class CMB:
             self, dl: bool = True, dtype: str = "d", new: bool = False
         ) -> Union[Dict[str, np.ndarray], np.ndarray]:
         powers = self.get_unlensed_spectra(dl=dl) 
-        raise NotImplementedError("Mass model not implemented yet")
+        pow = {}
+        pow["tt"] = powers["tt"]
+        pow["te"] = powers["te"]
+        pow["ee"] = powers["ee"]
+        pow["bb"] = powers["bb"]
+        internal_len = len(powers["tt"])
+        _eb_ = self.__td_eb__()
+        _tb_ = self.__td_tb__()
+        eb = np.zeros(len(powers["tt"]))
+        tb = np.zeros(len(powers["tt"]))
+        eb[2:len(_eb_)] = _eb_[2:]
+        tb[2:len(_eb_)] = _tb_[2:]
+        pow["eb"] = eb
+        pow["tb"] = tb
+
+        if dtype == "d":
+            return pow
+        elif dtype == "a":
+            if new:
+                # TT, EE, BB, TE, EB, TB
+                return np.array(
+                    [pow["tt"], pow["ee"], pow["bb"], pow["te"], pow["eb"], pow["tb"]]
+                )
+            else:
+                # TT, TE, TB, EE, EB, BB
+                return np.array(
+                    [pow["tt"], pow["te"], pow["tb"], pow["ee"], pow["eb"], pow["bb"]]
+                )
+        else:
+            raise ValueError("dtype should be 'd' or 'a'")
             
     def get_cb_lensed_spectra(
         self, beta: float = 0.0, dl: bool = True, dtype: str = "d", new: bool = False
@@ -334,18 +384,49 @@ class CMB:
     def get_cb_lensed_mass_spectra(
             self, dl: bool = True, dtype: str = "d", new: bool = False
         ) -> Union[Dict[str, np.ndarray], np.ndarray]:
-       powers = self.get_lensed_spectra(dl=dl) 
-       raise NotImplementedError("Mass model not implemented yet")
+        powers = self.get_lensed_spectra(dl=dl) 
+        pow = {}
+        pow["tt"] = powers["tt"]
+        pow["te"] = powers["te"]
+        pow["ee"] = powers["ee"]
+        pow["bb"] = powers["bb"]
+        internal_len = len(powers["tt"])
+        _eb_ = self.__td_eb__()
+        _tb_ = self.__td_tb__()
+        eb = np.zeros(len(powers["tt"]))
+        tb = np.zeros(len(powers["tt"]))
+        eb[2:len(_eb_)] = _eb_[2:]
+        tb[2:len(_eb_)] = _tb_[2:]
+        pow["eb"] = eb
+        pow["tb"] = tb
+
+        if dtype == "d":
+            return pow
+        elif dtype == "a":
+            if new:
+                # TT, EE, BB, TE, EB, TB
+                return np.array(
+                    [pow["tt"], pow["ee"], pow["bb"], pow["te"], pow["eb"], pow["tb"]]
+                )
+            else:
+                # TT, TE, TB, EE, EB, BB
+                return np.array(
+                    [pow["tt"], pow["te"], pow["tb"], pow["ee"], pow["eb"], pow["bb"]]
+                )
+        else:
+            raise ValueError("dtype should be 'd' or 'a'")
 
     def get_cb_gaussian_lensed_QU(self,idx: int) -> List[np.ndarray]:
         if self.model == "iso":
-            return self.get_iso_cb_gaussian_lensed_QU(idx)
+            return self.get_iso_const_cb_gaussian_lensed_QU(idx)
+        elif self.model == "iso_td":
+            return self.get_iso_td_cb_gaussian_lensed_QU(idx)
         elif self.model == "aniso":
             return self.get_aniso_cb_gaussian_lensed_QU(idx)
         else:
             raise NotImplementedError("Model not implemented yet, only 'iso' and 'aniso' are supported")
     
-    def get_iso_cb_gaussian_lensed_QU(self, idx: int) -> List[np.ndarray]:
+    def get_iso_const_cb_gaussian_lensed_QU(self, idx: int) -> List[np.ndarray]:
         """
         Generate or retrieve the Q and U Stokes parameters after applying cosmic birefringence.
 
@@ -382,7 +463,10 @@ class CMB:
             QU = hp.alm2map_spin([E, B], self.nside, 2, lmax=self.lmax)
             hp.write_map(fname, QU, dtype=np.float32)
             return QU
-        
+    
+    def get_iso_td_cb_gaussian_lensed_QU(self, idx: int) -> List[np.ndarray]:
+        raise NotImplementedError("Model not implemented yet")
+    
     def cl_aa(self):
         """
         Compute the Cl_AA power spectrum for the anisotropic model.
@@ -476,7 +560,7 @@ class CMB:
         phi_alm = self.phi_alm(idx)
         return hp.almxfl(phi_alm, np.sqrt(np.arange(self.lmax + 1, dtype=float) * np.arange(1, self.lmax + 2)), None, False)
 
-    def get_iso_cb_real_lensed_QU(self, idx: int) -> List[np.ndarray]:
+    def get_iso_const_cb_real_lensed_QU(self, idx: int) -> List[np.ndarray]:
         fname = os.path.join(
             self.cmbdir,
             f"sims_nside{self.nside}_{idx:03d}.fits",
@@ -495,10 +579,32 @@ class CMB:
             )
             defl = self.grad_phi_alm(idx)
             geom_info = ('healpix', {'nside':self.nside})
-            Qlen, Ulen = lenspyx.alm2lenmap_spin([alms[1],alms[2]], defl, 2, geometry=geom_info, verbose=1)
+            Qlen, Ulen = lenspyx.alm2lenmap_spin([alms[1],alms[2]], defl, 2, geometry=geom_info, verbose=int(self.verbose))
             hp.write_map(fname, [Qlen, Ulen], dtype=np.float64)
             return [Qlen, Ulen]
 
+    def get_iso_td_cb_real_lensed_QU(self, idx: int) -> List[np.ndarray]:
+        fname = os.path.join(
+            self.cmbdir,
+            f"sims_nside{self.nside}_{idx:03d}.fits",
+        )
+        if os.path.isfile(fname):
+            return hp.read_map(fname, field=[0, 1])
+        else:
+            spectra = self.get_cb_unlensed_mass_spectra(
+                    dl=False,
+                )
+            alms = hp.synalm(
+                [spectra["tt"], spectra["ee"], spectra["bb"], spectra["te"], spectra["eb"], spectra["tb"]],
+                lmax=self.lmax,
+                new=True,
+            )
+            defl = self.grad_phi_alm(idx)
+            geom_info = ('healpix', {'nside':self.nside})
+            Qlen, Ulen = lenspyx.alm2lenmap_spin([alms[1],alms[2]], defl, 2, geometry=geom_info, verbose=int(self.verbose))
+            hp.write_map(fname, [Qlen, Ulen], dtype=np.float64)
+            return [Qlen, Ulen]
+    
     def get_aniso_cb_real_lensed_QU(self, idx: int) -> List[np.ndarray]:
         fname = os.path.join(
             self.cmbdir,
@@ -516,7 +622,7 @@ class CMB:
             )
             defl = self.grad_phi_alm(idx)
             geom_info = ('healpix', {'nside':self.nside})
-            Q, U = lenspyx.alm2lenmap_spin([alms[1],alms[2]], defl, 2, geometry=geom_info, verbose=1)
+            Q, U = lenspyx.alm2lenmap_spin([alms[1],alms[2]], defl, 2, geometry=geom_info, verbose=int(self.verbose))
             alpha = self.alpha_map(idx)
             rQ = Q * np.cos(2 * alpha) - U * np.sin(2 * alpha)
             rU = Q * np.sin(2 * alpha) + U * np.cos(2 * alpha)
@@ -526,16 +632,16 @@ class CMB:
         
     def get_cb_real_lensed_QU(self, idx: int) -> List[np.ndarray]:
         if self.model == "iso":
-            return self.get_iso_cb_real_lensed_QU(idx)
+            return self.get_iso_const_cb_real_lensed_QU(idx)
+        elif self.model == "iso_td":
+            return self.get_iso_td_cb_real_lensed_QU(idx)
         elif self.model == "aniso":
             return self.get_aniso_cb_real_lensed_QU(idx)
         else:
-            raise NotImplementedError("Model not implemented yet, only 'iso' and 'aniso' are supported")
+            raise NotImplementedError("Model not implemented yet, only 'iso', 'iso_td', and 'aniso' are supported")
         
     def get_cb_lensed_QU(self, idx: int) -> List[np.ndarray]:
         if self.lensing:
             return self.get_cb_real_lensed_QU(idx)
         else:
             return self.get_cb_gaussian_lensed_QU(idx)
-        
-
