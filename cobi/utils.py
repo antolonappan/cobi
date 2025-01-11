@@ -121,3 +121,12 @@ def deconvolveQU(QU,beam):
     hp.almxfl(blm,cli(bl[2]),inplace=True)
     return hp.alm2map_spin([elm,blm],nside,2,lmax)
 
+
+def change_coord(m, coord=['C', 'G']):
+    npix = m.shape[-1]
+    nside = hp.npix2nside(npix)
+    ang = hp.pix2ang(nside, np.arange(npix))
+    rot = hp.Rotator(coord=reversed(coord))
+    new_ang = rot(*ang)
+    new_pix = hp.ang2pix(nside, *new_ang)
+    return m[..., new_pix]

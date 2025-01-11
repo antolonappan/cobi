@@ -16,42 +16,42 @@ class SkySimulation:
         self,
         libdir: str,
         nside: int,
-        cb_method: str,
-        dust: int,
-        synch: int,
-        alpha: Union[float, List[float]],
         freqs: np.ndarray,
         fwhm: np.ndarray,
         tube: np.ndarray,
-        beta: Optional[float],
-        Acb: Optional[float],
-        atm_noise: bool = False,
+        cb_model: str = "iso",
+        beta: float = 0.35,
+        mass: float = 1.5,
+        Acb: float = 1e-6,
+        lensing: bool = True,
+        dust_model: int = 10,
+        sync_model: int = 5,
+        bandpass: bool = True,
+        alpha: float = 0.0,
+        alpha_err: float = 0.0,
+        noise_model: str = "NC",
+        atm_noise: bool = True,
         nsplits: int = 2,
-        bandpass: bool = False,
-        verbose: bool = True,
-        fldname_suffix: str = "",
         hilc_bins: int = 10,
         deconv_maps: bool = False,
+        fldname_suffix: str = "",
+        verbose: bool = True,
     ):
         """
         Initializes the SkySimulation class for generating and handling sky simulations.
 
         Parameters:
-        libdir (str): Directory where the sky maps will be stored.
-        nside (int): HEALPix resolution parameter.
-        beta (float): Rotation angle for cosmic birefringence in degrees.
-        dust (int): Model number for the dust emission.
-        synch (int): Model number for the synchrotron emission.
-        alpha (Union[float, List[float]]): Polarisation angle(s) for frequency bands. If a list, should match the number of frequency bands.
-        atm_noise (bool, optional): If True, includes atmospheric noise. Defaults to False.
-        nsplits (int, optional): Number of data splits to consider. Defaults to 2.
-        bandpass (bool, optional): If True, applies bandpass integration. Defaults to False.
-        verbose (bool, optional): If True, enables verbose output. Defaults to True.
-        freqs (np.ndarray, optional): Array of frequency bands.
-        fwhm (np.ndarray, optional): Array of full-width half-maximum for the Gaussian beam.
-        tube (np.ndarray, optional): Array of tube identifiers.
-        fldname_suffix (str, optional): Suffix to append to the folder name. Defaults to "".
-        hilc_bins (int, optional): Number of bins for the HILC method. Defaults to 10.
+        -----------
+        libdir: str
+            The directory where the simulation data will be stored.
+        nside: int
+            The HEALPix nside parameter for the simulation.
+        freqs: np.ndarray
+            The frequency bands for the simulation.
+        fwhm: np.ndarray
+            The full width at half maximum (FWHM) for each frequency band.
+        tube: np.ndarray
+            The tube identifier for each frequency band.
         """
         self.logger = Logger(self.__class__.__name__, verbose)
         self.verbose = verbose
@@ -63,20 +63,24 @@ class SkySimulation:
         self.libdir = os.path.join(libdir, self.__class__.__name__[:3] + fldname)
         os.makedirs(self.libdir + '/obs', exist_ok=True)
 
+        if self.__class__.__name__ == "SAT" and nside != 512:
+            self.logger.log(f"SAT simulations are only supported for nside=512. Resetting the given NSIDE={nside} to 512.")
+            nside = 512
+            
         self.nside = nside
         self.Acb = Acb
-        self.cb_method = cb_method
+        self.cb_method = cb_model
         self.beta = beta
-        self.cmb = CMB(libdir, nside, beta, Acb, cb_method,self.verbose)
-        self.foreground = Foreground(libdir, nside, dust, synch, bandpass, verbose=False)
-        self.dust_model = dust
-        self.sync_model = synch
+        self.cmb = CMB(libdir, nside, cb_model,beta, mass, Acb, lensing, verbose=self.verbose)
+        self.foreground = Foreground(libdir, nside, dust_model, sync_model, bandpass, verbose=False)
+        self.dust_model = dust_model
+        self.sync_model = sync_model
         self.nsplits = nsplits
         self.freqs = freqs
         self.fwhm = fwhm
         self.tube = tube
         self.mask, self.fsky = self.__set_mask_fsky__(libdir)
-        self.noise = Noise(nside, self.fsky, self.__class__.__name__[:3], atm_noise, nsplits, verbose=self.verbose)
+        self.noise = Noise(nside, self.fsky, self.__class__.__name__[:3], noise_model, atm_noise, nsplits, verbose=self.verbose)
         self.config = {}
         for split in range(nsplits):
             for band in range(len(self.freqs)):
@@ -96,6 +100,7 @@ class SkySimulation:
                         self.config[f'{self.freqs[band]}-{split+1}']["alpha"] = alpha
 
         self.alpha = alpha
+        self.alpha_err = alpha_err
         self.atm_noise = atm_noise
         self.bandpass = bandpass
         self.hilc_bins = hilc_bins
@@ -228,36 +233,47 @@ class LATsky(SkySimulation):
         self,
         libdir: str,
         nside: int,
-        cb_method: str,
-        dust: int,
-        synch: int,
-        alpha: Union[float, List[float]],
-        beta: Optional[float] = None,
-        Acb: Optional[float] = None,
-        atm_noise: bool = False,
+        cb_model: str = "iso",
+        beta: float = 0.35,
+        mass: float = 1.5,
+        Acb: float = 1e-6,
+        lensing: bool = True,
+        dust_model: int = 10,
+        sync_model: int = 5,
+        bandpass: bool = True,
+        alpha: float = 0.0,
+        alpha_err: float = 0.0,
+        noise_model: str = "NC",
+        atm_noise: bool = True,
         nsplits: int = 2,
-        bandpass: bool = False,
+        hilc_bins: int = 10,
         deconv_maps: bool = False,
+        fldname_suffix: str = "",
         verbose: bool = True,
     ):
         super().__init__(
-            libdir=libdir,
-            nside=nside,
-            cb_method=cb_method,
-            dust=dust,
-            synch=synch,
-            alpha=alpha,
-            freqs=LATsky.freqs,
-            fwhm=LATsky.fwhm,
-            tube=LATsky.tube,
-            beta=beta,
-            Acb=Acb,
-            atm_noise=atm_noise,
-            nsplits=nsplits,
-            bandpass=bandpass,
-            verbose=verbose,
-            fldname_suffix="",
-            deconv_maps=deconv_maps,
+            libdir = libdir,
+            nside = nside,
+            freqs = LATsky.freqs,
+            fwhm = LATsky.fwhm,
+            tube = LATsky.tube,
+            cb_model = cb_model,
+            beta = beta,
+            mass = mass,
+            Acb = Acb,
+            lensing = lensing,
+            dust_model = dust_model,
+            sync_model = sync_model,
+            bandpass = bandpass,
+            alpha = alpha,
+            alpha_err = alpha_err,
+            noise_model = noise_model,
+            atm_noise = atm_noise,
+            nsplits = nsplits,
+            hilc_bins = hilc_bins,
+            deconv_maps = deconv_maps,
+            fldname_suffix = fldname_suffix,
+            verbose = verbose,
         )
 
 
@@ -270,34 +286,45 @@ class SATsky(SkySimulation):
         self,
         libdir: str,
         nside: int,
-        cb_method: str,
-        dust: int,
-        synch: int,
-        alpha: Union[float, List[float]],
-        beta: Optional[float] = None,
-        Acb: Optional[float] = None,
-        atm_noise: bool = False,
+        cb_model: str = "iso",
+        beta: float = 0.35,
+        mass: float = 1.5,
+        Acb: float = 1e-6,
+        lensing: bool = True,
+        dust_model: int = 10,
+        sync_model: int = 5,
+        bandpass: bool = True,
+        alpha: float = 0.0,
+        alpha_err: float = 0.0,
+        noise_model: str = "NC",
+        atm_noise: bool = True,
         nsplits: int = 2,
-        bandpass: bool = False,
+        hilc_bins: int = 10,
         deconv_maps: bool = False,
+        fldname_suffix: str = "",
         verbose: bool = True,
     ):
         super().__init__(
-            libdir=libdir,
-            nside=nside,
-            cb_method=cb_method,
-            dust=dust,
-            synch=synch,
-            alpha=alpha,
-            freqs=SATsky.freqs,
-            fwhm=SATsky.fwhm,
-            tube=SATsky.tube,
-            beta=beta,
-            Acb=Acb,
-            atm_noise=atm_noise,
-            nsplits=nsplits,
-            bandpass=bandpass,
-            verbose=verbose,
-            fldname_suffix="",
-            deconv_maps=deconv_maps,
+            libdir = libdir,
+            nside = nside,
+            freqs = SATsky.freqs,
+            fwhm = SATsky.fwhm,
+            tube = SATsky.tube,
+            cb_model = cb_model,
+            beta = beta,
+            mass = mass,
+            Acb = Acb,
+            lensing = lensing,
+            dust_model = dust_model,
+            sync_model = sync_model,
+            bandpass = bandpass,
+            alpha = alpha,
+            alpha_err = alpha_err,
+            noise_model = noise_model,
+            atm_noise = atm_noise,
+            nsplits = nsplits,
+            hilc_bins = hilc_bins,
+            deconv_maps = deconv_maps,
+            fldname_suffix = fldname_suffix,
+            verbose = verbose,
         )

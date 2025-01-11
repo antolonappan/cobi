@@ -1,10 +1,12 @@
 import numpy as np
 import healpy as hp
+from pixell import enmap
+from pixell.reproject import map2healpix
 from typing import Dict, Optional, Any, Union, List, Tuple
 from so_models_v3 import SO_Noise_Calculator_Public_v3_1_1 as so_models
 
 from cobi import mpi
-from cobi.utils import Logger
+from cobi.utils import Logger, change_coord
 
 #atm_noise or atm_corr, same for the noise map as well
 
@@ -48,6 +50,7 @@ class Noise:
                  nside: int, 
                  fsky: float,
                  telescope: str,
+                 sim = 'NC',
                  atm_noise: bool = False, 
                  nsplits: int = 2,
                  verbose: bool = True,
@@ -66,12 +69,23 @@ class Noise:
         self.sensitivity_mode = 2
         self.atm_noise        = atm_noise
         self.nsplits          = nsplits
+        self.telescope = telescope
         self.Nell             = NoiseSpectra(self.sensitivity_mode, fsky, self.lmax, self.atm_noise, telescope)
+        self.sim = sim
+        assert sim in ['NC', 'TOD'], "Invalid simulation type. Choose from 'NC' or 'TOD'."
+
         self.logger           = Logger(self.__class__.__name__, verbose)
-        if atm_noise:
-            self.logger.log(f"Noise Model:[{telescope}] White + 1/f noise v3.1.1")
+        if self.sim == 'NC':
+            if self.atm_noise:
+                self.logger.log(f"Noise Model:[{telescope}] White + 1/f noise v3.1.1")
+            else:
+                self.logger.log(f"Noise Model:[{telescope}] White noise v3.1.1")
+        elif self.sim == 'TOD':
+            self.logger.log(f"Noise Model: [{telescope}] Based on TOD and Map based simulations, directly using SO products.")
         else:
-            self.logger.log(f"Noise Model:[{telescope}] White noise v3.1.1")
+            raise ValueError(f"Invalid simulation type: {self.sim}", "Choose from 'NC' or 'TOD'.")
+        
+
 
     @property
     def rand_alm(self) -> np.ndarray:
@@ -185,7 +199,7 @@ class Noise:
         n = np.array([n_27, n_39, n_93, n_145, n_225, n_280])
         return n
 
-    def noiseQU(self) -> np.ndarray:
+    def noiseQU_NC(self,idx=None) -> np.ndarray:
         """
         Generates Q and U polarization noise maps based on the noise model.
 
@@ -205,3 +219,66 @@ class Noise:
                 N.append([q[i], u[i]])
 
         return np.array(N)*np.sqrt(self.nsplits)
+    
+    def noiseQU_TOD_sat(self,idx: int) -> np.ndarray:
+        sim_nsplits = 4
+        fac = np.sqrt(self.nsplits) / np.sqrt(sim_nsplits)
+        sim_no = f'{idx:04}'
+        fdir = f'/global/cfs/cdirs/sobs/awg_bb/sims/BBSims/NOISE_20230531/goal_optimistic/{sim_no}'
+        fbase_template = 'SO_SAT_{band}_noise_split_{split}of4_{sim_no}_goal_optimistic_20230531.fits'
+
+        bands = ['27', '39', '93', '145', '225', '280']
+        N = []
+        for split in range(self.nsplits):
+            for b in bands:
+                fbase = fbase_template.format(band=b, split=split+1, sim_no=sim_no)
+                fpath = f'{fdir}/{fbase}'
+                mm = hp.read_map(fpath, field=(1, 2))
+                mm = change_coord(mm)
+                N.append([mm[0],mm[1]])
+        return np.array(N)*fac
+
+    def noiseQU_TOD_lat(self,idx: int) -> np.ndarray:
+        sim_nsplits = 4
+        fac = np.sqrt(self.nsplits) / np.sqrt(sim_nsplits)
+        fdir = '/global/cfs/cdirs/sobs/v4_sims/mbs/mbs_s0015_20240504/sims'
+        fbase_template = 'so_lat_mbs_mss0002_{model}_{band}_lmax5400_4way_set{split_num}_noise_sim_map{sim_num:04}.fits'
+
+        models = ['fdw_lf', 'fdw_mf', 'fdw_uhf']
+        bands = ['lf_f030_lf_f040', 'mf_f090_mf_f150', 'uhf_f230_uhf_f290']
+        N = []
+        for split in range(self.nsplits):
+            for i in range(len(bands)):
+                fbase = fbase_template.format(model=models[i], band=bands[i], split_num=split+1, sim_num=idx)
+                fpath = f'{fdir}/{fbase}'
+                for j in range(2):
+                    n = enmap.read_map(fpath,sel=np.s_[j, 0])
+                    mm = map2healpix(n, nside=2048)[1:]
+                    mm = change_coord(mm)
+                    del n
+                    N.append([mm[0],mm[1]])
+        
+        return np.array(N)*fac
+
+    def noiseQU_TOD(self, idx: int) -> np.ndarray:
+        if self.telescope == 'SAT':
+            return self.noiseQU_TOD_sat(idx)
+        elif self.telescope == 'LAT':
+            return self.noiseQU_TOD_lat(idx)
+        else:
+            raise ValueError(f"Invalid telescope: {self.telescope}", "Choose from 'LAT' or 'SAT'.")
+    
+    def noiseQU(self, idx: Optional[int] = None) -> np.ndarray:
+        """
+        Generates Q and U polarization noise maps based on the noise model.
+
+        Returns:
+        np.ndarray: An array of Q and U noise maps.
+        """
+        if self.sim == 'NC':
+            return self.noiseQU_NC(idx)
+        elif self.sim == 'TOD':
+            assert idx is not None, "For TOD simulation, provide the index of the simulation."
+            return self.noiseQU_TOD(idx)
+        else:
+            raise ValueError(f"Invalid simulation type: {self.sim}", "Choose from 'NC' or 'TOD'.")
