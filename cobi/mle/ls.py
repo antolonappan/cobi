@@ -1,6 +1,6 @@
 
 import numpy as np
-from solat_cb.mle.utils import moving_sum
+from cobi.mle.utils import moving_sum
 
 
 class LinearSystem:

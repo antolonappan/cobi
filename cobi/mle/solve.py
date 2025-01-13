@@ -3,11 +3,11 @@ import numpy as np
 import healpy as hp
 import os
 import pickle as pl
-from solat_cb.simulation import CMB
-from solat_cb.mle.utils import *
-from solat_cb.mle.ls import LinearSystem
-from solat_cb import mpi
-from solat_cb.utils import Logger
+from cobi.simulation import CMB
+from cobi.mle.utils import *
+from cobi.mle.ls import LinearSystem
+from cobi import mpi
+from cobi.utils import Logger
 
 rad2arcmin = 180*60/np.pi
      
@@ -722,7 +722,7 @@ class MLE:
         # solve Ax=B
         # ang_now = np.matmul(np.linalg.pinv(sys_mat), ind_term) # risky alternative
         ang_now = np.linalg.solve(sys_mat, ind_term)
-        cov_now = np.linalg.inv(sys_mat)
+        cov_now = np.linalg.pinv(sys_mat)
         std_now = np.sqrt(np.diagonal(cov_now)) 
         # save results even if something went wrong
         res.ml[f"Iter {Niter+1}"]         = {}
@@ -769,7 +769,7 @@ class MLE:
         # solve Ax=B
         # ang_now = np.matmul(np.linalg.pinv(sys_mat), ind_term) # risky alternative
         ang_now = np.linalg.solve(sys_mat, ind_term)
-        cov_now = np.linalg.inv(sys_mat)
+        cov_now = np.linalg.pinv(sys_mat)
         std_now = np.sqrt(np.diagonal(cov_now)) 
         # save results even if something went wrong
         res.ml[f"Iter {Niter+1}"]         = {"Ad":ang_now[0]}
@@ -828,7 +828,7 @@ class MLE:
         # solve Ax=B
         # ang_now = np.matmul(np.linalg.pinv(sys_mat), ind_term) # risky alternative
         ang_now = np.linalg.solve(sys_mat, ind_term)
-        cov_now = np.linalg.inv(sys_mat)
+        cov_now = np.linalg.pinv(sys_mat)
         std_now = np.sqrt(np.diagonal(cov_now)) 
         # save results even if something went wrong
         res.ml[f"Iter {Niter+1}"]         = {"As":ang_now[0], "Ad":ang_now[1]}
@@ -900,7 +900,7 @@ class MLE:
         # solve Ax=B
         # ang_now = np.matmul(np.linalg.pinv(sys_mat), ind_term) # risky alternative
         ang_now = np.linalg.solve(sys_mat, ind_term)
-        cov_now = np.linalg.inv(sys_mat)
+        cov_now = np.linalg.pinv(sys_mat)
         std_now = np.sqrt(np.diagonal(cov_now)) 
         # save results even if something went wrong
         res.ml[f"Iter {Niter+1}"]         = {"As":ang_now[0], "Ad":ang_now[1], "Asd":ang_now[2]}
@@ -948,7 +948,7 @@ class MLE:
         # solve Ax=B
         # ang_now = np.matmul(np.linalg.pinv(sys_mat), ind_term) # risky alternative
         ang_now = np.linalg.solve(sys_mat, ind_term)
-        cov_now = np.linalg.inv(sys_mat)
+        cov_now = np.linalg.pinv(sys_mat)
         std_now = np.sqrt(np.diagonal(cov_now)) 
         # save results even if something went wrong
         res.ml[f"Iter {Niter+1}"]         = {"beta":ang_now[0]}
@@ -1006,7 +1006,7 @@ class MLE:
         # solve Ax=B
         # ang_now = np.matmul(np.linalg.pinv(sys_mat), ind_term) # risky alternative
         ang_now = np.linalg.solve(sys_mat, ind_term)
-        cov_now = np.linalg.inv(sys_mat)
+        cov_now = np.linalg.pinv(sys_mat)
         std_now = np.sqrt(np.diagonal(cov_now)) 
         # save results even if something went wrong
         res.ml[f"Iter {Niter+1}"]         = {"Ad":ang_now[0], "beta":ang_now[1]}
@@ -1077,7 +1077,7 @@ class MLE:
         # solve Ax=B
         # ang_now = np.matmul(np.linalg.pinv(sys_mat), ind_term) # risky alternative
         ang_now = np.linalg.solve(sys_mat, ind_term)
-        cov_now = np.linalg.inv(sys_mat)
+        cov_now = np.linalg.pinv(sys_mat)
         std_now = np.sqrt(np.diagonal(cov_now)) 
         
         # save results even if something went wrong
@@ -1163,7 +1163,7 @@ class MLE:
         # solve Ax=B
         # ang_now = np.matmul(np.linalg.pinv(sys_mat), ind_term) # risky alternative
         ang_now = np.linalg.solve(sys_mat, ind_term)
-        cov_now = np.linalg.inv(sys_mat)
+        cov_now = np.linalg.pinv(sys_mat)
         std_now = np.sqrt(np.diagonal(cov_now)) 
         # save results even if something went wrong
         res.ml[f"Iter {Niter+1}"]         = {"As":ang_now[0], "Ad":ang_now[1], "Asd":ang_now[2],"beta":ang_now[3]}
@@ -1201,7 +1201,7 @@ class MLE:
         niter     = 0
         while not converged:
             cov    = self.build_cov(niter, res)
-            invcov = np.linalg.inv(cov/self.fsky)
+            invcov = np.linalg.pinv(cov/self.fsky)
             try:
                 self.solve_linear_system(invcov, niter, res)
                 # evaluate convergence of the iterative calculation 

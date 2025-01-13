@@ -27,7 +27,7 @@ class SkySimulation:
         dust_model: int = 10,
         sync_model: int = 5,
         bandpass: bool = True,
-        alpha: float = 0.0,
+        alpha: Union[float,List[float]] = 0.0,
         alpha_err: float = 0.0,
         noise_model: str = "NC",
         atm_noise: bool = True,
@@ -56,16 +56,30 @@ class SkySimulation:
         self.logger = Logger(self.__class__.__name__, verbose)
         self.verbose = verbose
 
-        fldname = "_atm_noise" if atm_noise else "_white_noise"
-        fldname += "_bandpass" if bandpass else ""
-        fldname += f"_{nsplits}splits" + fldname_suffix
+        fldname = "_an" if atm_noise else "_wn"
+        fldname += "_bp" if bandpass else ""
+        fldname += f"_{nsplits}ns" 
+        fldname += "_lens" if lensing else "_gauss"
+        fldname += f"_{noise_model.lower()}nm"
+        if cb_model == 'iso':
+            fldname += f"_b{str(beta).replace('.','p')}"
+        elif cb_model == 'iso_td':
+            fldname += f"_m({str(mass).replace('.','p')}"
+        elif cb_model == 'aniso':
+            fldname += f"_acb{str(Acb).replace('-','')}"
+        else:
+            raise ValueError("Unknown CB method")
+        fldname += f"_d{dust_model}s{sync_model}"
+        fldname += fldname_suffix
+
         self.basedir = libdir
         self.libdir = os.path.join(libdir, self.__class__.__name__[:3] + fldname)
         os.makedirs(self.libdir + '/obs', exist_ok=True)
 
+        self.dnside = 0
         if self.__class__.__name__ == "SAT" and nside != 512:
             self.logger.log(f"SAT simulations are only supported for nside=512. Resetting the given NSIDE={nside} to 512.")
-            nside = 512
+            self.dnside = 512
             
         self.nside = nside
         self.Acb = Acb
@@ -137,20 +151,10 @@ class SkySimulation:
 
     def obsQUfname(self, idx: int, band: str) -> str:
         alpha = self.config[band]["alpha"]
-        if self.cb_method == 'iso':
-            beta = self.cmb.beta
-            return os.path.join(
-                self.libdir,
-                f"obs/obsQU_N{self.nside}_b{str(beta).replace('.','p')}_a{str(alpha).replace('.','p')}_{band}{'_d' if self.deconv_maps else ''}{'_bp' if self.bandpass else ''}_{idx:03d}.fits",
-            )
-        elif self.cb_method == 'aniso':
-            Acb = self.cmb.Acb
-            return os.path.join(
-                self.libdir,
-                f"obs/obsQU_N{self.nside}_A{str(Acb).replace('.','p')}_a{str(alpha).replace('.','p')}_{band}{'_d' if self.deconv_maps else ''}{'_bp' if self.bandpass else ''}_{idx:03d}.fits",
-            )
-        else:
-            raise ValueError("Unknown CB method")
+        fwhm = self.config[band]["fwhm"]
+        tube = self.config[band]["opt. tube"]
+        fname = os.path.join(self.libdir,'obs', f"sims_a{str(alpha)}_f{fwhm}_t{tube}_{idx:03d}.fits")
+        return fname
         
 
     def saveObsQUs(self, idx: int, apply_mask: bool = True) -> None:

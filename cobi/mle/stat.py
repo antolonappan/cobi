@@ -1,4 +1,4 @@
-from solat_cb.mle import MLE
+from cobi.mle import MLE
 import numpy as np
 
 

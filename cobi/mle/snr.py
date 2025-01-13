@@ -1,8 +1,8 @@
 import numpy as np
 import os
-from solat_cb.spectra import Spectra
-from solat_cb.simulation import LATsky
-from solat_cb.mle import MLE, LinearSystem, Result, effective_ell
+from cobi.spectra import Spectra
+from cobi.simulation import LATsky
+from cobi.mle import MLE, LinearSystem, Result, effective_ell
 
 
 
