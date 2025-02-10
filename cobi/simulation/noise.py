@@ -85,6 +85,11 @@ class Noise:
         else:
             raise ValueError(f"Invalid simulation type: {self.sim}", "Choose from 'NC' or 'TOD'.")
         
+        self.__nseeds__ = {
+            1: np.arange(7777, 7777 + 1000),
+            2: np.arange(9999, 9999 + 1000),
+        }
+        
 
 
     @property
@@ -164,9 +169,63 @@ class Noise:
                     self.__white_noise__('145'),
                     self.__white_noise__('225'),
                     self.__white_noise__('280')])
+    def atm_noise_maps_freq(self, idx: int, freq: str) -> np.ndarray:
+        """
+        Generates atmospheric noise maps using Cholesky decomposition.
+
+        Returns:
+        np.ndarray: An array of atmospheric noise maps for different frequency bands.
+        """
+        L11, L21, L22, L33, L43, L44, L55, L65, L66 = self.cholesky_matrix_elements 
+
+        f = freq.split('-')[0]
+        split = int(freq.split('-')[-1])
+
+        def noise_map(Alm,L):
+            nlm = hp.almxfl(Alm, L)
+            n = hp.alm2map(nlm, self.nside, pixwin=False)
+            return n
+        def noise_map_cross(Alm1,Alm2,L1,L2):
+            nlm = hp.almxfl(Alm1, L1) + hp.almxfl(Alm2, L2)
+            n = hp.alm2map(nlm, self.nside, pixwin=False)
+            return n
+        
+        if f == '27':
+            np.random.seed(self.__nseeds__[split][idx])
+            alm = self.rand_alm
+            return noise_map(alm, L11)*np.sqrt(self.nsplits)
+        elif f == '39':
+            np.random.seed(self.__nseeds__[split][idx])
+            alm = self.rand_alm
+            np.random.seed(self.__nseeds__[split][idx]+1)
+            blm = self.rand_alm
+            return noise_map_cross(alm,blm,L21,L22)*np.sqrt(self.nsplits)
+        elif f == '93':
+            np.random.seed(self.__nseeds__[split][idx]+2)
+            clm = self.rand_alm
+            return noise_map(clm,L33)*np.sqrt(self.nsplits)
+        elif f == '145':
+            np.random.seed(self.__nseeds__[split][idx]+2)
+            clm = self.rand_alm
+            np.random.seed(self.__nseeds__[split][idx]+3)
+            dlm = self.rand_alm
+            return noise_map_cross(clm,dlm,L43,L44)*np.sqrt(self.nsplits)
+        elif f == '225':
+            np.random.seed(self.__nseeds__[split][idx]+4)
+            elm = self.rand_alm
+            return noise_map(elm,L55)*np.sqrt(self.nsplits)
+        elif f == '280':
+            np.random.seed(self.__nseeds__[split][idx]+4)
+            elm = self.rand_alm
+            np.random.seed(self.__nseeds__[split][idx]+5)
+            flm = self.rand_alm
+            return noise_map_cross(elm,flm,L65,L66)*np.sqrt(self.nsplits)
+        else:
+            raise ValueError(f"Invalid frequency band: {f}", "Choose from '27', '39', '93', '145', '225', '280'.")
+            
 
 
-    def atm_noise_maps(self) -> np.ndarray:
+    def atm_noise_maps(self,split, idx) -> np.ndarray:
         """
         Generates atmospheric noise maps using Cholesky decomposition.
 
@@ -174,22 +233,28 @@ class Noise:
         np.ndarray: An array of atmospheric noise maps for different frequency bands.
         """
         L11, L21, L22, L33, L43, L44, L55, L65, L66 = self.cholesky_matrix_elements
-
+        
+        np.random.seed(self.__nseeds__[split][idx])
         alm    = self.rand_alm
+        np.random.seed(self.__nseeds__[split][idx]+1)
         blm    = self.rand_alm
         nlm_27 = hp.almxfl(alm, L11)
         nlm_39 = hp.almxfl(alm, L21) + hp.almxfl(blm, L22)
         n_27   = hp.alm2map(nlm_27, self.nside, pixwin=False)
         n_39   = hp.alm2map(nlm_39, self.nside, pixwin=False)
-
+        
+        np.random.seed(self.__nseeds__[split][idx]+2)
         clm     = self.rand_alm
+        np.random.seed(self.__nseeds__[split][idx]+3)
         dlm     = self.rand_alm
         nlm_93  = hp.almxfl(clm, L33)
         nlm_145 = hp.almxfl(clm, L43) + hp.almxfl(dlm, L44)
         n_93    = hp.alm2map(nlm_93, self.nside, pixwin=False)
         n_145   = hp.alm2map(nlm_145, self.nside, pixwin=False)
-
+        
+        np.random.seed(self.__nseeds__[split][idx]+4)
         elm     = self.rand_alm
+        np.random.seed(self.__nseeds__[split][idx]+5)
         flm     = self.rand_alm
         nlm_225 = hp.almxfl(elm, L55)
         nlm_280 = hp.almxfl(elm, L65) + hp.almxfl(flm, L66)
@@ -199,7 +264,7 @@ class Noise:
         n = np.array([n_27, n_39, n_93, n_145, n_225, n_280])
         return n
 
-    def noiseQU_NC(self,idx=None) -> np.ndarray:
+    def noiseQU_NC(self,idx) -> np.ndarray:
         """
         Generates Q and U polarization noise maps based on the noise model.
 
@@ -209,8 +274,8 @@ class Noise:
         N = []
         for split in range(self.nsplits):
             if self.atm_noise:
-                q = self.atm_noise_maps()
-                u = self.atm_noise_maps()
+                q = self.atm_noise_maps(split+1, idx)
+                u = self.atm_noise_maps(split+1, idx)
             else:
                 q = self.white_noise_maps()
                 u = self.white_noise_maps()            

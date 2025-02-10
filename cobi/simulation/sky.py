@@ -1,6 +1,7 @@
 import numpy as np
 import healpy as hp
 import os
+import pickle as pl
 from tqdm import tqdm
 from cobi import mpi
 from typing import Union, List, Optional
@@ -9,6 +10,8 @@ from cobi.simulation import CMB, Foreground, Mask, Noise
 from cobi.utils import Logger, inrad
 from cobi.utils import cli, deconvolveQU
 from cobi.simulation import HILC
+
+from concurrent.futures import ThreadPoolExecutor
 
 
 class SkySimulation:
@@ -32,6 +35,7 @@ class SkySimulation:
         noise_model: str = "NC",
         atm_noise: bool = True,
         nsplits: int = 2,
+        gal_cut: int = 0,
         hilc_bins: int = 10,
         deconv_maps: bool = False,
         fldname_suffix: str = "",
@@ -69,7 +73,14 @@ class SkySimulation:
             fldname += f"_acb{str(Acb).replace('-','')}"
         else:
             raise ValueError("Unknown CB method")
+        
         fldname += f"_d{dust_model}s{sync_model}"
+        fldname += f"_g{gal_cut}" if gal_cut > 0 else ""
+        if isinstance(alpha, (list, np.ndarray)):
+            fldname += f"_a"  ''.join('n' + f"{abs(num):g}".replace(".", "") if num < 0 else f"{num:g}".replace(".", "") for num in alpha).replace('0','')
+        else:
+            fldname += f"_a{str(alpha).replace('.','p')}"
+        fldname += f"_ae{str(alpha_err).replace('.','p')}" if alpha_err > 0 else ""
         fldname += fldname_suffix
 
         self.basedir = libdir
@@ -93,6 +104,7 @@ class SkySimulation:
         self.freqs = freqs
         self.fwhm = fwhm
         self.tube = tube
+        self.gal_cut = gal_cut
         self.mask, self.fsky = self.__set_mask_fsky__(libdir)
         self.noise = Noise(nside, self.fsky, self.__class__.__name__[:3], noise_model, atm_noise, nsplits, verbose=self.verbose)
         self.config = {}
@@ -119,9 +131,10 @@ class SkySimulation:
         self.bandpass = bandpass
         self.hilc_bins = hilc_bins
         self.deconv_maps = deconv_maps
+        self.__set_alpha__()
 
     def __set_mask_fsky__(self, libdir):
-        maskobj = Mask(libdir, self.nside, self.__class__.__name__[:3], verbose=self.verbose)
+        maskobj = Mask(libdir, self.nside, self.__class__.__name__[:3], gal_cut=self.gal_cut, verbose=self.verbose)
         return maskobj.mask, maskobj.fsky
 
     def signalOnlyQU(self, idx: int, band: str) -> np.ndarray:
@@ -130,6 +143,33 @@ class SkySimulation:
         dustQU = self.foreground.dustQU(band)
         syncQU = self.foreground.syncQU(band)
         return cmbQU + dustQU + syncQU
+    
+    def __gen_alpha_dict__(self):
+        fname = os.path.join(self.libdir, 'alpha_dict.pkl')
+        if os.path.isfile(fname):
+            self.alpha_dict = pl.load(open(fname, 'rb'))
+        else:
+            self.alpha_dict = {}
+            for band in self.config.keys():
+                alpha = self.config[band]["alpha"]
+                self.alpha_dict[band] = np.random.normal(alpha, self.alpha_err/3, 300) # given value is assumed 3 sigma
+            if mpi.rank == 0:
+                pl.dump(self.alpha_dict, open(fname, 'wb'))
+        
+
+    def __set_alpha__(self):
+        if self.alpha_err > 0:
+            self.__gen_alpha_dict__()
+        else:
+            self.alpha_dict = None
+    
+    def get_alpha(self, idx: int, band: str):
+        if self.alpha_err > 0:
+            assert self.alpha_dict is not None, "Alpha dictionary not found. Run __gen_alpha_dict__ first."
+            return self.alpha_dict[band][idx]
+        else:
+            return self.config[band]["alpha"]
+        
 
     def obsQUwAlpha(
         self, idx: int, band: str, fwhm: float, alpha: float, apply_tranf: bool = True, return_alms: bool = False
@@ -153,7 +193,7 @@ class SkySimulation:
         alpha = self.config[band]["alpha"]
         fwhm = self.config[band]["fwhm"]
         tube = self.config[band]["opt. tube"]
-        fname = os.path.join(self.libdir,'obs', f"sims_a{str(alpha)}_f{fwhm}_t{tube}_{idx:03d}.fits")
+        fname = os.path.join(self.libdir,'obs', f"sims_a{str(alpha)}_f{fwhm}_t{tube}_b{band}_{idx:03d}.fits")
         return fname
         
 
@@ -163,7 +203,7 @@ class SkySimulation:
         signal = []
         for band in bands:
             fwhm = self.config[band]["fwhm"]
-            alpha = self.config[band]["alpha"]
+            alpha = self.get_alpha(idx, band)
             signal.append(self.obsQUwAlpha(idx, band, fwhm, alpha))
         noise = self.noise.noiseQU()
         sky = np.array(signal) + noise
@@ -175,6 +215,37 @@ class SkySimulation:
         for i in tqdm(range(len(bands)), desc="Saving Observed QUs", unit="band"):
             fname = self.obsQUfname(idx, bands[i])
             hp.write_map(fname, sky[i] * mask, dtype=np.float64, overwrite=True) # type: ignore
+    
+    def SaveObsQUs(self, idx: int, apply_mask: bool = True, threading=False) -> None:
+
+        def create_band_map(idx,band):
+            fname = self.obsQUfname(idx, band)
+            if os.path.isfile(fname):
+                return 0
+            else:
+                fwhm = self.config[band]["fwhm"]
+                alpha = self.get_alpha(idx, band)
+                signal = self.obsQUwAlpha(idx, band, fwhm, alpha)
+                noise = self.noise.atm_noise_maps_freq(idx, band)
+                sky = signal + noise
+                del (signal, noise)
+                if self.deconv_maps:
+                    sky = deconvolveQU(sky, fwhm)
+                fname = self.obsQUfname(idx, band)
+                hp.write_map(fname, sky * mask, dtype=np.float64) # type: ignore
+                return 0
+
+        mask = self.mask if apply_mask else np.ones_like(self.mask)
+        bands = list(self.config.keys())
+        if threading:
+            with ThreadPoolExecutor(max_workers=len(bands)) as executor:
+                maps = list(tqdm(executor.map(lambda band: create_band_map(idx,band), bands), total=len(bands), desc="Saving Observed QUs", unit="band"))
+        else:
+            for band in tqdm(bands, desc="Saving Observed QUs", unit="band"):
+                maps = create_band_map(idx,band)
+
+
+
 
     def obsQU(self, idx: int, band: str) -> np.ndarray:
         fname = self.obsQUfname(idx, band)
@@ -250,6 +321,7 @@ class LATsky(SkySimulation):
         noise_model: str = "NC",
         atm_noise: bool = True,
         nsplits: int = 2,
+        gal_cut: int = 0,
         hilc_bins: int = 10,
         deconv_maps: bool = False,
         fldname_suffix: str = "",
@@ -274,6 +346,7 @@ class LATsky(SkySimulation):
             noise_model = noise_model,
             atm_noise = atm_noise,
             nsplits = nsplits,
+            gal_cut = gal_cut,
             hilc_bins = hilc_bins,
             deconv_maps = deconv_maps,
             fldname_suffix = fldname_suffix,
@@ -303,6 +376,7 @@ class SATsky(SkySimulation):
         noise_model: str = "NC",
         atm_noise: bool = True,
         nsplits: int = 2,
+        gal_cut: int = 0,
         hilc_bins: int = 10,
         deconv_maps: bool = False,
         fldname_suffix: str = "",
@@ -327,6 +401,7 @@ class SATsky(SkySimulation):
             noise_model = noise_model,
             atm_noise = atm_noise,
             nsplits = nsplits,
+            gal_cut = gal_cut,
             hilc_bins = hilc_bins,
             deconv_maps = deconv_maps,
             fldname_suffix = fldname_suffix,

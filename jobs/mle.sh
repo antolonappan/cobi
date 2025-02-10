@@ -2,9 +2,9 @@
 #SBATCH --qos=debug
 #SBATCH --constraint=cpu
 #SBATCH --account=mp107e
-#SBATCH --nodes=8
-#SBATCH --ntasks=100
-#SBATCH --cpus-per-task=12
+#SBATCH --nodes=4
+#SBATCH --ntasks=300
+#SBATCH --cpus-per-task=1
 #SBATCH -J SOLAT
 #SBATCH -o solat.out
 #SBATCH -e solat.err
@@ -14,6 +14,6 @@
 
 module load python
 conda activate cb
-cd /global/homes/l/lonappan/workspace/solat_cb/jobs
+cd /global/homes/l/lonappan/workspace/cobi/jobs
 
 mpirun -np $SLURM_NTASKS python run.py

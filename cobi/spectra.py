@@ -15,6 +15,7 @@ from concurrent.futures import ThreadPoolExecutor
 class Spectra:
     def __init__(self, 
                  lat_lib: LATsky | SATsky,
+                 common_dir: str,
                  aposcale: float = 2.0, 
                  template_bandpass: bool = False, 
                  pureB: bool = False,
@@ -60,9 +61,8 @@ class Spectra:
         
 
         deconv = self.lat.deconv_maps
-        fldname    = "_atm_noise" if self.lat.atm_noise else "_white_noise"
-        libdiri    = os.path.join(libdir, f"spectra_{self.nside}{'_d' if deconv else ''}_aposcale{str(aposcale).replace('.','p')}{'_pureB' if pureB else ''}" + fldname + fld_ext)
-        comdir     = os.path.join(libdir, f"spectra_{self.nside}{'_d' if deconv else ''}_aposcale{str(aposcale).replace('.','p')}{'_pureB' if pureB else ''}" + "_common" + fld_ext)
+        libdiri    = os.path.join(libdir, f"spectra_{self.nside}{'_d' if deconv else ''}_aposcale{str(aposcale).replace('.','p')}{'_pureB' if pureB else ''}" + fld_ext)
+        comdir     = os.path.join(common_dir, f"spectra_{self.nside}{'_d' if deconv else ''}_aposcale{str(aposcale).replace('.','p')}{'_pureB' if pureB else ''}" + fld_ext)
         self.__set_dir__(libdiri, comdir)
         
         self.lmax     = min(2000,3 * self.lat.nside - 1)
@@ -689,10 +689,12 @@ class Spectra:
             
         if fg=='dust':
             base_dir = self.dxd_dir
+            model = self.dust_model
         elif fg=='sync':
             base_dir = self.sxs_dir
+            model = self.sync_model
         fname = os.path.join(base_dir,
-            f"{fg}_x_{fg}_{self.freqs[ii]}{'_tempBP' if self.temp_bp else ''}.npy",
+            f"{fg}_x_{fg}_{model}{self.freqs[ii]}{'_tempBP' if self.temp_bp else ''}.npy",
         )
         
         if os.path.isfile(fname):
@@ -761,9 +763,10 @@ class Spectra:
             raise ValueError('Unknown foreground')
         
         base_dir = self.dxd_dir if fg == 'dust' else self.sxs_dir
+        model = self.dust_model if fg == 'dust' else self.sync_model
         fname = os.path.join(
             base_dir,
-            f"{fg}_x_{fg}_{self.freqs[ii]}{'_tempBP' if self.temp_bp else ''}.npy",
+            f"{fg}_x_{fg}_{model}{self.freqs[ii]}{'_tempBP' if self.temp_bp else ''}.npy",
         )
         
         if os.path.isfile(fname):
@@ -922,7 +925,7 @@ class Spectra:
         Returns:
         np.ndarray: Power spectra for the synchrotron x dust fields.
         """
-        fname = os.path.join(self.sxd_dir, f"sync_x_dust_{self.freqs[ii]}{'_tempBP' if self.temp_bp else ''}.npy")
+        fname = os.path.join(self.sxd_dir, f"sync{self.sync_model}_x_dust{self.dust_model}_{self.freqs[ii]}{'_tempBP' if self.temp_bp else ''}.npy")
         if os.path.isfile(fname):
             return np.load(fname)
         else:
@@ -963,7 +966,7 @@ class Spectra:
         Returns:
         np.ndarray: Power spectra for the synchrotron x dust fields.
         """
-        fname = os.path.join(self.sxd_dir, f"sync_x_dust_{self.freqs[ii]}{'_tempBP' if self.temp_bp else ''}.npy")
+        fname = os.path.join(self.sxd_dir, f"sync{self.sync_model}_x_dust{self.dust_model}_{self.freqs[ii]}{'_tempBP' if self.temp_bp else ''}.npy")
         
         if os.path.isfile(fname):
             return np.load(fname)
