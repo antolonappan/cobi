@@ -3,7 +3,7 @@ import numpy as np
 import healpy as hp
 import os
 import pickle as pl
-from cobi.simulation import CMB
+#from cobi.simulation import CMB
 from cobi.mle.utils import *
 from cobi.mle.ls import LinearSystem
 from cobi import mpi
@@ -13,35 +13,42 @@ rad2arcmin = 180*60/np.pi
      
 
 class MLE:
+    # this is hacked by Carlos such that we can use it feeding the cells from disk
     fit_options = ["alpha", "Ad + alpha", "As + Ad + alpha", "As + Asd + Ad + alpha",
                    "beta + alpha", "Ad + beta + alpha", "As + Ad + beta + alpha","As + Asd + Ad + beta + alpha"]
     
-    def __init__(self, libdir, spec_lib, fit,
+    def __init__(self, libdir, fit, fsky, freqs, bands, nsplits,
                  alpha_per_split=False,
                  rm_same_tube=False,
-                 binwidth=20, bmin=51, bmax=1000,verbose=True):
+                 binwidth=20, bmin=51, bmax=1000,verbose=True,
+                 nside=2048, lmax=None):
+        # freqs is an array with format [27,39,93,...]
         self.logger = Logger(self.__class__.__name__, verbose)
         self.niter_max = 100
         self.tol       = 0.5 # arcmin  
-        self.spec      = spec_lib
+        #self.spec      = spec_lib
 
+        """
         if self.spec.lat.dust_model != self.spec.dust_model:
             self.logger.log("Special Case Noted: FG model in LATsky and Spectra object are different", 'warning')
             fld_ext = f"{self.spec.dust_model}{self.spec.sync_model}"
         else:
             fld_ext = ""
-
-        self.libdir    = os.path.join(self.spec.lat.libdir, 'mle'+fld_ext)
-        if mpi.rank == 0:
-            os.makedirs(self.libdir, exist_ok=True)
-        mpi.barrier()
-        self.nside     = self.spec.nside
-        self.cmb       = CMB(libdir, self.nside, beta=0, model='iso')
-        self.cmb_cls   = self.cmb.get_lensed_spectra(dl=False, dtype='d')
-        self.fsky      = self.spec.fsky
+        """
         
+        #self.libdir    = os.path.join(self.spec.lat.libdir, 'mle'+fld_ext)
+        #if mpi.rank == 0:
+        #    os.makedirs(self.libdir, exist_ok=True)
+        mpi.barrier()
+        self.nside     = nside
+        #self.cmb       = CMB(libdir, self.nside, beta=0, model='iso')
+        #self.cmb_cls   = self.cmb.get_lensed_spectra(dl=False, dtype='d')
+        self.fsky      = fsky
+        if lmax is None:
+            lmax = 3*nside - 1
+
         # define binning
-        assert bmax <= self.spec.lmax, "bmax must be less than lmax in Spectra object"
+        assert bmax <= lmax, "bmax must be less than lmax in Spectra object"
         self.nlb      = binwidth
         self.bmin     = bmin
         self.bmax     = bmax
@@ -53,8 +60,10 @@ class MLE:
 
         # define instrument
         #TODO you could ask to use a specific combination of bands (excluding some)
-        self.bands  = self.spec.bands
-        self.Nbands = self.spec.Nbands
+        # bands must have the format ['27-1','27-2','39-1','39-2',...] 
+        # note the split numbering starts at 1 and not 0
+        self.bands  = bands
+        self.Nbands = len(bands)
         self.inst   = {}
         for ii, band in enumerate(self.bands):
             self.inst[band] = {"fwhm": self.spec.lat.config[band]['fwhm'], 
@@ -72,8 +81,8 @@ class MLE:
         else:
             print("Fitting a common polarisation angle per frequency")
             counter = 0
-            for ii, freq in enumerate(self.spec.freqs):
-                for split in range(self.spec.lat.nsplits):
+            for ii, freq in enumerate(freqs):
+                for split in range(nsplits):
                      self.inst[f'{freq}-{split+1}']["alpha idx"] = counter
                 counter += 1
         
