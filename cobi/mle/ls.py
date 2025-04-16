@@ -19,6 +19,10 @@ class LinearSystem:
         else:
             self.iC         = inv_cov
         self.mode           = mode
+        if mode=='total':
+            self.iC         = np.moveaxis(inv_cov, 0, 2) # summation function a specific matrix shape
+        else:
+            self.iC         = inv_cov
         self.window         = window
         self.Nbins          = mle.Nbins
         if mode=="total":
