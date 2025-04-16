@@ -10,12 +10,15 @@ class LinearSystem:
         self.dt             = np.float64
         self.fit            = mle.fit
         self.bin_cl         = mle.bin_terms
-        self.iC             = inv_cov
         self.Nbands         = mle.Nbands
         self.mle            = mle
         
         assert mode in self.mode_options, f"mode must be one of {self.mode_options}"
         self.mode           = mode
+        if mode=='total':
+            self.iC         = np.moveaxis(inv_cov, 0, 2) # summation function a specific matrix shape
+        else:
+            self.iC         = inv_cov
         self.window         = window
         self.Nbins          = mle.Nbins
         if mode=="total":
