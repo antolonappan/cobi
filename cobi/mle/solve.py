@@ -3,7 +3,7 @@ import numpy as np
 import healpy as hp
 import os
 import pickle as pl
-#from cobi.simulation import CMB
+from cobi.simulation import CMB
 from cobi.mle.utils import *
 from cobi.mle.ls import LinearSystem
 from cobi import mpi
@@ -17,7 +17,7 @@ class MLE:
     fit_options = ["alpha", "Ad + alpha", "As + Ad + alpha", "As + Asd + Ad + alpha",
                    "beta + alpha", "Ad + beta + alpha", "As + Ad + beta + alpha","As + Asd + Ad + beta + alpha"]
     
-    def __init__(self, libdir, fit, fsky, freqs, bands, nsplits,
+    def __init__(self, libdir, fit, fsky, freqs, bands, nsplits, fwhms, tubes,
                  alpha_per_split=False,
                  rm_same_tube=False,
                  binwidth=20, bmin=51, bmax=1000,verbose=True,
@@ -25,30 +25,23 @@ class MLE:
         # freqs is an array with format [27,39,93,...]
         self.logger = Logger(self.__class__.__name__, verbose)
         self.niter_max = 100
-        self.tol       = 0.5 # arcmin  
-        #self.spec      = spec_lib
-
-        """
-        if self.spec.lat.dust_model != self.spec.dust_model:
-            self.logger.log("Special Case Noted: FG model in LATsky and Spectra object are different", 'warning')
-            fld_ext = f"{self.spec.dust_model}{self.spec.sync_model}"
-        else:
-            fld_ext = ""
-        """
+        self.tol       = 0.5 # arcmin
         
         #self.libdir    = os.path.join(self.spec.lat.libdir, 'mle'+fld_ext)
         #if mpi.rank == 0:
         #    os.makedirs(self.libdir, exist_ok=True)
         mpi.barrier()
         self.nside     = nside
-        #self.cmb       = CMB(libdir, self.nside, beta=0, model='iso')
-        #self.cmb_cls   = self.cmb.get_lensed_spectra(dl=False, dtype='d')
+        self.cmb       = CMB(libdir, self.nside, beta=0, model='iso')
+        self.cmb_cls   = self.cmb.get_lensed_spectra(dl=False, dtype='d')
         self.fsky      = fsky
         if lmax is None:
-            lmax = 3*nside - 1
+            self.lmax = 3*nside - 1
+        else:
+            self.lmax = lmax
 
         # define binning
-        assert bmax <= lmax, "bmax must be less than lmax in Spectra object"
+        assert bmax <= self.lmax, "bmax must be less than lmax in Spectra object"
         self.nlb      = binwidth
         self.bmin     = bmin
         self.bmax     = bmax
@@ -62,12 +55,13 @@ class MLE:
         #TODO you could ask to use a specific combination of bands (excluding some)
         # bands must have the format ['27-1','27-2','39-1','39-2',...] 
         # note the split numbering starts at 1 and not 0
+        self.freqs  = freqs
         self.bands  = bands
         self.Nbands = len(bands)
         self.inst   = {}
         for ii, band in enumerate(self.bands):
-            self.inst[band] = {"fwhm": self.spec.lat.config[band]['fwhm'], 
-                               "opt. tube": self.spec.lat.config[band]['opt. tube'], 
+            self.inst[band] = {"fwhm": fwhms[ii], 
+                               "opt. tube": tubes[ii], 
                                "cl idx":ii}
             
         # parameters to calculate
@@ -81,7 +75,7 @@ class MLE:
         else:
             print("Fitting a common polarisation angle per frequency")
             counter = 0
-            for ii, freq in enumerate(freqs):
+            for ii, freq in enumerate(self.freqs):
                 for split in range(nsplits):
                      self.inst[f'{freq}-{split+1}']["alpha idx"] = counter
                 counter += 1
@@ -157,7 +151,7 @@ class MLE:
             for ii, band in enumerate(self.bands):
                 alphas[ii] = res.ml[f"Iter {Niter}"][band]
         else:
-            for ii, freq in enumerate(self.spec.freqs):
+            for ii, freq in enumerate(self.freqs):
                 alphas[ii] = res.ml[f"Iter {Niter}"][freq]
                 
         if add_beta:
@@ -256,7 +250,7 @@ class MLE:
 ### Calculation of covariance matrix elements
 
     def C_cmb(self):  
-        lmax  = self.spec.lmax
+        lmax  = self.lmax
         bl_EE = np.zeros((self.Nbands*(self.Nbands-self.avoid), self.Nbands*(self.Nbands-self.avoid), lmax+1), dtype=np.float64)
         bl_BB = np.zeros((self.Nbands*(self.Nbands-self.avoid), self.Nbands*(self.Nbands-self.avoid), lmax+1), dtype=np.float64)
         for MN_pair in self.MNidx:
@@ -279,7 +273,7 @@ class MLE:
         return np.moveaxis(bin_cov_matrix(Tcmb, self.bin_conf), 3, 1)
 
     def C_oxo(self, EiEjo, BiBjo, EiBjo, BiEjo):  
-        lmax = self.spec.lmax
+        lmax = self.lmax
         ell  = np.arange(0, lmax+1, 1)
         ############################ remove all except T0(1), T5(6), T6(7)
         # observed * observed
@@ -293,7 +287,7 @@ class MLE:
         return np.moveaxis(bin_cov_matrix(To, self.bin_conf), 3, 1)
         
     def C_fgxfg(self, EiEj, BiBj, EiBj, BiEj):  
-        lmax = self.spec.lmax
+        lmax = self.lmax
         ell  = np.arange(0, lmax+1, 1)
         ##################### remove EB from T1, T2, T3
         # synch * synch or dust * dust
@@ -310,7 +304,7 @@ class MLE:
         
     def C_sdxsd(self, EiEjs, BiBjs, EiBjs, BiEjs, EiEjd, BiBjd, EiBjd, BiEjd,
                 Eis_Ejd, Bis_Bjd, Eis_Bjd, Bis_Ejd):  
-        lmax = self.spec.lmax
+        lmax = self.lmax
         ell  = np.arange(0, lmax+1, 1)
         ##################### remove EB from T1, T2, T3
         # synch-dust * synch-dust 
@@ -328,7 +322,7 @@ class MLE:
     def C_dsxds(self, EiEjs, BiBjs, EiBjs, BiEjs, EiEjd, BiBjd, EiBjd, BiEjd,
                 Eis_Ejd, Bis_Bjd, Eis_Bjd, Bis_Ejd):  
             
-        lmax = self.spec.lmax
+        lmax = self.lmax
         ell  = np.arange(0, lmax+1, 1)   
         ##################### remove EB from T1, T2, T3
         # dust-synch * dust-synch 
@@ -344,7 +338,7 @@ class MLE:
         return np.moveaxis(bin_cov_matrix(TDS, self.bin_conf), 3, 1)
 
     def C_fgxo(self,Eifg_Ejo, Bifg_Bjo, Eifg_Bjo, Bifg_Ejo):  
-        lmax = self.spec.lmax
+        lmax = self.lmax
         ell=np.arange(0, lmax+1, 1)
         ##################### remove EB from all except T0 and T1 (only T0 T1 T6 T7 left)
         # synch * observed  or dust * obs
@@ -360,7 +354,7 @@ class MLE:
         return np.moveaxis(bin_cov_matrix(Tfg_o, self.bin_conf), 3, 1)
         
     def C_sdxo(self,Eis_Ejo, Bis_Bjo, Eis_Bjo, Bis_Ejo, Eid_Ejo, Bid_Bjo, Eid_Bjo, Bid_Ejo):  
-        lmax = self.spec.lmax
+        lmax = self.lmax
         ell  = np.arange(0, lmax+1, 1)
         ##################### remove EB from all except T0 and T1 (only T0 T1 T6 T7 left)
         # synch-dust * observed 
@@ -376,7 +370,7 @@ class MLE:
         return np.moveaxis(bin_cov_matrix(TSD_o, self.bin_conf), 3, 1)
     
     def C_dsxo(self,Eis_Ejo, Bis_Bjo, Eis_Bjo, Bis_Ejo, Eid_Ejo, Bid_Bjo, Eid_Bjo, Bid_Ejo):  
-        lmax = self.spec.lmax
+        lmax = self.lmax
         ell  = np.arange(0, lmax+1, 1)
         ##################### remove EB from all except T0 and T1 (only T0 T1 T6 T7 left)
         # dust-synch * observed  
@@ -392,7 +386,7 @@ class MLE:
         return np.moveaxis(bin_cov_matrix(TDS_o, self.bin_conf), 3, 1)
 
     def C_sxd(self, Eis_Ejd, Bis_Bjd, Eis_Bjd, Bis_Ejd):  
-        lmax = self.spec.lmax
+        lmax = self.lmax
         ell  = np.arange(0, lmax+1, 1)
         ##################### remove EB from T2, T3, T4, T5, T6, T7
         # synch * dust 
@@ -417,7 +411,7 @@ class MLE:
     
     def C_sdxds(self, EiEjs, BiBjs, EiBjs, BiEjs, EiEjd, BiBjd, EiBjd, BiEjd,
                 Eis_Ejd, Bis_Bjd, Eis_Bjd, Bis_Ejd):  
-        lmax = self.spec.lmax
+        lmax = self.lmax
         ell  = np.arange(0, lmax+1,1)
         ##################### remove EB from T2, T3, T4, T5, T6, T7
         # synch-dust * dust-synch
@@ -442,7 +436,7 @@ class MLE:
         
 #TODO terms have a different order but if you are careful you could build C_fgxsd and C_fgxds    
     def C_sxsd(self,EiEjs, BiBjs, EiBjs, BiEjs, Eis_Ejd, Bis_Bjd, Eis_Bjd, Bis_Ejd):  
-        lmax = self.spec.lmax
+        lmax = self.lmax
         ell  = np.arange(0, lmax+1, 1)
         ##################### remove EB from T2, T3, T4, T5, T6, T7
         # synch * synch-dust 
@@ -466,7 +460,7 @@ class MLE:
         return np.moveaxis(bin_cov_matrix(Ts_SD, self.bin_conf), 3, 1)
         
     def C_sxds(self,EiEjs, BiBjs, EiBjs, BiEjs, Eis_Ejd, Bis_Bjd, Eis_Bjd, Bis_Ejd):  
-        lmax = self.spec.lmax
+        lmax = self.lmax
         ell  = np.arange(0, lmax+1, 1)
         ##################### remove EB from T2, T3, T4, T5, T6, T7
         # synch * dust-synch 
@@ -490,7 +484,7 @@ class MLE:
         return np.moveaxis(bin_cov_matrix(Ts_DS, self.bin_conf), 3, 1)
         
     def C_dxsd(self, EiEjd, BiBjd, EiBjd, BiEjd, Eis_Ejd, Bis_Bjd, Eis_Bjd, Bis_Ejd):  
-        lmax = self.spec.lmax
+        lmax = self.lmax
         ell = np.arange(0, lmax+1, 1)
         ##################### remove EB from T2, T3, T4, T5, T6, T7
         # dust * synch-dust 
@@ -514,7 +508,7 @@ class MLE:
         return np.moveaxis(bin_cov_matrix(Td_SD, self.bin_conf), 3, 1)
 
     def C_dxds(self, EiEjd, BiBjd, EiBjd, BiEjd, Eis_Ejd, Bis_Bjd, Eis_Bjd, Bis_Ejd):  
-        lmax = self.spec.lmax
+        lmax = self.lmax
         ell  = np.arange(0, lmax+1, 1)
         ##################### remove EB from T2, T3, T4, T5, T6, T7
         # dust * dust-synch 
@@ -541,7 +535,7 @@ class MLE:
 ### Format cls and calculate elements of covariance matrix
 
     def process_cls(self, incls): 
-        lmax   = self.spec.lmax
+        lmax   = self.lmax
         # common to all fits (basic alpha*alpha fit)
         EEo_ij_b = np.zeros((self.Nbands, self.Nbands, lmax+1), dtype=np.float64)
         BBo_ij_b = np.zeros((self.Nbands, self.Nbands, lmax+1), dtype=np.float64) 
@@ -591,11 +585,11 @@ class MLE:
         # format cls
         for ii, band_i in enumerate(self.bands):
             idx_i  = self.inst[band_i]['cl idx']
-            freq_i = np.where(self.spec.lat.freqs==band_i[:-2])[0][0]
+            freq_i = np.where(self.freqs==band_i[:-2])[0][0]
             fwhm_i = self.inst[band_i]['fwhm']
             for jj, band_j in enumerate(self.bands):
                 idx_j  = self.inst[band_j]['cl idx']
-                freq_j = np.where(self.spec.lat.freqs==band_j[:-2])[0][0]
+                freq_j = np.where(self.freqs==band_j[:-2])[0][0]
                 fwhm_j = self.inst[band_j]['fwhm']
                 
                 # common to all fits (basic alpha*alpha fit)
@@ -742,7 +736,7 @@ class MLE:
                 res.ml[f"Iter {Niter+1}"][band]         = ang_now[ii]
                 res.std_fisher[f"Iter {Niter+1}"][band] = std_now[ii]
         else:
-            for ii, freq in enumerate(self.spec.freqs):
+            for ii, freq in enumerate(self.freqs):
                 res.ml[f"Iter {Niter+1}"][freq]         = ang_now[ii]
                 res.std_fisher[f"Iter {Niter+1}"][freq] = std_now[ii]
         if np.any( np.isnan(std_now) ):
@@ -789,7 +783,7 @@ class MLE:
                 res.ml[f"Iter {Niter+1}"][band]         = ang_now[ii+res.ext_par]
                 res.std_fisher[f"Iter {Niter+1}"][band] = std_now[ii+res.ext_par]
         else:
-            for ii, freq in enumerate(self.spec.freqs):
+            for ii, freq in enumerate(self.freqs):
                 res.ml[f"Iter {Niter+1}"][freq]         = ang_now[ii+res.ext_par]
                 res.std_fisher[f"Iter {Niter+1}"][freq] = std_now[ii+res.ext_par]
         if np.any( np.isnan(std_now) ):
@@ -848,7 +842,7 @@ class MLE:
                 res.ml[f"Iter {Niter+1}"][band]         = ang_now[ii+res.ext_par]
                 res.std_fisher[f"Iter {Niter+1}"][band] = std_now[ii+res.ext_par]
         else:
-            for ii, freq in enumerate(self.spec.freqs):
+            for ii, freq in enumerate(self.freqs):
                 res.ml[f"Iter {Niter+1}"][freq]         = ang_now[ii+res.ext_par]
                 res.std_fisher[f"Iter {Niter+1}"][freq] = std_now[ii+res.ext_par]
         if np.any( np.isnan(std_now) ):
@@ -920,7 +914,7 @@ class MLE:
                 res.ml[f"Iter {Niter+1}"][band]         = ang_now[ii+res.ext_par]
                 res.std_fisher[f"Iter {Niter+1}"][band] = std_now[ii+res.ext_par]
         else:
-            for ii, freq in enumerate(self.spec.freqs):
+            for ii, freq in enumerate(self.freqs):
                 res.ml[f"Iter {Niter+1}"][freq]         = ang_now[ii+res.ext_par]
                 res.std_fisher[f"Iter {Niter+1}"][freq] = std_now[ii+res.ext_par]
         if np.any( np.isnan(std_now) ):
@@ -968,7 +962,7 @@ class MLE:
                 res.ml[f"Iter {Niter+1}"][band]         = ang_now[ii+res.ext_par]
                 res.std_fisher[f"Iter {Niter+1}"][band] = std_now[ii+res.ext_par]
         else:
-            for ii, freq in enumerate(self.spec.freqs):
+            for ii, freq in enumerate(self.freqs):
                 res.ml[f"Iter {Niter+1}"][freq]         = ang_now[ii+res.ext_par]
                 res.std_fisher[f"Iter {Niter+1}"][freq] = std_now[ii+res.ext_par]
         if np.any( np.isnan(std_now) ):
@@ -1026,7 +1020,7 @@ class MLE:
                 res.ml[f"Iter {Niter+1}"][band]         = ang_now[ii+res.ext_par]
                 res.std_fisher[f"Iter {Niter+1}"][band] = std_now[ii+res.ext_par]
         else:
-            for ii, freq in enumerate(self.spec.freqs):
+            for ii, freq in enumerate(self.freqs):
                 res.ml[f"Iter {Niter+1}"][freq]         = ang_now[ii+res.ext_par]
                 res.std_fisher[f"Iter {Niter+1}"][freq] = std_now[ii+res.ext_par]
         if np.any( np.isnan(std_now) ):
@@ -1098,7 +1092,7 @@ class MLE:
                 res.ml[f"Iter {Niter+1}"][band]         = ang_now[ii+res.ext_par]
                 res.std_fisher[f"Iter {Niter+1}"][band] = std_now[ii+res.ext_par]
         else:
-            for ii, freq in enumerate(self.spec.freqs):
+            for ii, freq in enumerate(self.freqs):
                 res.ml[f"Iter {Niter+1}"][freq]         = ang_now[ii+res.ext_par]
                 res.std_fisher[f"Iter {Niter+1}"][freq] = std_now[ii+res.ext_par]
         if np.any( np.isnan(std_now) ):
@@ -1183,7 +1177,7 @@ class MLE:
                 res.ml[f"Iter {Niter+1}"][band]         = ang_now[ii+res.ext_par]
                 res.std_fisher[f"Iter {Niter+1}"][band] = std_now[ii+res.ext_par]
         else:
-            for ii, freq in enumerate(self.spec.freqs):
+            for ii, freq in enumerate(self.freqs):
                 res.ml[f"Iter {Niter+1}"][freq]         = ang_now[ii+res.ext_par]
                 res.std_fisher[f"Iter {Niter+1}"][freq] = std_now[ii+res.ext_par]
         if np.any( np.isnan(std_now) ):
@@ -1193,7 +1187,7 @@ class MLE:
     
     def calculate(self, idx, return_result=False):
         # this function always saves the result
-        res = Result(self.spec, self.fit, idx, self.alpha_per_split, 
+        res = Result(self.fit, idx, self.alpha_per_split, 
                      self.rm_same_tube, self.nlb, self.bmin, self.bmax)
         # read the input spectra 
         try:
