@@ -111,7 +111,7 @@ class LinearSystem:
         elif opt == 'ij':
             return np.sum(np.sum(x_ijpq, axis=3), axis=2)
         elif opt == '_':
-            return np.sum(x_ijpq)
+            return np.atleast_1d(np.sum(x_ijpq))
         else:
             raise ValueError(f'{opt} is not a valid option')
        
