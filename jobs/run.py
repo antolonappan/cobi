@@ -10,6 +10,7 @@ from cobi.mle import MLE
 # Argument parser
 parser = argparse.ArgumentParser(description="Run LATsky simulations with MPI support.")
 parser.add_argument('-sim', action='store_true', help='Run the simulation loop')
+parser.add_argument('-checksim', action='store_true', help='Check the simulation loop')
 parser.add_argument('-specobs', action='store_true', help='Run the spectra and observation loop')
 parser.add_argument('-specdust', action='store_true', help='Run the spectra and dust loop')
 parser.add_argument('-specsync', action='store_true', help='Run the spectra and sync loop')
@@ -21,10 +22,30 @@ libdir = '/global/cfs/cdirs/sobs/cosmic_birefringence/v0'
 nside = 2048
 cb_model = "iso"
 beta = 0.35
-alpha = 0
+
+#setting 1
+# alpha = 0
+# alpha_err = 0
+# bp = False
+
+#setting 2
+# alpha = 0
+# alpha_err = 0.1
+# bp = False
+
+#setting 3
+# alpha = [-0.1,-0.1,0.2,0.2,.15,.15]
+# alpha_err = 0.1
+# bp = False
+
+#setting 4
+alpha = [-0.1,-0.1,0.2,0.2,.15,.15]
+alpha_err = 0.1
+bp = True
+
 
 # Initialize LATsky and Spectra
-lat = LATsky(libdir, nside, cb_model, beta, alpha=alpha, bandpass=False)
+lat = LATsky(libdir, nside, cb_model, beta, alpha=alpha, alpha_err=alpha_err, bandpass=bp)
 spec = Spectra(lat, libdir, cache=True, parallel=0)
 
 start_i = 0
@@ -34,6 +55,11 @@ jobs = np.arange(start_i, end_i)
 if args.sim:
     for i in jobs[mpi.rank::mpi.size]:
         lat.SaveObsQUs(i)
+    mpi.barrier()
+
+if args.checksim:
+    for i in jobs[mpi.rank::mpi.size]:
+        lat.checkObsQU(i)
     mpi.barrier()
 
 if args.specobs:

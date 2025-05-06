@@ -87,7 +87,7 @@ class Spectra:
         self.fsky     = np.mean(self.mask**2)**2/np.mean(self.mask**4)
         
         # PDP: saving the spectra in this order makes the indexing of the mle easier
-        self.freqs = LATsky.freqs
+        self.freqs = self.lat.freqs
         self.Nfreq = len(self.freqs)
         self.bands = []
         for nu in self.freqs:
@@ -269,6 +269,22 @@ class Spectra:
     
     def Sync_qu_maps(self, ii: int) -> np.ndarray:
         return self.__get_fg_QUmap__(self.freqs[ii], 'sync')
+    
+    def obs_x_obs_check(self, idx: int) -> None:
+        """
+        Checks if the observed x observed power spectra have been computed for all frequency bands.
+
+        Parameters:
+        idx (int): Index for the realization of the CMB map.
+        """
+        c = []
+        for ii in range(self.Nbands):
+            fname = os.path.join(
+                self.oxo_dir,
+                f"obs_x_obs_{self.bands[ii]}{'_obsBP' if self.lat.bandpass else ''}{'_d' if self.lat.deconv_maps else ''}_{idx:03d}.npy",
+            )
+            c.append(os.path.isfile(fname))
+        return c
 
     def __obs_x_obs_helper_series__(self, ii: int, idx: int, recache: bool = False) -> np.ndarray:
         """
@@ -634,6 +650,40 @@ class Spectra:
                         cl += result
         
         return cl
+    
+    def dust_x_obs_check(self, idx: int) -> None:
+        """
+        Checks if the dust x observed power spectra have been computed for all frequency bands.
+
+        Parameters:
+        idx (int): Index for the realization of the CMB map.
+        """
+        c = []
+        for ii in range(self.Nfreq):
+            fname = os.path.join(
+                self.dxo_dir,
+                f"dust_x_obs_{self.freqs[ii]}{'_obsBP' if self.lat.bandpass else ''}{'_tempBP' if self.temp_bp else ''}_{idx:03d}.npy",
+            )
+            c.append(os.path.isfile(fname))
+        return c
+
+    def sync_x_obs_check(self, idx: int) -> None:
+        """
+        Checks if the synchrotron x observed power spectra have been computed for all frequency bands.
+
+        Parameters:
+        idx (int): Index for the realization of the CMB map.
+        """
+        c = []
+        for ii in range(self.Nfreq):
+            fname = os.path.join(
+                self.sxo_dir,
+                f"sync_x_obs_{self.freqs[ii]}{'_obsBP' if self.lat.bandpass else ''}{'_tempBP' if self.temp_bp else ''}_{idx:03d}.npy",
+            )
+            c.append(os.path.isfile(fname))
+        return c
+    
+
 
     def sync_x_obs(self, idx: int, progress: bool = False) -> np.ndarray:
         """

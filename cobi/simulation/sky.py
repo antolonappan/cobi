@@ -144,15 +144,33 @@ class SkySimulation:
         syncQU = self.foreground.syncQU(band)
         return cmbQU + dustQU + syncQU
     
+    # def __gen_alpha_dict__(self):
+    #     fname = os.path.join(self.libdir, 'alpha_dict.pkl')
+    #     if os.path.isfile(fname):
+    #         self.alpha_dict = pl.load(open(fname, 'rb'))
+    #     else:
+    #         self.alpha_dict = {}
+    #         for band in self.config.keys():
+    #             alpha = self.config[band]["alpha"]
+    #             self.alpha_dict[band] = np.random.normal(alpha, self.alpha_err, 300) # given value is assumed 3 sigma
+    #         if mpi.rank == 0:
+    #             pl.dump(self.alpha_dict, open(fname, 'wb'))
     def __gen_alpha_dict__(self):
         fname = os.path.join(self.libdir, 'alpha_dict.pkl')
         if os.path.isfile(fname):
             self.alpha_dict = pl.load(open(fname, 'rb'))
         else:
             self.alpha_dict = {}
-            for band in self.config.keys():
-                alpha = self.config[band]["alpha"]
-                self.alpha_dict[band] = np.random.normal(alpha, self.alpha_err/3, 300) # given value is assumed 3 sigma
+            # Extract base bands like '27', '39', etc.
+            base_bands = set([band.split('-')[0] for band in self.config.keys()])
+            for base_band in base_bands:
+                # Create one random sample per base_band
+                band_1 = f"{base_band}-1"
+                alpha = self.config[band_1]["alpha"]
+                sample = np.random.normal(alpha, self.alpha_err, 300)
+                # Assign same sample to both '-1' and '-2'
+                self.alpha_dict[f"{base_band}-1"] = sample
+                self.alpha_dict[f"{base_band}-2"] = sample
             if mpi.rank == 0:
                 pl.dump(self.alpha_dict, open(fname, 'wb'))
         
@@ -216,11 +234,11 @@ class SkySimulation:
             fname = self.obsQUfname(idx, bands[i])
             hp.write_map(fname, sky[i] * mask, dtype=np.float64, overwrite=True) # type: ignore
     
-    def SaveObsQUs(self, idx: int, apply_mask: bool = True, threading=False) -> None:
+    def SaveObsQUs(self, idx: int, apply_mask: bool = True, threading=False, bands=None) -> None:
 
         def create_band_map(idx,band):
             fname = self.obsQUfname(idx, band)
-            if os.path.isfile(fname):
+            if os.path.isfile(fname) and (bands is None):
                 return 0
             else:
                 fwhm = self.config[band]["fwhm"]
@@ -232,11 +250,11 @@ class SkySimulation:
                 if self.deconv_maps:
                     sky = deconvolveQU(sky, fwhm)
                 fname = self.obsQUfname(idx, band)
-                hp.write_map(fname, sky * mask, dtype=np.float64) # type: ignore
+                hp.write_map(fname, sky * mask, dtype=np.float64,overwrite=(bands is not None)) # type: ignore
                 return 0
 
         mask = self.mask if apply_mask else np.ones_like(self.mask)
-        bands = list(self.config.keys())
+        bands = list(self.config.keys()) if bands is None else bands
         if threading:
             with ThreadPoolExecutor(max_workers=len(bands)) as executor:
                 maps = list(tqdm(executor.map(lambda band: create_band_map(idx,band), bands), total=len(bands), desc="Saving Observed QUs", unit="band"))
@@ -254,7 +272,46 @@ class SkySimulation:
         else:
             self.saveObsQUs(idx)
             return hp.read_map(fname, field=[0, 1]) # type: ignore
-        
+    
+    def checkObsQU(self, idx: int,overwrite=False,what='filesize',bands=False) -> bool:
+        bands = list(self.config.keys())
+        if what == 'filesize':
+            err = []
+            for band in bands:
+                try:
+                    qu = self.obsQU(idx, band)
+                except ValueError:
+                    err.append(band)
+            if len(err) > 0:
+                self.logger.log(f"Error in {idx} for bands {err}")
+                if overwrite:
+                    self.logger.log(f"Overwriting {idx} for bands {err}")
+                    self.SaveObsQUs(idx, bands=err)
+                    return True
+                else:
+                    return False
+            else:
+                self.logger.log(f"All bands are present for {idx}")
+                return True
+        elif what == 'file':
+            err = []
+            for band in bands:
+                fname = self.obsQUfname(idx, band)
+                if not os.path.isfile(fname):
+                    err.append(band)
+            if len(err) > 0:
+                self.logger.log(f"Error in {idx} for bands {err}")
+                if overwrite:
+                    self.logger.log(f"Overwriting {idx} for bands {err}")
+                    self.SaveObsQUs(idx, bands=err)
+                    return True
+                else:
+                    return False
+            else:
+                return True
+        else:
+            raise ValueError(f"Unknown check {what}. Please use 'filesize' or 'file'.")
+
     
     def HILC_obsEB(self, idx: int) -> np.ndarray:
         fnameS = os.path.join(
@@ -388,6 +445,116 @@ class SATsky(SkySimulation):
             freqs = SATsky.freqs,
             fwhm = SATsky.fwhm,
             tube = SATsky.tube,
+            cb_model = cb_model,
+            beta = beta,
+            mass = mass,
+            Acb = Acb,
+            lensing = lensing,
+            dust_model = dust_model,
+            sync_model = sync_model,
+            bandpass = bandpass,
+            alpha = alpha,
+            alpha_err = alpha_err,
+            noise_model = noise_model,
+            atm_noise = atm_noise,
+            nsplits = nsplits,
+            gal_cut = gal_cut,
+            hilc_bins = hilc_bins,
+            deconv_maps = deconv_maps,
+            fldname_suffix = fldname_suffix,
+            verbose = verbose,
+        )
+
+
+class LATskyC(SkySimulation):
+    freqs = np.array(["93", "145"])
+    fwhm = np.array([2.2, 1.4 ])  # arcmin
+    tube = np.array(["MF", "MF"])  # tube each frequency occupies
+
+    def __init__(
+        self,
+        libdir: str,
+        nside: int,
+        cb_model: str = "iso",
+        beta: float = 0.35,
+        mass: float = 1.5,
+        Acb: float = 1e-6,
+        lensing: bool = True,
+        dust_model: int = 10,
+        sync_model: int = 5,
+        bandpass: bool = True,
+        alpha: float = 0.0,
+        alpha_err: float = 0.0,
+        noise_model: str = "NC",
+        atm_noise: bool = True,
+        nsplits: int = 2,
+        gal_cut: int = 0,
+        hilc_bins: int = 10,
+        deconv_maps: bool = False,
+        fldname_suffix: str = "",
+        verbose: bool = True,
+    ):
+        super().__init__(
+            libdir = libdir,
+            nside = nside,
+            freqs = LATskyC.freqs,
+            fwhm = LATskyC.fwhm,
+            tube = LATskyC.tube,
+            cb_model = cb_model,
+            beta = beta,
+            mass = mass,
+            Acb = Acb,
+            lensing = lensing,
+            dust_model = dust_model,
+            sync_model = sync_model,
+            bandpass = bandpass,
+            alpha = alpha,
+            alpha_err = alpha_err,
+            noise_model = noise_model,
+            atm_noise = atm_noise,
+            nsplits = nsplits,
+            gal_cut = gal_cut,
+            hilc_bins = hilc_bins,
+            deconv_maps = deconv_maps,
+            fldname_suffix = fldname_suffix,
+            verbose = verbose,
+        )
+
+
+class SATskyC(SkySimulation):
+    freqs = np.array([ "93", "145"])
+    fwhm = np.array([30, 17])
+    tube = np.array(["S2", "S2"])  # example tube identifiers
+
+    def __init__(
+        self,
+        libdir: str,
+        nside: int,
+        cb_model: str = "iso",
+        beta: float = 0.35,
+        mass: float = 1.5,
+        Acb: float = 1e-6,
+        lensing: bool = True,
+        dust_model: int = 10,
+        sync_model: int = 5,
+        bandpass: bool = True,
+        alpha: float = 0.0,
+        alpha_err: float = 0.0,
+        noise_model: str = "NC",
+        atm_noise: bool = True,
+        nsplits: int = 2,
+        gal_cut: int = 0,
+        hilc_bins: int = 10,
+        deconv_maps: bool = False,
+        fldname_suffix: str = "",
+        verbose: bool = True,
+    ):
+        super().__init__(
+            libdir = libdir,
+            nside = nside,
+            freqs = SATskyC.freqs,
+            fwhm = SATskyC.fwhm,
+            tube = SATskyC.tube,
             cb_model = cb_model,
             beta = beta,
             mass = mass,
