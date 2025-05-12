@@ -318,9 +318,8 @@ class Noise:
                 fbase = fbase_template.format(model=models[i], band=bands[i], split_num=split+1, sim_num=idx)
                 fpath = f'{fdir}/{fbase}'
                 for j in range(2):
-                    n = enmap.read_map(fpath,sel=np.s_[j, 0])
-                    mm = map2healpix(n, nside=2048)[1:]
-                    mm = change_coord(mm)
+                    n = enmap.read_map(fpath,sel=np.s_[j, 0, 1:]) # the 1: will select the QU fields
+                    mm = map2healpix(n, nside=2048, rot='equ,gal', spin=2)
                     del n
                     N.append([mm[0],mm[1]])
         
