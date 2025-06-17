@@ -426,3 +426,17 @@ class Noise:
             return self.noiseQU_TOD(idx)
         else:
             raise ValueError(f"Invalid simulation type: {self.sim}", "Choose from 'NC' or 'TOD'.")
+
+    def noiseQU_freq(self, idx: int, freq: str) -> np.ndarray:
+        """
+        Generates Q and U polarization noise maps for a specific frequency band.
+
+        Returns:
+        np.ndarray: An array of Q and U noise maps for the specified frequency band.
+        """
+        if self.sim == 'NC':
+            return self.noiseQU_NC_freq(idx, freq)
+        elif self.sim == 'TOD':
+            return self.noiseQU_TOD_freq(idx, freq)
+        else:
+            raise ValueError(f"Invalid simulation type: {self.sim}", "Choose from 'NC' or 'TOD'.")
