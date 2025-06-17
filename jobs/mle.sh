@@ -2,7 +2,7 @@
 #SBATCH --qos=debug
 #SBATCH --constraint=cpu
 #SBATCH --account=mp107b
-#SBATCH --nodes=1
+#SBATCH --nodes=2
 #SBATCH --ntasks=100
 ##SBATCH --cpus-per-task=1
 #SBATCH -J SOLAT

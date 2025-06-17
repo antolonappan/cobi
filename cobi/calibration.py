@@ -20,17 +20,23 @@ def selectorf(lib,avoid_freq):
     select = np.where(np.array([freq not in avoid_freq for freq in freqs]))[0]
     return select
 
-def get_sp(lib,lmax):
+def get_sp(lib,lmax,avoid_freq=[]):
     bl_arr = []
-    for i in range(2):
+    for i in range(2):# changed
         bl_arr.append(lib.binInfo.bin_cell(hp.gauss_beam(np.radians(lib.lat.fwhm[i]/60),lmax)**2))
     bl_arr = np.array(bl_arr)
     obs_arr = []
-    for i in range(20):
-        sp = lib.obs_x_obs(i)
-        obs_arr.append(sp)
-    obs_arr = np.array(obs_arr)
-    obs_arr = obs_arr[:,np.arange(2),np.arange(2),2,2:]
+    # for i in range(100):
+    #     sp = lib.obs_x_obs(i)
+    #     obs_arr.append(sp)
+    # obs_arr = np.array(obs_arr)
+    # obs_arr = obs_arr[:,np.arange(2),np.arange(2),2,2:] # changed
+    for i in range(100):
+        sp = lib.obs_x_obs(i, False) 
+        first  = (sp[1, 0, 2, 2:] + sp[0, 1, 2, 2:]) / 2
+        second = (sp[2, 3, 2, 2:] + sp[3, 2, 2, 2:]) / 2
+        obs_arr.append(np.stack([first, second], axis=0))
+    obs_arr = np.asarray(obs_arr)         
     return obs_arr/bl_arr
 
 def paranames(lib,name,avoid=[]):
@@ -42,6 +48,20 @@ class Sat4Lat:
     
     def __init__(self,libdir,lmin,lmax,latlib,satlib,sat_err,beta):
         self.libdir = os.path.join(libdir,'Calibration')
+        
+        latnc = latlib.lat.noise_model
+        satnc = satlib.lat.noise_model
+        if (latnc == 'NC') and (satnc == 'NC'):
+            self.libdir = os.path.join(libdir,'Calibration')
+        elif (latnc == 'TOD') and (satnc == 'TOD'):
+            self.libdir = os.path.join(libdir,'Calibration_TOD')
+        elif (latnc == 'TOD') and (satnc == 'NC'):
+            self.libdir = os.path.join(libdir,'Calibration_TOD_NC')
+        elif (latnc == 'NC') and (satnc == 'TOD'):
+            self.libdir = os.path.join(libdir,'Calibration_NC_TOD')
+        else:
+            raise ValueError(f"Invalid noise model {latnc} {satnc}")
+
         os.makedirs(self.libdir,exist_ok=True)
         self.latlib = latlib
         self.sat_err = sat_err
@@ -75,10 +95,10 @@ class Sat4Lat:
     def plot_spectra(self,tele):
         plt.figure(figsize=(4,4))
         if tele == 'LAT' and self.latlib is not None:
-            for i in range(2):
+            for i in range(2): # changed
                 plt.loglog(self.binner.get_effective_ells()[self.__select__],self.lat_mean[i])
-        elif tele == 'SAT':
-            for i in range(2):
+        elif tele == 'SAT': 
+            for i in range(2): # changed
                 plt.loglog(self.binner.get_effective_ells()[self.__select__],self.sat_mean[i])
         else:
             raise ValueError(f"Invalid telescope {tele}")
@@ -108,7 +128,7 @@ class Sat4Lat:
     
     def lnprior(self,theta):
         sigma = self.sat_err
-        alphalat,alphasat,beta = np.array(theta[:2]), np.array(theta[2:4]), theta[-1]
+        alphalat,alphasat,beta = np.array(theta[:2]), np.array(theta[2:4]), theta[-1] # changed
 
 
         lnp = -0.5 * (alphasat - 0 )**2 / sigma**2 - np.log(sigma*np.sqrt(2*np.pi))
@@ -129,10 +149,10 @@ class Sat4Lat:
         return lp + self.ln_likelihood(theta)
     
     
-    def samples(self,nwalkers=32,nsamples=1000):
-        true = np.array([0.2,0.2,0,0,0.35])
+    def samples(self,nwalkers=32,nsamples=1000,rerun=True):
+        true = np.array([0.2,0.2,0,0,0.35]) #changed
         fname = os.path.join(self.libdir,f"samples_{nwalkers}_{nsamples}{self.addname}.pkl")
-        if os.path.exists(fname):
+        if os.path.exists(fname) and not rerun:
             return pl.load(open(fname,'rb'))
         else:
             ndim = len(true)

@@ -27,25 +27,34 @@ beta = 0.35
 # alpha = 0
 # alpha_err = 0
 # bp = False
+# nm = 'NC'
 
 #setting 2
 # alpha = 0
 # alpha_err = 0.1
 # bp = False
+# nm = 'NC'
 
 #setting 3
 # alpha = [-0.1,-0.1,0.2,0.2,.15,.15]
 # alpha_err = 0.1
 # bp = False
+# nm = 'NC'
 
 #setting 4
+# alpha = [-0.1,-0.1,0.2,0.2,.15,.15]
+# alpha_err = 0.1
+# bp = True
+# nm = 'NC'
+
+#setting 5
 alpha = [-0.1,-0.1,0.2,0.2,.15,.15]
 alpha_err = 0.1
 bp = True
-
+nm = 'TOD'
 
 # Initialize LATsky and Spectra
-lat = LATsky(libdir, nside, cb_model, beta, alpha=alpha, alpha_err=alpha_err, bandpass=bp)
+lat = LATsky(libdir, nside, cb_model, beta, alpha=alpha, alpha_err=alpha_err, bandpass=bp,noise_model=nm)
 spec = Spectra(lat, libdir, cache=True, parallel=0)
 
 start_i = 0

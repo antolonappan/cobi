@@ -170,6 +170,18 @@ class Noise:
                     self.__white_noise__('145'),
                     self.__white_noise__('225'),
                     self.__white_noise__('280')])
+    
+    def white_noise_maps_freq(self, freq: str) -> np.ndarray:
+        """
+        Generates white noise maps for a specific frequency band.
+
+        Returns:
+        np.ndarray: An array of white noise maps for the specified frequency band.
+        """
+        band = freq.split('-')[0]
+        n = self.__white_noise__(band)
+        return n
+    
     def atm_noise_maps_freq(self, idx: int, freq: str) -> np.ndarray:
         """
         Generates atmospheric noise maps using Cholesky decomposition.
@@ -275,6 +287,7 @@ class Noise:
         N = []
         for split in range(self.nsplits):
             if self.atm_noise:
+                # TODO: q and u are the same atm noise maps
                 q = self.atm_noise_maps(split+1, idx)
                 u = self.atm_noise_maps(split+1, idx)
             else:
@@ -285,6 +298,22 @@ class Noise:
                 N.append([q[i], u[i]])
 
         return np.array(N)*np.sqrt(self.nsplits)
+    
+    def noiseQU_NC_freq(self, idx: int, freq: str) -> np.ndarray:
+        """
+        Generates Q and U polarization noise maps for a specific frequency band.
+
+        Returns:
+        np.ndarray: An array of Q and U noise maps for the specified frequency band.
+        """
+        if self.atm_noise:
+            q = self.atm_noise_maps_freq(idx, freq)
+            u = q
+        else:
+            q = self.white_noise_maps_freq(freq)
+            u = q
+
+        return np.array([q, u])
     
     def noiseQU_TOD_sat(self,idx: int) -> np.ndarray:
         sim_nsplits = 4
@@ -325,6 +354,47 @@ class Noise:
         
         return np.array(N)*fac
 
+    def noiseQU_TOD_sat_band(self, idx: int, freq: str) -> np.ndarray:
+        band = freq.split('-')[0]
+        split = int(freq.split('-')[-1])
+        sim_nsplits = 4
+        fac = np.sqrt(self.nsplits) / np.sqrt(sim_nsplits)
+        sim_no = f'{idx:04}'
+        fdir = f'/global/cfs/cdirs/sobs/awg_bb/sims/BBSims/NOISE_20230531/goal_optimistic/{sim_no}'
+        fbase = f'SO_SAT_{band}_noise_split_{split}of4_{sim_no}_goal_optimistic_20230531.fits'
+        fpath = f'{fdir}/{fbase}'
+        mm = hp.read_map(fpath, field=(1, 2)) #type: ignore
+        mm = change_coord(mm)
+        N = np.array([mm[0],mm[1]])
+        return N*fac
+    
+    def noiseQU_TOD_lat_band(self, idx: int, freq: str) -> np.ndarray:
+        band = freq.split('-')[0]
+        split = int(freq.split('-')[-1])
+        sim_nsplits = 4
+        fac = np.sqrt(self.nsplits) / np.sqrt(sim_nsplits)
+        fdir = '/global/cfs/cdirs/sobs/v4_sims/mbs/mbs_s0015_20240504/sims'
+
+        model, band, j = {"27":['fdw_lf', 'lf_f030_lf_f040',0], 
+                          "39":['fdw_lf', 'lf_f030_lf_f040',1], 
+                          "93":['fdw_mf', 'mf_f090_mf_f150',0], 
+                          "145":['fdw_mf', 'mf_f090_mf_f150',1], 
+                          "225":['fdw_uhf', 'uhf_f230_uhf_f290',0], 
+                          "280":['fdw_uhf', 'uhf_f230_uhf_f290',1]}[band]
+        
+        fbase = f'so_lat_mbs_mss0002_{model}_{band}_lmax5400_4way_set{split}_noise_sim_map{idx:04}.fits'
+        fpath = f'{fdir}/{fbase}'
+
+        n = enmap.read_map(fpath,sel=np.s_[j, 0])
+        mm = map2healpix(n, nside=2048)[1:]
+        mm = change_coord(mm)
+        del n
+        N = np.array([mm[0],mm[1]])
+        return N*fac
+
+
+
+
     def noiseQU_TOD(self, idx: int) -> np.ndarray:
         if self.telescope == 'SAT':
             return self.noiseQU_TOD_sat(idx)
@@ -332,6 +402,15 @@ class Noise:
             return self.noiseQU_TOD_lat(idx)
         else:
             raise ValueError(f"Invalid telescope: {self.telescope}", "Choose from 'LAT' or 'SAT'.")
+        
+    def noiseQU_TOD_freq(self, idx: int, freq: str) -> np.ndarray:
+        if self.telescope == 'SAT':
+            return self.noiseQU_TOD_sat_band(idx, freq)
+        elif self.telescope == 'LAT':
+            return self.noiseQU_TOD_lat_band(idx, freq)
+        else:
+            raise ValueError(f"Invalid telescope: {self.telescope}", "Choose from 'LAT' or 'SAT'.")
+
     
     def noiseQU(self, idx: Optional[int] = None) -> np.ndarray:
         """

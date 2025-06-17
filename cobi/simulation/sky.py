@@ -106,6 +106,7 @@ class SkySimulation:
         self.tube = tube
         self.gal_cut = gal_cut
         self.mask, self.fsky = self.__set_mask_fsky__(libdir)
+        self.noise_model = noise_model
         self.noise = Noise(nside, self.fsky, self.__class__.__name__[:3], noise_model, atm_noise, nsplits, verbose=self.verbose)
         self.config = {}
         for split in range(nsplits):
@@ -234,7 +235,7 @@ class SkySimulation:
             fname = self.obsQUfname(idx, bands[i])
             hp.write_map(fname, sky[i] * mask, dtype=np.float64, overwrite=True) # type: ignore
     
-    def SaveObsQUs(self, idx: int, apply_mask: bool = True, threading=False, bands=None) -> None:
+    def SaveObsQUs(self, idx: int, apply_mask: bool = True, bands=None) -> None:
 
         def create_band_map(idx,band):
             fname = self.obsQUfname(idx, band)
@@ -244,7 +245,15 @@ class SkySimulation:
                 fwhm = self.config[band]["fwhm"]
                 alpha = self.get_alpha(idx, band)
                 signal = self.obsQUwAlpha(idx, band, fwhm, alpha)
-                noise = self.noise.atm_noise_maps_freq(idx, band)
+                #noise = self.noise.atm_noise_maps_freq(idx, band)
+                noise = self.noise.noiseQU_freq(idx, band)
+                if len(noise) > 2:
+                    nside = hp.get_nside(noise[0])
+                else:
+                    nside = hp.get_nside(noise)
+                if nside != self.nside:
+                    self.logger.log(f"Noise map is not in the same nside as the signal map. Changing nside {nside} to {self.nside}.")
+                    noise = hp.ud_grade(noise, self.nside)
                 sky = signal + noise
                 del (signal, noise)
                 if self.deconv_maps:
@@ -254,13 +263,10 @@ class SkySimulation:
                 return 0
 
         mask = self.mask if apply_mask else np.ones_like(self.mask)
-        bands = list(self.config.keys()) if bands is None else bands
-        if threading:
-            with ThreadPoolExecutor(max_workers=len(bands)) as executor:
-                maps = list(tqdm(executor.map(lambda band: create_band_map(idx,band), bands), total=len(bands), desc="Saving Observed QUs", unit="band"))
-        else:
-            for band in tqdm(bands, desc="Saving Observed QUs", unit="band"):
-                maps = create_band_map(idx,band)
+        Bands = list(self.config.keys()) if bands is None else bands
+  
+        for band in tqdm(Bands, desc="Saving Observed QUs", unit="band"):
+            maps = create_band_map(idx,band)
 
 
 
