@@ -246,7 +246,10 @@ class SkySimulation:
                 alpha = self.get_alpha(idx, band)
                 signal = self.obsQUwAlpha(idx, band, fwhm, alpha)
                 #noise = self.noise.atm_noise_maps_freq(idx, band)
-                noise = self.noise.noiseQU_freq(idx, band)
+                if self.noise_model=='NC':
+                    noise = self.noise.noiseQU_NC_freq(idx, band)
+                elif self.noise_model=='TOD':
+                    noise = self.noise.noiseQU_TOD_freq(idx, band)
                 if len(noise) > 2:
                     nside = hp.get_nside(noise[0])
                 else:
