@@ -4,6 +4,7 @@ from pixell import enmap
 from pixell.reproject import map2healpix
 from typing import Dict, Optional, Any, Union, List, Tuple
 from so_models_v3 import SO_Noise_Calculator_Public_v3_1_1 as so_models
+import pickle
 
 from cobi import mpi
 from cobi.utils import Logger, change_coord
@@ -13,7 +14,7 @@ from cobi.utils import Logger, change_coord
 def NoiseSpectra(sensitivity_mode, fsky, lmax, atm_noise, telescope):
     match telescope:
         case "LAT":
-            teles = so_models.SOLatV3point1(sensitivity_mode, el=50)
+            teles = so_models.SOLatV3point1(sensitivity_mode)
         case "SAT":
             teles = so_models.SOSatV3point1(sensitivity_mode)
     
@@ -52,6 +53,8 @@ class Noise:
                  fsky: float,
                  telescope: str,
                  sim = 'NC',
+                 nhits: str = None,
+                 nhits_fac: float = 1.0,
                  atm_noise: bool = False, 
                  nsplits: int = 2,
                  verbose: bool = True,
@@ -72,6 +75,7 @@ class Noise:
         self.nsplits          = nsplits
         self.telescope = telescope
         self.Nell             = NoiseSpectra(self.sensitivity_mode, fsky, self.lmax, self.atm_noise, telescope)
+        pickle.dump(self.Nell, open('Nell_cobi.pkl','wb'))
         self.sim = sim
         assert sim in ['NC', 'TOD'], "Invalid simulation type. Choose from 'NC' or 'TOD'."
 
@@ -90,7 +94,12 @@ class Noise:
             1: np.arange(7777, 7777 + 1000),
             2: np.arange(9999, 9999 + 1000),
         }
-        
+        if nhits is not None:
+            self.nhits = hp.read_map(nhits, field=0, dtype=np.single)
+            mask_nonzero = self.nhits > 0.0
+            self.nhits /= (nhits_fac*np.median(self.nhits[mask_nonzero]))
+        else:
+            self.nhits = np.ones(12*self.nside**2).astype(np.single)
 
 
     @property
@@ -206,33 +215,51 @@ class Noise:
         if f == '27':
             np.random.seed(self.__nseeds__[split][idx])
             alm = self.rand_alm
-            return noise_map(alm, L11)*np.sqrt(self.nsplits)
+            noise_ = noise_map(alm, L11)*np.sqrt(self.nsplits)/np.sqrt(self.nhits)
+            nanmask = np.logical_not(np.isfinite(noise_))
+            noise_[nanmask] = 0.0
+            return noise_
         elif f == '39':
             np.random.seed(self.__nseeds__[split][idx])
             alm = self.rand_alm
             np.random.seed(self.__nseeds__[split][idx]+1)
             blm = self.rand_alm
-            return noise_map_cross(alm,blm,L21,L22)*np.sqrt(self.nsplits)
+            noise_ = noise_map_cross(alm,blm,L21,L22)*np.sqrt(self.nsplits)/np.sqrt(self.nhits)
+            nanmask = np.logical_not(np.isfinite(noise_))
+            noise_[nanmask] = 0.0
+            return noise_
         elif f == '93':
             np.random.seed(self.__nseeds__[split][idx]+2)
             clm = self.rand_alm
-            return noise_map(clm,L33)*np.sqrt(self.nsplits)
+            noise_ = noise_map(clm,L33)*np.sqrt(self.nsplits)/np.sqrt(self.nhits)
+            nanmask = np.logical_not(np.isfinite(noise_))
+            noise_[nanmask] = 0.0
+            return noise_
         elif f == '145':
             np.random.seed(self.__nseeds__[split][idx]+2)
             clm = self.rand_alm
             np.random.seed(self.__nseeds__[split][idx]+3)
             dlm = self.rand_alm
-            return noise_map_cross(clm,dlm,L43,L44)*np.sqrt(self.nsplits)
+            noise_ = noise_map_cross(clm,dlm,L43,L44)*np.sqrt(self.nsplits)/np.sqrt(self.nhits)
+            nanmask = np.logical_not(np.isfinite(noise_))
+            noise_[nanmask] = 0.0
+            return noise_
         elif f == '225':
             np.random.seed(self.__nseeds__[split][idx]+4)
             elm = self.rand_alm
-            return noise_map(elm,L55)*np.sqrt(self.nsplits)
+            noise_ = noise_map(elm,L55)*np.sqrt(self.nsplits)/np.sqrt(self.nhits)
+            nanmask = np.logical_not(np.isfinite(noise_))
+            noise_[nanmask] = 0.0
+            return noise_
         elif f == '280':
             np.random.seed(self.__nseeds__[split][idx]+4)
             elm = self.rand_alm
             np.random.seed(self.__nseeds__[split][idx]+5)
             flm = self.rand_alm
-            return noise_map_cross(elm,flm,L65,L66)*np.sqrt(self.nsplits)
+            noise_ = noise_map_cross(elm,flm,L65,L66)*np.sqrt(self.nsplits)/np.sqrt(self.nhits)
+            nanmask = np.logical_not(np.isfinite(noise_))
+            noise_[nanmask] = 0.0
+            return noise_
         else:
             raise ValueError(f"Invalid frequency band: {f}", "Choose from '27', '39', '93', '145', '225', '280'.")
             

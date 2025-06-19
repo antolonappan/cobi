@@ -6,7 +6,7 @@ from tqdm import tqdm
 from cobi import mpi
 from typing import Union, List, Optional
 
-from cobi.simulation import CMB, Foreground, Mask, Noise
+from cobi.simulation import CMB, Foreground, Noise, calc_fsky
 from cobi.utils import Logger, inrad
 from cobi.utils import cli, deconvolveQU
 from cobi.simulation import HILC
@@ -22,13 +22,14 @@ class SkySimulation:
         freqs: np.ndarray,
         fwhm: np.ndarray,
         tube: np.ndarray,
+        mask: str,
         cb_model: str = "iso",
         beta: float = 0.35,
         mass: float = 1.5,
         Acb: float = 1e-6,
         lensing: bool = True,
-        dust_model: int = 10,
-        sync_model: int = 5,
+        dust_model: str = 'd10',
+        sync_model: str = 's5',
         bandpass: bool = True,
         alpha: Union[float,List[float]] = 0.0,
         alpha_err: float = 0.0,
@@ -40,6 +41,8 @@ class SkySimulation:
         deconv_maps: bool = False,
         fldname_suffix: str = "",
         verbose: bool = True,
+        nhits: str = None,
+        nhits_fac: float = 1.0,
     ):
         """
         Initializes the SkySimulation class for generating and handling sky simulations.
@@ -104,10 +107,10 @@ class SkySimulation:
         self.freqs = freqs
         self.fwhm = fwhm
         self.tube = tube
-        self.gal_cut = gal_cut
-        self.mask, self.fsky = self.__set_mask_fsky__(libdir)
+        self.mask = hp.read_map(mask, field=0, dtype=np.double)
+        self.fsky = calc_fsky(self.mask)
         self.noise_model = noise_model
-        self.noise = Noise(nside, self.fsky, self.__class__.__name__[:3], noise_model, atm_noise, nsplits, verbose=self.verbose)
+        self.noise = Noise(nside, self.fsky, self.__class__.__name__[:3], noise_model, nhits, nhits_fac, atm_noise, nsplits, verbose=self.verbose,)
         self.config = {}
         for split in range(nsplits):
             for band in range(len(self.freqs)):
@@ -133,10 +136,6 @@ class SkySimulation:
         self.hilc_bins = hilc_bins
         self.deconv_maps = deconv_maps
         self.__set_alpha__()
-
-    def __set_mask_fsky__(self, libdir):
-        maskobj = Mask(libdir, self.nside, self.__class__.__name__[:3], gal_cut=self.gal_cut, verbose=self.verbose)
-        return maskobj.mask, maskobj.fsky
 
     def signalOnlyQU(self, idx: int, band: str) -> np.ndarray:
         band = band[:band.index('-')]
@@ -371,13 +370,14 @@ class LATsky(SkySimulation):
         self,
         libdir: str,
         nside: int,
+        mask: str,
         cb_model: str = "iso",
         beta: float = 0.35,
         mass: float = 1.5,
         Acb: float = 1e-6,
         lensing: bool = True,
-        dust_model: int = 10,
-        sync_model: int = 5,
+        dust_model: str = 'd10',
+        sync_model: str = 's5',
         bandpass: bool = True,
         alpha: float = 0.0,
         alpha_err: float = 0.0,
@@ -389,10 +389,13 @@ class LATsky(SkySimulation):
         deconv_maps: bool = False,
         fldname_suffix: str = "",
         verbose: bool = True,
+        nhits: str = None,
+        nhits_fac: float = 1.0,
     ):
         super().__init__(
             libdir = libdir,
             nside = nside,
+            mask = mask,
             freqs = LATsky.freqs,
             fwhm = LATsky.fwhm,
             tube = LATsky.tube,
@@ -414,6 +417,8 @@ class LATsky(SkySimulation):
             deconv_maps = deconv_maps,
             fldname_suffix = fldname_suffix,
             verbose = verbose,
+            nhits = nhits,
+            nhits_fac = nhits_fac
         )
 
 

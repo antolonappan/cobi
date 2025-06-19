@@ -140,4 +140,11 @@ class Mask:
             mask = self.mask
         return float(np.mean(mask ** 2) ** 2 / np.mean(mask ** 4))
 
-    
+def calc_fsky(mask) -> float:
+    """
+    Calculates the fraction of sky covered by the mask.
+
+    Returns:
+    float: The fraction of sky covered by the mask.
+    """
+    return float(np.mean(mask ** 2) ** 2 / np.mean(mask ** 4))

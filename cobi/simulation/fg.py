@@ -67,8 +67,8 @@ class Foreground:
         self,
         libdir: str,
         nside: int,
-        dust_model: int,
-        sync_model: int,
+        dust_model: str,
+        sync_model: str,
         bandpass: bool = False,
         verbose: bool = True,
     ):
@@ -123,7 +123,7 @@ class Foreground:
         else:
             self.logger.log(f"Generating dust Q and U maps for band {band}", level="info")
             sky = pysm3.Sky(
-                nside=self.nside, preset_strings=[f"d{int(self.dust_model)}"]
+                nside=self.nside, preset_strings=[f"{self.dust_model}"]
             )
             if self.bandpass:
                 if self.bp_profile is not None:
@@ -166,7 +166,7 @@ class Foreground:
         else:
             self.logger.log(f"Generating synchrotron Q and U maps for band {band}", level="info")
             sky = pysm3.Sky(
-                nside=self.nside, preset_strings=[f"s{int(self.sync_model)}"]
+                nside=self.nside, preset_strings=[f"{self.sync_model}"]
             )
             if self.bandpass:
                 if self.bp_profile is not None:

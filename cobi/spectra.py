@@ -4,7 +4,7 @@ import healpy as hp
 import pymaster as nmt
 import os
 from tqdm import tqdm
-from cobi.simulation import LATsky, Foreground,Mask, SATsky
+from cobi.simulation import LATsky, Foreground, SATsky
 from cobi.utils import Logger
 from cobi import mpi
 from typing import Dict, Optional, Any, Union, List, Tuple
@@ -65,7 +65,7 @@ class Spectra:
         comdir     = os.path.join(common_dir, f"spectra_{self.nside}{'_d' if deconv else ''}_aposcale{str(aposcale).replace('.','p')}{'_pureB' if pureB else ''}" + fld_ext)
         self.__set_dir__(libdiri, comdir)
         
-        self.lmax     = min(2000,3 * self.lat.nside - 1)
+        self.lmax     = 2 * self.lat.nside - 1
         
         self.temp_bp  = template_bandpass
 
@@ -83,8 +83,8 @@ class Spectra:
         self.CO       = CO
         self.PS       = PS
         self.galcut   = galcut
-        self.mask     = self.get_apodised_mask()
-        self.fsky     = np.mean(self.mask**2)**2/np.mean(self.mask**4)
+        self.mask     = self.lat.mask #self.get_apodised_mask()
+        self.fsky     = self.lat.fsky #np.mean(self.mask**2)**2/np.mean(self.mask**4)
         
         # PDP: saving the spectra in this order makes the indexing of the mle easier
         self.freqs = self.lat.freqs
@@ -327,12 +327,12 @@ class Spectra:
             #assert self.obs_qu_maps is not None, "Observed Q and U maps not loaded"          #changed for the special case
             fp_i = nmt.NmtField(
                 self.mask, self.Obs_qu_maps(idx,ii), lmax=self.lmax, purify_b=self.pureB,     #changed from self.obs_qu_maps[ii]
-                masked_on_input=False
+                masked_on_input=True
             )
             for jj in range(ii, self.Nbands, 1):
                 fp_j = nmt.NmtField(
                     self.mask, self.Obs_qu_maps(idx,jj), lmax=self.lmax, purify_b=self.pureB, #changed from self.obs_qu_maps[jj]
-                    masked_on_input=False
+                    masked_on_input=True
                 )
 
                 cl_ij = self.compute_master(fp_i, fp_j)  # (EiEj, EiBj, BiEj, BiBj)
@@ -390,14 +390,14 @@ class Spectra:
             # assert self.obs_qu_maps is not None, "Observed Q and U maps not loaded"     #changed for the special case
             fp_i = nmt.NmtField(
                 self.mask, self.Obs_qu_maps(idx,ii), lmax=self.lmax, purify_b=self.pureB, #changed from self.obs_qu_maps[ii]
-                masked_on_input=False
+                masked_on_input=True
             )
             
             def compute_for_band(jj):
                 # assert self.obs_qu_maps is not None, "Observed Q and U maps not loaded"   #changed for the special case
                 fp_j = nmt.NmtField(
                     self.mask, self.Obs_qu_maps(idx,jj), lmax=self.lmax, purify_b=self.pureB, #changed from self.obs_qu_maps[jj]
-                    masked_on_input=False
+                    masked_on_input=True
                 )
 
                 cl_ij = self.compute_master(fp_i, fp_j)  # (EiEj, EiBj, BiEj, BiBj)
@@ -507,17 +507,17 @@ class Spectra:
             if fg=='dust':
                 fp_i = nmt.NmtField(
                     self.mask, self.Dust_qu_maps(ii), lmax=self.lmax, purify_b=self.pureB,  #changed from self.dust_qu_maps[ii]
-                    masked_on_input=False
+                    masked_on_input=True
                 )
             elif fg=='sync':
                 fp_i = nmt.NmtField(
                     self.mask, self.Sync_qu_maps(ii), lmax=self.lmax, purify_b=self.pureB,  #changed from self.sync_qu_maps[ii]
-                    masked_on_input=False
+                    masked_on_input=True
                 )
             for jj in range(0, self.Nbands, 1):
                 fp_j = nmt.NmtField(
                     self.mask, self.Obs_qu_maps(idx,jj), lmax=self.lmax, purify_b=self.pureB, #changed from self.obs_qu_maps[jj]
-                    masked_on_input=False
+                    masked_on_input=True
                 )
 
                 cl_ij = self.compute_master(fp_i,fp_j)  # (EiEj, EiBj, BiEj, BiBj)
@@ -572,14 +572,14 @@ class Spectra:
                 self.Dust_qu_maps(ii) if fg == 'dust' else self.Sync_qu_maps(ii),  #changed from self.dust_qu_maps[ii] and self.sync_qu_maps[ii]
                 lmax=self.lmax, 
                 purify_b=self.pureB,
-                masked_on_input=False
+                masked_on_input=True
             )
 
             def compute_for_band(jj):
                 # Inner function to process each band in parallel
                 fp_j = nmt.NmtField(
                     self.mask, self.Obs_qu_maps(idx,jj), lmax=self.lmax, purify_b=self.pureB,  #changed from self.obs_qu_maps[jj]
-                    masked_on_input=False
+                    masked_on_input=True
                 )
 
                 cl_ij = self.compute_master(fp_i, fp_j)  # (EiEj, EiBj, BiEj, BiBj)
@@ -770,24 +770,24 @@ class Spectra:
             if fg=='dust':
                 fp_i = nmt.NmtField(
                     self.mask, self.Dust_qu_maps(ii), lmax=self.lmax, purify_b=self.pureB, #changed from self.dust_qu_maps[ii]
-                    masked_on_input=False
+                    masked_on_input=True
                 )
             elif fg=='sync':
                 fp_i = nmt.NmtField(
                     self.mask, self.Sync_qu_maps(ii), lmax=self.lmax, purify_b=self.pureB, #changed from self.sync_qu_maps[ii]
-                    masked_on_input=False
+                    masked_on_input=True
                 )
                 
             for jj in range(ii, self.Nfreq, 1):
                 if fg=='dust':
                     fp_j = nmt.NmtField(
                         self.mask, self.Dust_qu_maps(jj), lmax=self.lmax, purify_b=self.pureB, #changed from self.dust_qu_maps[jj]
-                        masked_on_input=False
+                        masked_on_input=True
                     )
                 elif fg=='sync':
                     fp_j = nmt.NmtField(
                         self.mask, self.Sync_qu_maps(jj), lmax=self.lmax, purify_b=self.pureB, #changed from self.sync_qu_maps[jj]
-                        masked_on_input=False
+                        masked_on_input=True
                     )
 
                 cl_ij = self.compute_master(fp_i, fp_j)
@@ -841,24 +841,24 @@ class Spectra:
             if fg == 'dust':
                 fp_i = nmt.NmtField(
                     self.mask, self.Dust_qu_maps(ii), lmax=self.lmax, purify_b=self.pureB,  #changed from self.dust_qu_maps[ii]
-                    masked_on_input=False
+                    masked_on_input=True
                 )
             elif fg == 'sync':
                 fp_i = nmt.NmtField(
                     self.mask, self.Sync_qu_maps(ii), lmax=self.lmax, purify_b=self.pureB, #changed from self.sync_qu_maps[ii]
-                    masked_on_input=False
+                    masked_on_input=True
                 )
 
             def process_jj(jj):
                 if fg == 'dust':
                     fp_j = nmt.NmtField(
                         self.mask, self.Dust_qu_maps(jj), lmax=self.lmax, purify_b=self.pureB, #changed from self.dust_qu_maps[jj]
-                        masked_on_input=False
+                        masked_on_input=True
                     )
                 elif fg == 'sync':
                     fp_j = nmt.NmtField(
                         self.mask, self.Sync_qu_maps(jj), lmax=self.lmax, purify_b=self.pureB, #changed from self.sync_qu_maps[jj]
-                        masked_on_input=False
+                        masked_on_input=True
                     )
                 
                 cl_ij = self.compute_master(fp_i, fp_j)
@@ -993,12 +993,12 @@ class Spectra:
             )
             fp_i = nmt.NmtField(
                 self.mask, self.Sync_qu_maps(ii), lmax=self.lmax, purify_b=self.pureB, #changed from self.sync_qu_maps[ii]
-                masked_on_input=False
+                masked_on_input=True
             )
             for jj in range(0, self.Nfreq, 1):
                 fp_j = nmt.NmtField(
                     self.mask, self.Dust_qu_maps(jj), lmax=self.lmax, purify_b=self.pureB, #changed from self.dust_qu_maps[jj]
-                    masked_on_input=False
+                    masked_on_input=True
                 )
 
                 cl_ij = self.compute_master(fp_i,fp_j)  # (EiEj, EiBj, BiEj, BiBj)
@@ -1034,13 +1034,13 @@ class Spectra:
             
             fp_i = nmt.NmtField(
                 self.mask, self.Sync_qu_maps(ii), lmax=self.lmax, purify_b=self.pureB, #changed from self.sync_qu_maps[ii]
-                masked_on_input=False
+                masked_on_input=True
             )
 
             def process_jj(jj):
                 fp_j = nmt.NmtField(
                     self.mask, self.Dust_qu_maps(jj), lmax=self.lmax, purify_b=self.pureB, #changed from self.dust_qu_maps[jj]
-                    masked_on_input=False
+                    masked_on_input=True
                 )
 
                 cl_ij = self.compute_master(fp_i, fp_j)  # (EiEj, EiBj, BiEj, BiBj)
