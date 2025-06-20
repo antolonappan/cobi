@@ -75,7 +75,6 @@ class Noise:
         self.nsplits          = nsplits
         self.telescope = telescope
         self.Nell             = NoiseSpectra(self.sensitivity_mode, fsky, self.lmax, self.atm_noise, telescope)
-        pickle.dump(self.Nell, open('Nell_cobi.pkl','wb'))
         self.sim = sim
         assert sim in ['NC', 'TOD'], "Invalid simulation type. Choose from 'NC' or 'TOD'."
 
