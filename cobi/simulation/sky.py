@@ -110,7 +110,7 @@ class SkySimulation:
         self.mask = hp.read_map(mask, field=0, dtype=np.double)
         self.fsky = calc_fsky(self.mask)
         self.noise_model = noise_model
-        self.noise = Noise(nside, self.fsky, self.__class__.__name__[:3], noise_model, nhits, nhits_fac, atm_noise, nsplits, verbose=self.verbose,)
+        self.noise = Noise(nside, 0.4, self.__class__.__name__[:3], noise_model, nhits, nhits_fac, atm_noise, nsplits, verbose=self.verbose,)
         self.config = {}
         for split in range(nsplits):
             for band in range(len(self.freqs)):
