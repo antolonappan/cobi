@@ -12,8 +12,8 @@ nside = 2048
 cb_model = "iso"
 beta = 0.35
 alpha_lat = [0.2,0.2]
-alpha_lat_err = 0.1
-alpha_sat_err = 0.07
+alpha_lat_err = 0.2
+alpha_sat_err = 0.1
 nc = 'TOD'
 
 lat = LATskyC(libdir, nside, cb_model, beta, alpha=alpha_lat,alpha_err=alpha_lat_err, bandpass=True,verbose=True,nsplits=2,noise_model=nc)

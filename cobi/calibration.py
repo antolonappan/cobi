@@ -163,13 +163,13 @@ class Sat4Lat:
             pl.dump(flat_samples,open(fname,'wb'))
             return flat_samples
 
-    def getdist_samples(self,nwalkers,nsamples):
-        flat_samples = self.samples(nwalkers,nsamples)
+    def getdist_samples(self,nwalkers,nsamples, rerun=True):
+        flat_samples = self.samples(nwalkers,nsamples, rerun=rerun)
         return MCSamples(samples=flat_samples,names = self.__pnames__, labels = self.__plabels__)
         
-    
-    def plot_getdist(self,nwalkers,nsamples,avoid_sat=False,beta_only=False):
-        flat_samples = self.getdist_samples(nwalkers,nsamples)
+
+    def plot_getdist(self,nwalkers,nsamples,avoid_sat=False,beta_only=False, rerun=True):
+        flat_samples = self.getdist_samples(nwalkers,nsamples, rerun=rerun)
         if beta_only:
             g = plots.get_single_plotter(width_inch=4)
             g.plot_1d(flat_samples, 'beta', title_limit=1)
