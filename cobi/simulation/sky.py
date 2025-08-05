@@ -43,6 +43,7 @@ class SkySimulation:
         verbose: bool = True,
         nhits: str = None,
         nhits_fac: float = 1.0,
+        fore_realization: bool = False,
     ):
         """
         Initializes the SkySimulation class for generating and handling sky simulations.
@@ -77,7 +78,7 @@ class SkySimulation:
         else:
             raise ValueError("Unknown CB method")
         
-        fldname += f"_d{dust_model}s{sync_model}"
+        fldname += f"_{dust_model}{sync_model}"
         fldname += f"_g{gal_cut}" if gal_cut > 0 else ""
         if isinstance(alpha, (list, np.ndarray)):
             fldname += f"_a"  ''.join('n' + f"{abs(num):g}".replace(".", "") if num < 0 else f"{num:g}".replace(".", "") for num in alpha).replace('0','')
@@ -100,7 +101,7 @@ class SkySimulation:
         self.cb_method = cb_model
         self.beta = beta
         self.cmb = CMB(libdir, nside, cb_model,beta, mass, Acb, lensing, verbose=self.verbose)
-        self.foreground = Foreground(libdir, nside, dust_model, sync_model, bandpass, verbose=False)
+        self.foreground = Foreground(libdir, nside, dust_model, sync_model, bandpass, verbose=False, fore_realization=fore_realization)
         self.dust_model = dust_model
         self.sync_model = sync_model
         self.nsplits = nsplits
@@ -140,7 +141,10 @@ class SkySimulation:
     def signalOnlyQU(self, idx: int, band: str) -> np.ndarray:
         band = band[:band.index('-')]
         cmbQU = np.array(self.cmb.get_cb_lensed_QU(idx))
-        dustQU = self.foreground.dustQU(band)
+        if fore_realization:
+            dustQU = self.foreground.dustQU(band, idx)
+        else:
+            dustQU = self.foreground.dustQU(band)
         syncQU = self.foreground.syncQU(band)
         return cmbQU + dustQU + syncQU
     
@@ -213,26 +217,7 @@ class SkySimulation:
         tube = self.config[band]["opt. tube"]
         fname = os.path.join(self.libdir,'obs', f"sims_a{str(alpha)}_f{fwhm}_t{tube}_b{band}_{idx:03d}.fits")
         return fname
-        
 
-    def saveObsQUs(self, idx: int, apply_mask: bool = True) -> None:
-        mask = self.mask if apply_mask else np.ones_like(self.mask)
-        bands = list(self.config.keys())
-        signal = []
-        for band in bands:
-            fwhm = self.config[band]["fwhm"]
-            alpha = self.get_alpha(idx, band)
-            signal.append(self.obsQUwAlpha(idx, band, fwhm, alpha))
-        noise = self.noise.noiseQU()
-        sky = np.array(signal) + noise
-        
-        if self.deconv_maps:
-            for i in tqdm(range(len(bands)), desc='Deconvolving QUs', unit='band'):
-                sky[i] = deconvolveQU(sky[i], self.config[bands[i]]['fwhm'])
-            
-        for i in tqdm(range(len(bands)), desc="Saving Observed QUs", unit="band"):
-            fname = self.obsQUfname(idx, bands[i])
-            hp.write_map(fname, sky[i] * mask, dtype=np.float64, overwrite=True) # type: ignore
     
     def SaveObsQUs(self, idx: int, apply_mask: bool = True, bands=None) -> None:
 
@@ -391,6 +376,7 @@ class LATsky(SkySimulation):
         verbose: bool = True,
         nhits: str = None,
         nhits_fac: float = 1.0,
+        fore_realization: bool = False,
     ):
         super().__init__(
             libdir = libdir,
@@ -418,7 +404,8 @@ class LATsky(SkySimulation):
             fldname_suffix = fldname_suffix,
             verbose = verbose,
             nhits = nhits,
-            nhits_fac = nhits_fac
+            nhits_fac = nhits_fac,
+            fore_realization = fore_realization
         )
 
 
