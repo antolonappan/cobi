@@ -156,11 +156,17 @@ class Foreground:
                     maps = maps.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(int(band) * u.GHz)) # type: ignore
 
         else:
+            name = (
+                f"dustQU_N{self.nside}_f{band}_%04i.fits"%idx
+                if not self.bandpass
+                else f"dustQU_N{self.nside}_f{band}_bp_%04i.fits"%idx
+            )
+            fname = os.path.join(self.libdir, name)
             maps = hp.read_map(self.dust_model_path % idx, field=(0,1,2))
             sed_factor_i = sed_dust(float(band), self.beta_dust_map, self.temp_dust_map)
             maps *= sed_factor_i
-        #if mpi.rank == 0:
-        #    hp.write_map(fname, maps[1:], dtype=np.float64) # type: ignore
+        if mpi.rank == 0:
+            hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore
         mpi.barrier()
         if self.fore_realization:
             return maps[1:]
@@ -205,7 +211,7 @@ class Foreground:
                 maps = maps.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(int(band) * u.GHz)) # type: ignore
 
             if mpi.rank == 0:
-                hp.write_map(fname, maps[1:], dtype=np.float64) # type: ignore
+                hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore
             mpi.barrier()
 
             return maps[1:].value
