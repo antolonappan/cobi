@@ -585,3 +585,4 @@ class SATskyC(SkySimulation):
             fldname_suffix = fldname_suffix,
             verbose = verbose,
         )
+
