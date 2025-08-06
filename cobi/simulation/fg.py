@@ -163,11 +163,15 @@ class Foreground:
                 else f"dustQU_N{self.nside}_f{band}_bp_%04i.fits"%idx
             )
             fname = os.path.join(self.libdir, name)
-            maps = hp.read_map(self.dust_model_path % idx, field=(0,1,2))
-            sed_factor_i = sed_dust(float(band), self.beta_dust_map, self.temp_dust_map)
-            maps *= sed_factor_i
-            print(f"rank {mpi.rank} trying to write file {fname}")
-            hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore
+            if os.path.isfile(fname):
+                self.logger.log(f"Loading dust Q and U maps for band {band}", level="info")
+                return hp.read_map(fname, field=[0, 1]) # type: ignore
+            else:
+                maps = hp.read_map(self.dust_model_path % idx, field=(0,1,2))
+                sed_factor_i = sed_dust(float(band), self.beta_dust_map, self.temp_dust_map)
+                maps *= sed_factor_i
+                print(f"rank {mpi.rank} trying to write file {fname}")
+                hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore
         mpi.barrier()
         if self.fore_realization:
             return maps[1:]
