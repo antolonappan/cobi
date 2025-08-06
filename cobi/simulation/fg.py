@@ -154,7 +154,8 @@ class Foreground:
                 else:
                     maps = sky.get_emission(int(band) * u.GHz) # type: ignore
                     maps = maps.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(int(band) * u.GHz)) # type: ignore
-
+            if mpi.rank == 0:
+                hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore
         else:
             name = (
                 f"dustQU_N{self.nside}_f{band}_%04i.fits"%idx
@@ -165,7 +166,6 @@ class Foreground:
             maps = hp.read_map(self.dust_model_path % idx, field=(0,1,2))
             sed_factor_i = sed_dust(float(band), self.beta_dust_map, self.temp_dust_map)
             maps *= sed_factor_i
-        if mpi.rank == 0:
             hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore
         mpi.barrier()
         if self.fore_realization:
