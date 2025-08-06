@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 import argparse
-sys.path.append('/home/chervias/CMBwork/Cosmic_birefringence/cobi')
+sys.path.append('/home/chervias/Cosmic_birefringence/cobi')
 from cobi import mpi
 from cobi.simulation import LATsky
 from cobi.spectra import Spectra
@@ -18,12 +18,12 @@ parser.add_argument('-mle', action='store_true', help='Run the MLE')
 args = parser.parse_args()
 
 # Constants
-libdir = '/home/chervias/CMBwork/Cosmic_birefringence/output_cobi/my_test_ds'
+libdir = '/scratch/chervias/output_cobi/my_test_d'
 nside = 2048
 cb_model = "iso"
 beta = 0.35
-mask = '/home/chervias/CMBwork/SimonsObs/Masks/Mask_fullLAT_5.0_deg_gal_with-srcs-galplane80.fits'
-nhits = '/home/chervias/CMBwork/SimonsObs/data/LAT_ivar_galcoords.fits'
+mask = '/home/chervias/Cosmic_birefringence/data/Mask_fullLAT_5.0_deg_gal_with-srcs-galplane80.fits'
+nhits = '/home/chervias/Cosmic_birefringence/data/LAT_ivar_galcoords.fits'
 nhits_fac = 1.052
 
 #setting 1
@@ -37,7 +37,7 @@ lat = LATsky(libdir, nside, mask, cb_model, beta, alpha=alpha, alpha_err=alpha_e
 spec = Spectra(lat, libdir, cache=True, parallel=0)
 
 start_i = 0
-end_i = 1
+end_i = 100
 jobs = np.arange(start_i, end_i)
 
 if args.sim:
@@ -66,7 +66,7 @@ if args.specsync:
     mpi.barrier()
 
 if args.mle:
-    fit = "Ad + As + beta + alpha"
+    fit = "Ad + beta + alpha"
     binwidth = 20
     bmin = 100
     bmax = 3500
