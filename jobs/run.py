@@ -25,6 +25,9 @@ beta = 0.35
 mask = '/home/chervias/Cosmic_birefringence/data/Mask_fullLAT_5.0_deg_gal_with-srcs-galplane80.fits'
 nhits = '/home/chervias/Cosmic_birefringence/data/LAT_ivar_galcoords.fits'
 nhits_fac = 1.052
+fore_realization = True
+sync_model = 's5'
+dust_model = 'df_baseline'
 
 #setting 1
 alpha = 0
@@ -33,11 +36,11 @@ bp = False
 nm = 'NC'
 
 # Initialize LATsky and Spectra
-lat = LATsky(libdir, nside, mask, cb_model, beta, alpha=alpha, alpha_err=alpha_err, bandpass=bp,noise_model=nm, nhits=nhits, nhits_fac=nhits_fac)
+lat = LATsky(libdir, nside, mask, cb_model, beta, alpha=alpha, alpha_err=alpha_err, bandpass=bp,noise_model=nm, nhits=nhits, nhits_fac=nhits_fac, fore_realization=fore_realization, sync_model=sync_model, dust_model=dust_model)
 spec = Spectra(lat, libdir, cache=True, parallel=0)
 
 start_i = 0
-end_i = 100
+end_i = 5
 jobs = np.arange(start_i, end_i)
 
 if args.sim:
@@ -67,6 +70,7 @@ if args.specsync:
 
 if args.mle:
     fit = "Ad + beta + alpha"
+    #fit = "As + Asd + Ad + beta + alpha"
     binwidth = 20
     bmin = 100
     bmax = 3500
