@@ -109,9 +109,10 @@ class Foreground:
             self.bp_profile = None
             self.logger.log("Bandpass integration is disabled", level="info")
         if self.fore_realization:
-            self.beta_dust_map = hp.read_map('/home/chervias/CMBwork/Planck_data/COM_CompMap_Dust-GNILC-Model-Spectral-Index_2048_R2.01.fits', field=0)
-            self.temp_dust_map = hp.read_map('/home/chervias/CMBwork/Planck_data/COM_CompMap_Dust-GNILC-Model-Temperature_2048_R2.01.fits', field=0)
-            self.dust_model_path = '/home/chervias/CMBwork/Filaments/nonzeroEB/output/SOLAT_baseline_model/DustFilaments_TQU_45M_400pc_SOLAT_Dust-gnilc-unires-limit50-sigmatheta14_nside2048_baseline_seed%04i_AllScaleMap_f353p0.fits'
+            self.beta_dust_map = hp.read_map('/home/chervias/Planck_data/COM_CompMap_Dust-GNILC-Model-Spectral-Index_2048_R2.01.fits', field=0)
+            self.temp_dust_map = hp.read_map('/home/chervias/Planck_data/COM_CompMap_Dust-GNILC-Model-Temperature_2048_R2.01.fits', field=0)
+            self.dust_model_path = '/home/chervias/Filaments/nonzeroEB/output/DustFilaments_TQU_45M_400pc_SOLAT_Dust-gnilc-unires-limit50-sigmatheta14_nside2048_baseline_seed%04i_AllScaleMap_f353p0.fits'
+
         else:
             self.dust_model_path = None
 
@@ -157,11 +158,14 @@ class Foreground:
         else:
             maps = hp.read_map(self.dust_model_path % idx, field=(0,1,2))
             sed_factor_i = sed_dust(float(band), self.beta_dust_map, self.temp_dust_map)
-            maps *= sed_factor_i * u.uK_CMB
-        if mpi.rank == 0:
-            hp.write_map(fname, maps[1:], dtype=np.float64) # type: ignore
+            maps *= sed_factor_i
+        #if mpi.rank == 0:
+        #    hp.write_map(fname, maps[1:], dtype=np.float64) # type: ignore
         mpi.barrier()
-        return maps[1:].value
+        if self.fore_realization:
+            return maps[1:]
+        else:
+            return maps[1:].value
 
     def syncQU(self, band: str) -> np.ndarray:
         """

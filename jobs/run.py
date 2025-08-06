@@ -18,7 +18,7 @@ parser.add_argument('-mle', action='store_true', help='Run the MLE')
 args = parser.parse_args()
 
 # Constants
-libdir = '/scratch/chervias/output_cobi/my_test_d'
+libdir = '/scratch/chervias/output_cobi/my_test_for_fore_realization/'
 nside = 2048
 cb_model = "iso"
 beta = 0.35
