@@ -65,7 +65,7 @@ class Spectra:
         comdir     = os.path.join(common_dir, f"spectra_{self.nside}{'_d' if deconv else ''}_aposcale{str(aposcale).replace('.','p')}{'_pureB' if pureB else ''}" + fld_ext)
         self.__set_dir__(libdiri, comdir)
         
-        self.lmax     = 2 * self.lat.nside - 1
+        self.lmax     = 3500 #2 * self.lat.nside - 1
         
         self.temp_bp  = template_bandpass
 
@@ -329,6 +329,7 @@ class Spectra:
                 self.mask, self.Obs_qu_maps(idx,ii), lmax=self.lmax, purify_b=self.pureB,     #changed from self.obs_qu_maps[ii]
                 masked_on_input=True
             )
+            print(f"rank {mpi.rank} is running band {ii} and seed {idx} with OMP_NUM_THREADS={os.environ.get('OMP_NUM_THREADS')}")
             for jj in range(ii, self.Nbands, 1):
                 fp_j = nmt.NmtField(
                     self.mask, self.Obs_qu_maps(idx,jj), lmax=self.lmax, purify_b=self.pureB, #changed from self.obs_qu_maps[jj]
