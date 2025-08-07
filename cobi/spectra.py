@@ -234,9 +234,9 @@ class Spectra:
 		if fg not in ['dust', 'sync']:
 			raise ValueError('Unknown foreground')
 		if idx is None:
-			fname = os.path.join(self.fg.libdir, f"{fg}QU_N{self.nside}_{nu}_{'_bp' if self.temp_bp else ''}.fits")
+			fname = os.path.join(self.fg.libdir, f"{fg}QU_N{self.nside}_f{nu}_{'_bp' if self.temp_bp else ''}.fits")
 		else:
-			fname = os.path.join(self.fg.libdir, f"{fg}QU_N{self.nside}_{nu}_{idx:03d}_{'_bp' if self.temp_bp else ''}.fits")
+			fname = os.path.join(self.fg.libdir, f"{fg}QU_N{self.nside}_f{nu}_{idx:03d}_{'_bp' if self.temp_bp else ''}.fits")
 		if os.path.isfile(fname):
 			m = hp.read_map(fname, field=(0, 1))
 			return m[0], m[1]
