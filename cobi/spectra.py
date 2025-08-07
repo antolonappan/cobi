@@ -516,10 +516,12 @@ class Spectra:
 		else:
 			cl = np.zeros((self.Nfreq, self.Nbands, 4, self.Nell + 2), dtype=np.float64)
 			if fg=='dust':
-				fp_i = nmt.NmtField(
-					self.mask, self.Dust_qu_maps(ii), lmax=self.lmax, purify_b=self.pureB,  #changed from self.dust_qu_maps[ii]
-					masked_on_input=True
-				)
+				if self.lat.fore_realization:
+					fp_i = nmt.NmtField(self.mask, self.Dust_qu_maps(ii,idx), lmax=self.lmax, purify_b=self.pureB,  #changed from self.dust_qu_maps[ii]
+					masked_on_input=True)
+				else:
+					fp_i = nmt.NmtField(self.mask, self.Dust_qu_maps(ii), lmax=self.lmax, purify_b=self.pureB,  #changed from self.dust_qu_maps[ii]
+					masked_on_input=True)
 			elif fg=='sync':
 				fp_i = nmt.NmtField(
 					self.mask, self.Sync_qu_maps(ii), lmax=self.lmax, purify_b=self.pureB,  #changed from self.sync_qu_maps[ii]
