@@ -187,7 +187,7 @@ class Spectra:
 		self.dxo_dir = os.path.join(idir,  "dust_x_obs")
 		self.sxo_dir = os.path.join(idir,  "sync_x_obs")
 		if self.lat.fore_realization:
-			self.dxd_dit = os.path.join(idir, "dust_x_dust")
+			self.dxd_dir = os.path.join(idir, "dust_x_dust")
 		else:
 			self.dxd_dir = os.path.join(cdir, "dust_x_dust")
 		self.sxs_dir = os.path.join(cdir, "sync_x_sync")
