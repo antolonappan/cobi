@@ -23,7 +23,8 @@ def thermo2rj(nu):
     x = H_PLANCK*nu*1.e9/(K_BOLTZ*T_CMB)
     return x**2 * np.exp(x) / (np.exp(x) - 1.0)**2
 def sed_dust(nu, beta, Tdust):
-    sed_fact_353 = (353e9)**(beta+1) / (np.exp(H_PLANCK*353e9/(K_BOLTZ*Tdust))-1) / thermo2rj(353.0) ; sed_fact_nu  = (nu * 1e9)**(beta+1) / (np.exp(H_PLANCK*nu*1e9/(K_BOLTZ*Tdust))-1) / thermo2rj(nu)
+    sed_fact_353 = (353e9)**(beta+1) / (np.exp(H_PLANCK*353e9/(K_BOLTZ*Tdust))-1) / thermo2rj(353.0) ; 
+    sed_fact_nu  = (nu * 1e9)**(beta+1) / (np.exp(H_PLANCK*nu*1e9/(K_BOLTZ*Tdust))-1) / thermo2rj(nu)
     return sed_fact_nu / sed_fact_353
 
 class BandpassInt:
@@ -168,11 +169,10 @@ class Foreground:
                 return hp.read_map(fname, field=[0, 1]) # type: ignore
             else:
                 maps = hp.read_map(self.dust_model_path % idx, field=(0,1,2))
-                print(f"After loading the map {name}-{np.logical_not(np.isfinite(maps)).sum()} ")
                 sed_factor_i = sed_dust(float(band), self.beta_dust_map, self.temp_dust_map)
-                print(f"After calculating SED factor {name}-{np.logical_not(np.isfinite(sed_factor_i)).sum()}")
                 maps *= sed_factor_i
-                print(f"After applying the sed factor the map {name}-{np.logical_not(np.isfinite(maps)).sum()} ")
+                mask_ = np.logical_not(np.isfinite(maps)) # we need to mask non-finite pixels from the sed.
+                maps[mask_] = 0.0
                 hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore
         mpi.barrier()
         if self.fore_realization:
