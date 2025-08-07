@@ -168,9 +168,10 @@ class Foreground:
                 return hp.read_map(fname, field=[0, 1]) # type: ignore
             else:
                 maps = hp.read_map(self.dust_model_path % idx, field=(0,1,2))
+                print(f"After loading the map {name}-{np.logical_not(np.isfinite(maps)).sum()} ")
                 sed_factor_i = sed_dust(float(band), self.beta_dust_map, self.temp_dust_map)
                 maps *= sed_factor_i
-                print(f"rank {mpi.rank} trying to write file {fname}")
+                print(f"After applying the sed factor the map {name}-{np.logical_not(np.isfinite(maps)).sum()} ")
                 hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore
         mpi.barrier()
         if self.fore_realization:
