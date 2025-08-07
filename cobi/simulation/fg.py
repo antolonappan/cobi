@@ -170,6 +170,7 @@ class Foreground:
                 maps = hp.read_map(self.dust_model_path % idx, field=(0,1,2))
                 print(f"After loading the map {name}-{np.logical_not(np.isfinite(maps)).sum()} ")
                 sed_factor_i = sed_dust(float(band), self.beta_dust_map, self.temp_dust_map)
+                print(f"After calculating SED factor {name}-{np.logical_not(np.isfinite(sed_factor_i)).sum()}")
                 maps *= sed_factor_i
                 print(f"After applying the sed factor the map {name}-{np.logical_not(np.isfinite(maps)).sum()} ")
                 hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore
