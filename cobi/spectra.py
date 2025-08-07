@@ -764,9 +764,9 @@ class Spectra:
 			base_dir = self.sxs_dir
 			model = self.sync_model
 		if self.lat.fore_realization:
-			fname_help = f"{fg}_x_{fg}_{model}{self.freqs[ii]}{'_tempBP' if self.temp_bp else ''}.npy"
+			fname_help = f"{fg}_x_{fg}_{model}_{self.freqs[ii]}_{idx:03d}{'_tempBP' if self.temp_bp else ''}.npy"
 		else:
-			fname_help = f"{fg}_x_{fg}_{model}{self.freqs[ii]}{'_tempBP' if self.temp_bp else ''}_{idx:03d}.npy"
+			fname_help = f"{fg}_x_{fg}_{model}_{self.freqs[ii]}_{idx:03d}{'_tempBP' if self.temp_bp else ''}.npy"
 		fname = os.path.join(base_dir,fname_help,)
 		
 		if os.path.isfile(fname):
