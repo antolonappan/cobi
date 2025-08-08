@@ -234,16 +234,18 @@ class Spectra:
 		if fg not in ['dust', 'sync']:
 			raise ValueError('Unknown foreground')
 		if idx is None:
-			fname = os.path.join(self.fg.libdir, f"{fg}QU_N{self.nside}_f{nu}{'_bp' if self.temp_bp else ''}.fits")
+			fname = os.path.join(self.fg.libdir, f"{fg}QU_N{self.nside}_{nu}_template{'_bp' if self.temp_bp else ''}.fits")
 		else:
-			fname = os.path.join(self.fg.libdir, f"{fg}QU_N{self.nside}_f{nu}_{idx:04d}{'_bp' if self.temp_bp else ''}.fits")
+			fname = os.path.join(self.fg.libdir, f"{fg}QU_N{self.nside}_{nu}_{idx:03d}_template{'_bp' if self.temp_bp else ''}.fits")
 		if os.path.isfile(fname):
 			m = hp.read_map(fname, field=(0, 1))
 			return m[0], m[1]
 		else:
-			print(f'Trying to reconstruct the file {fname} !!!!!')
 			if fg=='dust':
-				m = self.fg.dustQU(nu)
+				if idx is None:
+					m = self.fg.dustQU(nu)
+				else:
+					m = self.fg.dustQU(nu,idx)
 			elif fg=='sync':
 				m = self.fg.syncQU(nu)
 			E, B   = hp.map2alm_spin(m, 2, lmax=self.lmax)
@@ -253,7 +255,7 @@ class Spectra:
 			hp.almxfl(E, bl[:,1]*pwf[1,:], inplace=True)
 			hp.almxfl(B, bl[:,2]*pwf[1,:], inplace=True)
 			m      = hp.alm2map_spin([E, B], self.nside, 2, self.lmax)*self.mask
-			hp.write_map(fname, m, dtype=np.float64)
+			hp.write_map(fname, m, dtype=np.float32)
 			return m[0], m[1]
 
 	def load_dustQUmaps(self) -> None:
@@ -272,7 +274,7 @@ class Spectra:
 		"""
 		Loads synchrotron Q and U Stokes parameter maps for all frequency bands.
 		"""
-		maps = np.zeros((self.Nfreq, 2, hp.nside2npix(self.nside)), dtype=np.float64)
+		maps = np.zeros((self.Nfreq, 2, hp.nside2npix(self.nside)), dtype=np.float32)
 		for i, nu in enumerate(self.freqs):
 			maps[i] = self.__get_fg_QUmap__(nu, 'sync')
 		self.sync_qu_maps = maps

@@ -244,7 +244,7 @@ class SkySimulation:
                 if self.deconv_maps:
                     sky = deconvolveQU(sky, fwhm)
                 fname = self.obsQUfname(idx, band)
-                hp.write_map(fname, sky * mask, dtype=np.float64,overwrite=(bands is not None)) # type: ignore
+                hp.write_map(fname, sky * mask, dtype=np.float32,overwrite=(bands is not None)) # type: ignore
                 return 0
 
         mask = self.mask if apply_mask else np.ones_like(self.mask)

@@ -159,9 +159,9 @@ class Foreground:
                 hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore
         else:
             name = (
-                f"dustQU_N{self.nside}_f{band}_%04i.fits"%idx
+                f"dustQU_N{self.nside}_f{band}_{idx:03d}.fits"
                 if not self.bandpass
-                else f"dustQU_N{self.nside}_f{band}_bp_%04i.fits"%idx
+                else f"dustQU_N{self.nside}_f{band}_bp_{idx:03d}.fits"
             )
             fname = os.path.join(self.libdir, name)
             if os.path.isfile(fname):
