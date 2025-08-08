@@ -1203,7 +1203,10 @@ class Spectra:
 		"""
 		oxo = self.obs_x_obs(idx)
 		dxo = self.dust_x_obs(idx)
-		dxd = self.dust_x_dust()
+		if self.lat.fore_realization:
+			dxd = self.dust_x_dust(idx=idx)
+		else:
+			dxd = self.dust_x_dust()
 		if sync:
 			sxo = self.sync_x_obs(idx)
 			sxs = self.sync_x_sync()
