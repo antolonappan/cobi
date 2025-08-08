@@ -501,7 +501,7 @@ class CMB:
             np.random.seed(self.__aseeds__[idx])
             alm = hp.synalm(cl_aa, lmax=self.lmax,new=True)
             alpha = hp.alm2map(alm, self.nside)
-            hp.write_map(fname, alpha, dtype=np.float64)
+            hp.write_map(fname, alpha, dtype=np.float32)
             return alpha # type: ignore
     
     def get_aniso_cb_gaussian_lensed_QU(self, idx: int) -> List[np.ndarray]:
@@ -538,7 +538,7 @@ class CMB:
             rQ = Q * np.cos(2 * alpha) - U * np.sin(2 * alpha)
             rU = Q * np.sin(2 * alpha) + U * np.cos(2 * alpha)
             del (Q, U)
-            hp.write_map(fname, [rQ, rU], dtype=np.float64)
+            hp.write_map(fname, [rQ, rU], dtype=np.float32)
             return [rQ, rU]
     
     def cl_pp(self):
@@ -580,7 +580,7 @@ class CMB:
             defl = self.grad_phi_alm(idx)
             geom_info = ('healpix', {'nside':self.nside})
             Qlen, Ulen = lenspyx.alm2lenmap_spin([alms[1],alms[2]], defl, 2, geometry=geom_info, verbose=int(self.verbose))
-            hp.write_map(fname, [Qlen, Ulen], dtype=np.float64)
+            hp.write_map(fname, [Qlen, Ulen], dtype=np.float32)
             return [Qlen, Ulen]
 
     def get_iso_td_cb_real_lensed_QU(self, idx: int) -> List[np.ndarray]:
@@ -602,7 +602,7 @@ class CMB:
             defl = self.grad_phi_alm(idx)
             geom_info = ('healpix', {'nside':self.nside})
             Qlen, Ulen = lenspyx.alm2lenmap_spin([alms[1],alms[2]], defl, 2, geometry=geom_info, verbose=int(self.verbose))
-            hp.write_map(fname, [Qlen, Ulen], dtype=np.float64)
+            hp.write_map(fname, [Qlen, Ulen], dtype=np.float32)
             return [Qlen, Ulen]
     
     def get_aniso_cb_real_lensed_QU(self, idx: int) -> List[np.ndarray]:
@@ -627,7 +627,7 @@ class CMB:
             rQ = Q * np.cos(2 * alpha) - U * np.sin(2 * alpha)
             rU = Q * np.sin(2 * alpha) + U * np.cos(2 * alpha)
             del (Q, U)
-            hp.write_map(fname, [rQ, rU], dtype=np.float64)
+            hp.write_map(fname, [rQ, rU], dtype=np.float32)
             return [rQ, rU]
         
     def get_cb_real_lensed_QU(self, idx: int) -> List[np.ndarray]:
