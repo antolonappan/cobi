@@ -770,7 +770,7 @@ class Spectra:
 		if self.lat.fore_realization:
 			fname_help = f"{fg}_x_{fg}_{model}_{self.freqs[ii]}_{idx:03d}{'_tempBP' if self.temp_bp else ''}.npy"
 		else:
-			fname_help = f"{fg}_x_{fg}_{model}_{self.freqs[ii]}_{idx:03d}{'_tempBP' if self.temp_bp else ''}.npy"
+			fname_help = f"{fg}_x_{fg}_{model}_{self.freqs[ii]}{'_tempBP' if self.temp_bp else ''}.npy"
 		fname = os.path.join(base_dir,fname_help,)
 		
 		if os.path.isfile(fname):
@@ -1000,7 +1000,7 @@ class Spectra:
 
 		return cl
 
-	def __sync_x_dust_helper_series__(self, ii: int) -> np.ndarray:
+	def __sync_x_dust_helper_series__(self, ii: int, idx: int = None) -> np.ndarray:
 		"""
 		Helper function:
 		Computes or loads the synchrotron x dust power spectra for a specific frequency band.
@@ -1011,7 +1011,10 @@ class Spectra:
 		Returns:
 		np.ndarray: Power spectra for the synchrotron x dust fields.
 		"""
-		fname = os.path.join(self.sxd_dir, f"sync{self.sync_model}_x_dust{self.dust_model}_{self.freqs[ii]}{'_tempBP' if self.temp_bp else ''}.npy")
+		if self.lat.fore_realization:
+			fname = os.path.join(self.sxd_dir, f"sync{self.sync_model}_x_dust{self.dust_model}_{self.freqs[ii]}_{idx:03d}{'_tempBP' if self.temp_bp else ''}.npy")
+		else:
+			fname = os.path.join(self.sxd_dir, f"sync{self.sync_model}_x_dust{self.dust_model}_{self.freqs[ii]}{'_tempBP' if self.temp_bp else ''}.npy")
 		if os.path.isfile(fname):
 			return np.load(fname)
 		else:
@@ -1023,10 +1026,12 @@ class Spectra:
 				masked_on_input=True
 			)
 			for jj in range(0, self.Nfreq, 1):
-				fp_j = nmt.NmtField(
-					self.mask, self.Dust_qu_maps(jj), lmax=self.lmax, purify_b=self.pureB, #changed from self.dust_qu_maps[jj]
-					masked_on_input=True
-				)
+				if self.lat.fore_realization:
+					fp_j = nmt.NmtField(self.mask, self.Dust_qu_maps(jj,idx=idx), lmax=self.lmax, purify_b=self.pureB, #changed from self.dust_qu_maps[jj]
+					masked_on_input=True)
+				else:
+					fp_j = nmt.NmtField(self.mask, self.Dust_qu_maps(jj), lmax=self.lmax, purify_b=self.pureB, #changed from self.dust_qu_maps[jj]
+					masked_on_input=True)
 
 				cl_ij = self.compute_master(fp_i,fp_j)  # (EiEj, EiBj, BiEj, BiBj)
 
@@ -1089,13 +1094,13 @@ class Spectra:
 				np.save(fname, cl)
 			return cl
 
-	def __sync_x_dust_helper__(self, ii: int) -> np.ndarray:
+	def __sync_x_dust_helper__(self, ii: int, idx: int = None) -> np.ndarray:
 		if self.parallel == 2:
 			return self.__sync_x_dust_helper_parallel__(ii)
 		else:
-			return self.__sync_x_dust_helper_series__(ii)
+			return self.__sync_x_dust_helper_series__(ii, idx=idx)
 		
-	def sync_x_dust(self, progress: bool = False) -> np.ndarray:
+	def sync_x_dust(self, progress: bool = False, idx: int = None) -> np.ndarray:
 		"""
 		Computes or loads the synchrotron x dust power spectra for all frequency bands.
 
@@ -1108,7 +1113,7 @@ class Spectra:
 		cl = np.zeros((self.Nfreq, self.Nfreq, 4, self.Nell + 2), dtype=np.float64)
 
 		def process_band(ii):
-			return self.__sync_x_dust_helper__(ii)
+			return self.__sync_x_dust_helper__(ii, idx=idx)
 
 		if self.parallel == 0:
 			# Serial execution
