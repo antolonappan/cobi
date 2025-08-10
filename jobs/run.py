@@ -14,6 +14,7 @@ parser.add_argument('-checksim', action='store_true', help='Check the simulation
 parser.add_argument('-specobs', action='store_true', help='Run the spectra and observation loop')
 parser.add_argument('-specdust', action='store_true', help='Run the spectra and dust loop')
 parser.add_argument('-specsync', action='store_true', help='Run the spectra and sync loop')
+parser.add_argument('-specs_x_d', action='store_true', help='Run the spectra for s_x_d loop')
 parser.add_argument('-mle', action='store_true', help='Run the MLE')
 args = parser.parse_args()
 
@@ -40,7 +41,7 @@ lat = LATsky(libdir, nside, mask, cb_model, beta, alpha=alpha, alpha_err=alpha_e
 spec = Spectra(lat, libdir, cache=True, parallel=0)
 
 start_i = 0
-end_i = 5
+end_i = 100
 jobs = np.arange(start_i, end_i)
 
 if args.sim:
@@ -60,12 +61,18 @@ if args.specobs:
 
 if args.specdust:
     for i in jobs[mpi.rank::mpi.size]:
+        spec.dust_x_dust(idx=i)
         spec.dust_x_obs(i)
     mpi.barrier()
 
 if args.specsync:
     for i in jobs[mpi.rank::mpi.size]:
         spec.sync_x_obs(i)
+    mpi.barrier()
+
+if args.specs_x_d:
+    for i in jobs[mpi.rank::mpi.size]:
+        spec.sync_x_dust(idx=i)
     mpi.barrier()
 
 if args.mle:
