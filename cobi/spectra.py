@@ -258,13 +258,13 @@ class Spectra:
 			hp.write_map(fname, m, dtype=np.float32)
 			return m[0], m[1]
 
-	def load_dustQUmaps(self) -> None:
+	def load_dustQUmaps(self, idx: int = None) -> None:
 		"""
 		Loads dust Q and U Stokes parameter maps for all frequency bands.
 		"""
 		maps = np.zeros((self.Nfreq, 2, hp.nside2npix(self.nside)), dtype=np.float64)
 		for i, nu in enumerate(self.freqs):
-			maps[i] = self.__get_fg_QUmap__(nu, 'dust')
+			maps[i] = self.__get_fg_QUmap__(nu, 'dust', idx=idx)
 		self.dust_qu_maps = maps
 
 	def Dust_qu_maps(self, ii: int, idx: int=None) -> np.ndarray:
@@ -1162,17 +1162,27 @@ class Spectra:
 		idx (int): Index for the realization of the CMB map.
 		sync (bool, optional): If True, calculate also synchrotron power spectra. Defaults to False.
 		"""
-		self.load_dustQUmaps()
-		dxd = self.dust_x_dust(progress=True)
+		if self.lat.fore_realization:
+			self.load_dustQUmaps(idx=idx)
+			dxd = self.dust_x_dust(idx=idx,progress=True)
+		else:
+			self.load_dustQUmaps()
+			dxd = self.dust_x_dust(progress=True)
 		self.load_obsQUmaps(idx)
 		oxo = self.obs_x_obs(idx, progress=True)
 		dxo = self.dust_x_obs(idx, progress=True)
 		if sync:
 			self.load_syncQUmaps()
-			sxd = self.sync_x_dust(progress=True)
+			if self.lat.fore_realization:
+				sxd = self.sync_x_dust(progress=True, idx=idx)
+			else:
+				sxd = self.sync_x_dust(progress=True)
 			self.clear_dust_qu_maps()
 			sxs = self.sync_x_sync(progress=True)
-			sxo = self.sync_x_obs(idx, progress=True)
+			if self.lat.fore_realization:
+				sxo = self.sync_x_obs(idx, progress=True, idx=idx)
+			else:
+				sxo = self.sync_x_obs(idx, progress=True)
 			self.clear_obs_qu_maps()
 			self.clear_sync_qu_maps()
 			del (oxo, dxo, dxd, sxd, sxs, sxo)
