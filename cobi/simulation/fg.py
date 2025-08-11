@@ -72,159 +72,159 @@ class BandpassInt:
         plt.show()
 
 class Foreground:
-    def __init__(
-        self,
-        libdir: str,
-        nside: int,
-        dust_model: str,
-        sync_model: str,
-        bandpass: bool = False,
-        verbose: bool = True,
-        fore_realization: bool = False,
-    ):
-        """
-        Initializes the Foreground class for generating and handling dust and synchrotron foreground maps.
+	def __init__(
+		self,
+		libdir: str,
+		nside: int,
+		dust_model: str,
+		sync_model: str,
+		bandpass: bool = False,
+		verbose: bool = True,
+		fore_realization: bool = False,
+	):
+		"""
+		Initializes the Foreground class for generating and handling dust and synchrotron foreground maps.
 
-        Parameters:
-        libdir (str): Directory where the foreground maps will be stored.
-        nside (int): HEALPix resolution parameter.
-        dust_model (int): Model number for the dust emission.
-        sync_model (int): Model number for the synchrotron emission.
-        bandpass (bool, optional): If True, bandpass integration is applied. Defaults to False.
-        """
-        self.logger = Logger(self.__class__.__name__, verbose=verbose)
-        self.basedir = libdir
-        self.libdir = os.path.join(libdir, f"Foregrounds{dust_model}{sync_model}")
-        if mpi.rank == 0:
-            os.makedirs(self.libdir, exist_ok=True)
-        mpi.barrier()
-        self.nside = nside
-        self.dust_model = dust_model
-        self.sync_model = sync_model
-        self.bandpass = bandpass
-        self.fore_realization = fore_realization
-        if bandpass:
-            self.bp_profile = BandpassInt(libdir)
-            self.logger.log("Bandpass integration is enabled", level="info")
-        else:
-            self.bp_profile = None
-            self.logger.log("Bandpass integration is disabled", level="info")
-        if self.fore_realization:
-            self.beta_dust_map = hp.read_map('/home/chervias/Planck_data/COM_CompMap_Dust-GNILC-Model-Spectral-Index_2048_R2.01.fits', field=0)
-            self.temp_dust_map = hp.read_map('/home/chervias/Planck_data/COM_CompMap_Dust-GNILC-Model-Temperature_2048_R2.01.fits', field=0)
-            if self.dust_model == 'df_baseline':
-			    self.dust_model_path = '/home/chervias/Filaments/nonzeroEB/output/DustFilaments_TQU_45M_400pc_SOLAT_Dust-gnilc-unires-limit50-sigmatheta14_nside2048_baseline_seed%04i_AllScaleMap_f353p0.fits'
+		Parameters:
+		libdir (str): Directory where the foreground maps will be stored.
+		nside (int): HEALPix resolution parameter.
+		dust_model (int): Model number for the dust emission.
+		sync_model (int): Model number for the synchrotron emission.
+		bandpass (bool, optional): If True, bandpass integration is applied. Defaults to False.
+		"""
+		self.logger = Logger(self.__class__.__name__, verbose=verbose)
+		self.basedir = libdir
+		self.libdir = os.path.join(libdir, f"Foregrounds{dust_model}{sync_model}")
+		if mpi.rank == 0:
+			os.makedirs(self.libdir, exist_ok=True)
+		mpi.barrier()
+		self.nside = nside
+		self.dust_model = dust_model
+		self.sync_model = sync_model
+		self.bandpass = bandpass
+		self.fore_realization = fore_realization
+		if bandpass:
+			self.bp_profile = BandpassInt(libdir)
+			self.logger.log("Bandpass integration is enabled", level="info")
+		else:
+			self.bp_profile = None
+			self.logger.log("Bandpass integration is disabled", level="info")
+		if self.fore_realization:
+			self.beta_dust_map = hp.read_map('/home/chervias/Planck_data/COM_CompMap_Dust-GNILC-Model-Spectral-Index_2048_R2.01.fits', field=0)
+			self.temp_dust_map = hp.read_map('/home/chervias/Planck_data/COM_CompMap_Dust-GNILC-Model-Temperature_2048_R2.01.fits', field=0)
+			if self.dust_model == 'df_baseline':
+				self.dust_model_path = '/home/chervias/Filaments/nonzeroEB/output/DustFilaments_TQU_45M_400pc_SOLAT_Dust-gnilc-unires-limit50-sigmatheta14_nside2048_baseline_seed%04i_AllScaleMap_f353p0.fits'
 			elif self.dust_model == 'df_fiducial':
-			    self.dust_model_path = '/home/chervias/Filaments/nonzeroEB/output/DustFilaments_TQU_45M_400pc_SOLAT_Dust-gnilc-unires-limit50-sigmatheta14_nside2048_ALD_fiducial_seed%04i_AllScaleMap_f353p0.fits'
+				self.dust_model_path = '/home/chervias/Filaments/nonzeroEB/output/DustFilaments_TQU_45M_400pc_SOLAT_Dust-gnilc-unires-limit50-sigmatheta14_nside2048_ALD_fiducial_seed%04i_AllScaleMap_f353p0.fits'
 
-        else:
-            self.dust_model_path = None
+		else:
+			self.dust_model_path = None
 
-    def dustQU(self, band: str, idx: int=None) -> np.ndarray:
-        """
-        Generates or retrieves the Q and U Stokes parameters for dust emission at a given frequency band.
+	def dustQU(self, band: str, idx: int=None) -> np.ndarray:
+		"""
+		Generates or retrieves the Q and U Stokes parameters for dust emission at a given frequency band.
 
-        Parameters:
-        band (str): The frequency band.
+		Parameters:
+		band (str): The frequency band.
 
-        Returns:
-        np.ndarray: A NumPy array containing the Q and U maps.
-        """
-        if self.fore_realization==False:
-            name = (
-                f"dustQU_N{self.nside}_f{band}.fits"
-                if not self.bandpass
-                else f"dustQU_N{self.nside}_f{band}_bp.fits"
-            )
-            fname = os.path.join(self.libdir, name)
-    
-            if os.path.isfile(fname):
-                self.logger.log(f"Loading dust Q and U maps for band {band}", level="info")
-                return hp.read_map(fname, field=[0, 1]) # type: ignore
-            
-            else:
-                self.logger.log(f"Generating dust Q and U maps for band {band}", level="info")
-                sky = pysm3.Sky(
-                    nside=self.nside, preset_strings=[f"{self.dust_model}"]
-                )
-                if self.bandpass:
-                    if self.bp_profile is not None:
-                        nu, weights = self.bp_profile.get_profile(band)
-                    else:
-                        raise ValueError("Bandpass profile is not initialized.")
-                    nu = nu * u.GHz # type: ignore
-                    maps = sky.get_emission(nu, weights)
-                    maps *= pysm3.utils.bandpass_unit_conversion(nu, weights=weights, output_unit=u.uK_CMB)
-                else:
-                    maps = sky.get_emission(int(band) * u.GHz) # type: ignore
-                    maps = maps.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(int(band) * u.GHz)) # type: ignore
-            if mpi.rank == 0:
-                hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore
-        else:
-            name = (
-                f"dustQU_N{self.nside}_f{band}_{idx:03d}.fits"
-                if not self.bandpass
-                else f"dustQU_N{self.nside}_f{band}_bp_{idx:03d}.fits"
-            )
-            fname = os.path.join(self.libdir, name)
-            if os.path.isfile(fname):
-                self.logger.log(f"Loading dust Q and U maps for band {band}", level="info")
-                return hp.read_map(fname, field=[0, 1]) # type: ignore
-            else:
-                maps = hp.read_map(self.dust_model_path % idx, field=(0,1,2))
-                sed_factor_i = sed_dust(float(band), self.beta_dust_map, self.temp_dust_map)
-                maps *= sed_factor_i
-                mask_ = np.logical_not(np.isfinite(maps)) # we need to mask non-finite pixels from the sed.
-                maps[mask_] = 0.0
-                hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore
-        mpi.barrier()
-        if self.fore_realization:
-            return maps[1:]
-        else:
-            return maps[1:].value
+		Returns:
+		np.ndarray: A NumPy array containing the Q and U maps.
+		"""
+		if self.fore_realization==False:
+			name = (
+				f"dustQU_N{self.nside}_f{band}.fits"
+				if not self.bandpass
+				else f"dustQU_N{self.nside}_f{band}_bp.fits"
+			)
+			fname = os.path.join(self.libdir, name)
 
-    def syncQU(self, band: str) -> np.ndarray:
-        """
-        Generates or retrieves the Q and U Stokes parameters for synchrotron emission at a given frequency band.
+			if os.path.isfile(fname):
+				self.logger.log(f"Loading dust Q and U maps for band {band}", level="info")
+				return hp.read_map(fname, field=[0, 1]) # type: ignore
+			
+			else:
+				self.logger.log(f"Generating dust Q and U maps for band {band}", level="info")
+				sky = pysm3.Sky(
+					nside=self.nside, preset_strings=[f"{self.dust_model}"]
+				)
+				if self.bandpass:
+					if self.bp_profile is not None:
+						nu, weights = self.bp_profile.get_profile(band)
+					else:
+						raise ValueError("Bandpass profile is not initialized.")
+					nu = nu * u.GHz # type: ignore
+					maps = sky.get_emission(nu, weights)
+					maps *= pysm3.utils.bandpass_unit_conversion(nu, weights=weights, output_unit=u.uK_CMB)
+				else:
+					maps = sky.get_emission(int(band) * u.GHz) # type: ignore
+					maps = maps.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(int(band) * u.GHz)) # type: ignore
+			if mpi.rank == 0:
+				hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore
+		else:
+			name = (
+				f"dustQU_N{self.nside}_f{band}_{idx:03d}.fits"
+				if not self.bandpass
+				else f"dustQU_N{self.nside}_f{band}_bp_{idx:03d}.fits"
+			)
+			fname = os.path.join(self.libdir, name)
+			if os.path.isfile(fname):
+				self.logger.log(f"Loading dust Q and U maps for band {band}", level="info")
+				return hp.read_map(fname, field=[0, 1]) # type: ignore
+			else:
+				maps = hp.read_map(self.dust_model_path % idx, field=(0,1,2))
+				sed_factor_i = sed_dust(float(band), self.beta_dust_map, self.temp_dust_map)
+				maps *= sed_factor_i
+				mask_ = np.logical_not(np.isfinite(maps)) # we need to mask non-finite pixels from the sed.
+				maps[mask_] = 0.0
+				hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore
+		mpi.barrier()
+		if self.fore_realization:
+			return maps[1:]
+		else:
+			return maps[1:].value
 
-        Parameters:
-        band (str): The frequency band.
+	def syncQU(self, band: str) -> np.ndarray:
+		"""
+		Generates or retrieves the Q and U Stokes parameters for synchrotron emission at a given frequency band.
 
-        Returns:
-        np.ndarray: A NumPy array containing the Q and U maps.
-        """
-        name = (
-            f"syncQU_N{self.nside}_f{band}.fits"
-            if not self.bandpass
-            else f"syncQU_N{self.nside}_f{band}_bp.fits"
-        )
-        fname = os.path.join(self.libdir, name)
+		Parameters:
+		band (str): The frequency band.
 
-        if os.path.isfile(fname):
-            self.logger.log(f"Loading synchrotron Q and U maps for band {band}", level="info")
-            return hp.read_map(fname, field=[0, 1]) # type: ignore
-        else:
-            self.logger.log(f"Generating synchrotron Q and U maps for band {band}", level="info")
-            sky = pysm3.Sky(
-                nside=self.nside, preset_strings=[f"{self.sync_model}"]
-            )
-            if self.bandpass:
-                if self.bp_profile is not None:
-                    nu, weights = self.bp_profile.get_profile(band)
-                else:
-                    raise ValueError("Bandpass profile is not initialized.")
-                nu = nu * u.GHz # type: ignore
-                maps = sky.get_emission(nu, weights)
-                maps *= pysm3.utils.bandpass_unit_conversion(nu, weights=weights, output_unit=u.uK_CMB)
-            else:
-                maps = sky.get_emission(int(band) * u.GHz) # type: ignore
-                maps = maps.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(int(band) * u.GHz)) # type: ignore
+		Returns:
+		np.ndarray: A NumPy array containing the Q and U maps.
+		"""
+		name = (
+			f"syncQU_N{self.nside}_f{band}.fits"
+			if not self.bandpass
+			else f"syncQU_N{self.nside}_f{band}_bp.fits"
+		)
+		fname = os.path.join(self.libdir, name)
 
-            if mpi.rank == 0:
-                hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore
-            mpi.barrier()
+		if os.path.isfile(fname):
+			self.logger.log(f"Loading synchrotron Q and U maps for band {band}", level="info")
+			return hp.read_map(fname, field=[0, 1]) # type: ignore
+		else:
+			self.logger.log(f"Generating synchrotron Q and U maps for band {band}", level="info")
+			sky = pysm3.Sky(
+				nside=self.nside, preset_strings=[f"{self.sync_model}"]
+			)
+			if self.bandpass:
+				if self.bp_profile is not None:
+					nu, weights = self.bp_profile.get_profile(band)
+				else:
+					raise ValueError("Bandpass profile is not initialized.")
+				nu = nu * u.GHz # type: ignore
+				maps = sky.get_emission(nu, weights)
+				maps *= pysm3.utils.bandpass_unit_conversion(nu, weights=weights, output_unit=u.uK_CMB)
+			else:
+				maps = sky.get_emission(int(band) * u.GHz) # type: ignore
+				maps = maps.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(int(band) * u.GHz)) # type: ignore
 
-            return maps[1:].value
+			if mpi.rank == 0:
+				hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore
+			mpi.barrier()
+
+			return maps[1:].value
 
 
 class HILC:
