@@ -1215,10 +1215,10 @@ class Spectra:
 		if sync:
 			sxo = self.sync_x_obs(idx)
 			sxs = self.sync_x_sync()
-                        if self.lat.fore_realization:
-                            sxd = self.sync_x_dust(idx=idx)
-                        else:
-                            sxd = self.sync_x_dust()
+			if self.lat.fore_realization:
+				sxd = self.sync_x_dust(idx=idx)
+			else:
+				sxd = self.sync_x_dust()
 			return {'oxo':oxo, 'dxd':dxd, 'sxs':sxs, 'dxo':dxo, 'sxo':sxo, 'sxd':sxd}
 		else:
 			return {'oxo':oxo, 'dxd':dxd, 'dxo':dxo}
