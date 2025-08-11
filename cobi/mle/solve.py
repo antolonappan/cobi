@@ -1187,12 +1187,11 @@ class MLE:
         res = Result(self.spec, self.fit, idx, self.alpha_per_split, 
                      self.rm_same_tube, self.nlb, self.bmin, self.bmax)
         # read the input spectra 
-        #try:
-        input_cls = self.spec.get_spectra(idx, sync='As' in self.fit)
-        #except TypeError:
-        #    self.spec.compute(idx, sync='As' in self.fit)
-        #    input_cls = self.spec.get_spectra(idx, sync='As' in self.fit)
-        
+        try:
+			input_cls = self.spec.get_spectra(idx, sync='As' in self.fit)
+        except TypeError:
+			self.spec.compute(idx, sync='As' in self.fit)
+			input_cls = self.spec.get_spectra(idx, sync='As' in self.fit)
         # format cls and calculate elements of covariance matrix
         self.process_cls(input_cls)
         del input_cls # free memory
