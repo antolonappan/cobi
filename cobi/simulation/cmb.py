@@ -15,6 +15,102 @@ from cobi import mpi
 from cobi.utils import Logger, inrad
 from cobi.data import CAMB_INI, SPECTRA, ISO_TD_SPECTRA
 
+
+
+def synfast_pol(nside, spectra):
+    """
+    Generate polarized CMB maps (Q, U) with optional auxiliary field A.
+
+    Parameters
+    ----------
+    nside : int
+        HEALPix resolution parameter.
+    spectra : dict
+        Power spectra dictionary with required 'EE' (and optional 'BB', 'AA', 'AE').
+    
+    Returns
+    -------
+    (Q_map, U_map) or (Q_map, U_map, A_map) if 'AA' in spectra
+    """
+    assert 'EE' in spectra, "The 'EE' spectrum must be provided."
+    assert 'AA' in spectra, "The 'AA' spectrum must be provided."
+
+    lmax = min(len(spectra['EE']) - 1, 3*nside -1)
+    epsilon = 1e-20
+
+    EE = spectra['EE'][:lmax+1]
+    BB = spectra.get('BB', np.zeros(lmax+1))[:lmax+1]
+    AE = spectra.get('AE', np.zeros(lmax+1))[:lmax+1]
+    AA = spectra['AA'][:lmax+1]
+    cov = np.empty((lmax+1, 2, 2))
+    cov[:, 0, 0] = EE
+    cov[:, 0, 1] = AE
+    cov[:, 1, 0] = AE
+    cov[:, 1, 1] = AA
+    nfields = 2
+
+    cov += epsilon * np.eye(nfields)[None, :, :]
+
+    # Cholesky decomposition
+    L_chol = np.empty_like(cov)
+    for l in range(lmax+1):
+        extra_eps = 0.0
+        while True:
+            try:
+                L_chol[l] = np.linalg.cholesky(cov[l] + extra_eps * np.eye(nfields))
+                if extra_eps > 0:
+                    print(f"Warning: Increased epsilon for l={l} to {extra_eps}")
+                break
+            except np.linalg.LinAlgError:
+                extra_eps = extra_eps * 10 if extra_eps > 0 else epsilon
+
+    # Allocate alm arrays
+    num_alm = hp.sphtfunc.Alm.getsize(lmax)
+    alm_E = np.zeros(num_alm, dtype=complex)
+    alm_B = np.zeros(num_alm, dtype=complex)
+    alm_A = np.zeros(num_alm, dtype=complex)
+
+    l_arr, m_arr = hp.Alm.getlm(lmax)
+
+    # m = 0
+    m0 = (m_arr == 0)
+    l0 = l_arr[m0]
+    z0 = np.random.normal(0.0, 1.0, size=(m0.sum(), 2))
+    L0 = L_chol[l0, :, :]
+    a_EA0 = np.einsum('ijk,ik->ij', L0, z0)
+    alm_E[m0] = a_EA0[:, 0]
+    alm_A[m0] = a_EA0[:, 1]
+
+    # m > 0
+    mpos = (m_arr > 0)
+    lpos = l_arr[mpos]
+    Npos = mpos.sum()
+    z_real = np.random.normal(0.0, 1.0, size=(Npos, 2)) / np.sqrt(2)
+    z_imag = np.random.normal(0.0, 1.0, size=(Npos, 2)) / np.sqrt(2)
+    L_pos = L_chol[lpos, :, :]
+    a_EA_real = np.einsum('ijk,ik->ij', L_pos, z_real)
+    a_EA_imag = np.einsum('ijk,ik->ij', L_pos, z_imag)
+    alm_E[mpos] = a_EA_real[:, 0] + 1j * a_EA_imag[:, 0]
+    alm_A[mpos] = a_EA_real[:, 1] + 1j * a_EA_imag[:, 1]
+
+    # B-modes
+    b0 = np.random.normal(0.0, 1.0, size=m0.sum())
+    alm_B[m0] = b0 * np.sqrt(BB[l_arr[m0]])
+    b_real = np.random.normal(0.0, 1.0, size=Npos) / np.sqrt(2)
+    b_imag = np.random.normal(0.0, 1.0, size=Npos) / np.sqrt(2)
+    alm_B[mpos] = (b_real + 1j * b_imag) * np.sqrt(BB[l_arr[mpos]])
+
+    # Maps
+    Q_map, U_map = hp.alm2map_spin([alm_E, alm_B], nside, spin=2, lmax=lmax)
+    A_map = hp.alm2map(alm_A, nside, lmax=lmax)
+
+    # Always apply birefringence-like rotation
+    Q_rot = Q_map * np.cos(2 * A_map) - U_map * np.sin(2 * A_map)
+    U_rot = Q_map * np.sin(2 * A_map) + U_map * np.cos(2 * A_map)
+    Q_map, U_map = Q_rot, U_rot
+
+    return Q_map, U_map, A_map
+
 class CMB:
 
     def __init__(
@@ -25,6 +121,7 @@ class CMB:
         beta: Optional[float]=None,
         mass: Optional[float]=None,
         Acb: Optional[float]=None,
+        AEcb: Optional[float]=None,
         lensing: Optional[bool] = False,
         verbose: Optional[bool] = True,
     ):
@@ -39,6 +136,7 @@ class CMB:
         self.beta   = beta
         self.mass   = mass
         self.Acb    = Acb
+        self.AEcb   = AEcb
         assert model in ["iso", "iso_td","aniso"], "model should be 'iso' or 'aniso'"
         self.model  = model
         if self.model == "aniso":
@@ -57,6 +155,12 @@ class CMB:
         self.__set_workspace__()
         self.__set_seeds__()
         self.verbose = verbose if verbose is not None else False
+    
+    def scale_invariant(self, Acb):
+        ells = np.arange(self.lmax + 1)
+        cl =  Acb * 2 * np.pi / ( ells**2 + ells + 1e-30)
+        cl[0], cl[1] = 0, 0
+        return cl
    
     def __set_seeds__(self) -> None:
         """
@@ -91,19 +195,22 @@ class CMB:
             self.alphadir = os.path.join(self.basedir, 'CMB', lens, model, 'alpha')
             os.makedirs(self.alphadir, exist_ok=True)
     
-    def __dl2cl__(self, arr: np.ndarray) -> np.ndarray:
+    def __dl2cl__(self, arr: np.ndarray,unit_only=False) -> np.ndarray:
         """
         Convert Dl to Cl.
         """
         tcmb = 2.7255e6
         l = np.arange(len(arr))
         dl = l * (l + 1) / (2 * np.pi)
-        arr = arr * tcmb ** 2 / (dl + 1e-30)
+        if unit_only:
+            return arr * tcmb ** 2 
+        else:
+            arr = arr * tcmb ** 2 / (dl + 1e-30)
         arr[0] = 0
         arr[1] = 0
         return arr
     
-    def __td_eb__(self) -> np.ndarray:
+    def __td_eb__(self,dl=True) -> np.ndarray:
         """
         Read the E and B mode power spectra from the CMB power spectra data.
         """
@@ -112,15 +219,15 @@ class CMB:
         spectra = ISO_TD_SPECTRA.data[m]
         eb = np.zeros(self.lmax + 1)
         eb[2:] = spectra[:self.lmax + 1 - 2, 5]
-        return self.__dl2cl__(eb)
-    
-    def __td_tb__(self) -> np.ndarray:
+        return self.__dl2cl__(eb,unit_only=not dl)  # type: ignore
+
+    def __td_tb__(self,dl=True) -> np.ndarray:
         ISO_TD_SPECTRA.directory = self.basedir
         m = str(self.mass).replace('.', 'p')
         spectra = ISO_TD_SPECTRA.data[m]
         tb = np.zeros(self.lmax + 1)
         tb[2:] = spectra[:self.lmax + 1 - 2, 6]
-        return self.__dl2cl__(tb)      
+        return self.__dl2cl__(tb,unit_only=not dl)      
         
     def compute_powers(self) -> Dict[str, Any]:
         """
@@ -302,8 +409,8 @@ class CMB:
         pow["ee"] = powers["ee"]
         pow["bb"] = powers["bb"]
         internal_len = len(powers["tt"])
-        _eb_ = self.__td_eb__()
-        _tb_ = self.__td_tb__()
+        _eb_ = self.__td_eb__(dl=dl)
+        _tb_ = self.__td_tb__(dl=dl)
         eb = np.zeros(len(powers["tt"]))
         tb = np.zeros(len(powers["tt"]))
         eb[2:len(_eb_)] = _eb_[2:]
@@ -391,8 +498,8 @@ class CMB:
         pow["ee"] = powers["ee"]
         pow["bb"] = powers["bb"]
         internal_len = len(powers["tt"])
-        _eb_ = self.__td_eb__()
-        _tb_ = self.__td_tb__()
+        _eb_ = self.__td_eb__(dl=dl)
+        _tb_ = self.__td_tb__(dl=dl)
         eb = np.zeros(len(powers["tt"]))
         tb = np.zeros(len(powers["tt"]))
         eb[2:len(_eb_)] = _eb_[2:]
@@ -474,36 +581,7 @@ class CMB:
         L = np.arange(self.lmax + 1)
         assert self.Acb is not None, "Acb should be provided for anisotropic model"
         return self.Acb * 2 * np.pi / ( L**2 + L + 1e-30)
-    
-    def alpha_map(self, idx: int) -> np.ndarray:
-        """
-        Generate a map of the rotation angle alpha for the anisotropic model.
-
-        Parameters:
-        idx (int): Index for the realization of the CMB map.
-
-        Returns:
-        np.ndarray: A map of the rotation angle alpha as a NumPy array.
-
-        Notes:
-        The method generates a map of the rotation angle alpha for the anisotropic model.
-        The map is generated as a random realization of the Cl_AA power spectrum.
-        """
-        fname = os.path.join(
-            self.alphadir,
-            f"alpha_nside{self.nside}_{idx:03d}.fits",
-        )
-        if os.path.isfile(fname):
-            return hp.read_map(fname)
-        else:
-            cl_aa = self.cl_aa()
-            cl_aa[0] = 0
-            np.random.seed(self.__aseeds__[idx])
-            alm = hp.synalm(cl_aa, lmax=self.lmax,new=True)
-            alpha = hp.alm2map(alm, self.nside)
-            hp.write_map(fname, alpha, dtype=np.float64)
-            return alpha # type: ignore
-    
+     
     def get_aniso_cb_gaussian_lensed_QU(self, idx: int) -> List[np.ndarray]:
         """
         Generate the Q and U Stokes maps after applying cosmic birefringence for the anisotropic model.
@@ -527,19 +605,16 @@ class CMB:
             return hp.read_map(fname, field=[0, 1])
         else:
             spectra = self.get_lensed_spectra(dl=False)
+            spec = {}
+            spec["EE"] = spectra["ee"]
+            spec["BB"] = spectra["bb"]
+            spec["AA"] = self.scale_invariant(self.Acb)
+            spec["AE"] = self.scale_invariant(self.AEcb)
+
             np.random.seed(self.__cseeds__[idx])
-            T, Q, U = hp.synfast(
-                [spectra["tt"], spectra["ee"], spectra["bb"], spectra["te"]],
-                nside=self.nside,
-                new=True,
-            )
-            del T
-            alpha = self.alpha_map(idx)
-            rQ = Q * np.cos(2 * alpha) - U * np.sin(2 * alpha)
-            rU = Q * np.sin(2 * alpha) + U * np.cos(2 * alpha)
-            del (Q, U)
-            hp.write_map(fname, [rQ, rU], dtype=np.float64)
-            return [rQ, rU]
+            Q,U,A = synfast_pol(self.nside,spec)
+            hp.write_map(fname, [Q,U,A], dtype=np.float64)
+            return [Q, U]
     
     def cl_pp(self):
         powers = self.get_power(dl=False)['lens_potential']
@@ -610,26 +685,17 @@ class CMB:
             self.cmbdir,
             f"sims_nside{self.nside}_{idx:03d}.fits",
         )
+        raise NotImplementedError("No real lensed used")
+    
+    def alpha_map(self, idx: int) -> np.ndarray:
+        fname = os.path.join(
+            self.cmbdir,
+            f"sims_nside{self.nside}_{idx:03d}.fits",
+        )
         if os.path.isfile(fname):
-            return hp.read_map(fname, field=[0, 1])
+            return hp.read_map(fname, field=2)
         else:
-            spectra = self.get_unlensed_spectra(dl=False)
-            np.random.seed(self.__cseeds__[idx])
-            alms = hp.synalm(
-                [spectra["tt"], spectra["ee"], spectra["bb"], spectra["te"]],
-                lmax=self.lmax,
-                new=True,
-            )
-            defl = self.grad_phi_alm(idx)
-            geom_info = ('healpix', {'nside':self.nside})
-            Q, U = lenspyx.alm2lenmap_spin([alms[1],alms[2]], defl, 2, geometry=geom_info, verbose=int(self.verbose))
-            alpha = self.alpha_map(idx)
-            rQ = Q * np.cos(2 * alpha) - U * np.sin(2 * alpha)
-            rU = Q * np.sin(2 * alpha) + U * np.cos(2 * alpha)
-            del (Q, U)
-            hp.write_map(fname, [rQ, rU], dtype=np.float64)
-            return [rQ, rU]
-        
+            raise FileNotFoundError("Alpha map not found, you should simulate the QU maps, this will generate the alpha map")
     def get_cb_real_lensed_QU(self, idx: int) -> List[np.ndarray]:
         if self.model == "iso":
             return self.get_iso_const_cb_real_lensed_QU(idx)

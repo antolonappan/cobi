@@ -47,18 +47,17 @@ def latexnames(lib, name, avoid=[]):
 class Sat4Lat:
     
     def __init__(self,libdir,lmin,lmax,latlib,satlib,sat_err,beta):
-        self.libdir = os.path.join(libdir,'Calibration')
         
         latnc = latlib.lat.noise_model
         satnc = satlib.lat.noise_model
         if (latnc == 'NC') and (satnc == 'NC'):
-            self.libdir = os.path.join(libdir,'Calibration')
+            self.libdir = os.path.join(latlib.lat.libdir,'Calibration')
         elif (latnc == 'TOD') and (satnc == 'TOD'):
-            self.libdir = os.path.join(libdir,'Calibration_TOD')
+            self.libdir = os.path.join(latlib.lat.libdir,'Calibration_TOD')
         elif (latnc == 'TOD') and (satnc == 'NC'):
-            self.libdir = os.path.join(libdir,'Calibration_TOD_NC')
+            self.libdir = os.path.join(latlib.lat.libdir,'Calibration_TOD_NC')
         elif (latnc == 'NC') and (satnc == 'TOD'):
-            self.libdir = os.path.join(libdir,'Calibration_NC_TOD')
+            self.libdir = os.path.join(latlib.lat.libdir,'Calibration_NC_TOD')
         else:
             raise ValueError(f"Invalid noise model {latnc} {satnc}")
 
@@ -149,7 +148,7 @@ class Sat4Lat:
         return lp + self.ln_likelihood(theta)
     
     
-    def samples(self,nwalkers=32,nsamples=1000,rerun=True):
+    def samples(self,nwalkers=32,nsamples=1000,rerun=False):
         true = np.array([0.2,0.2,0,0,0.35]) #changed
         fname = os.path.join(self.libdir,f"samples_{nwalkers}_{nsamples}{self.addname}.pkl")
         if os.path.exists(fname) and not rerun:
@@ -163,12 +162,13 @@ class Sat4Lat:
             pl.dump(flat_samples,open(fname,'wb'))
             return flat_samples
 
-    def getdist_samples(self,nwalkers,nsamples, rerun=True):
+    def getdist_samples(self,nwalkers,nsamples, rerun=False,label=None):
         flat_samples = self.samples(nwalkers,nsamples, rerun=rerun)
-        return MCSamples(samples=flat_samples,names = self.__pnames__, labels = self.__plabels__)
+        return MCSamples(samples=flat_samples,names = self.__pnames__, labels = self.__plabels__,label=label)
         
 
-    def plot_getdist(self,nwalkers,nsamples,avoid_sat=False,beta_only=False, rerun=True):
+    def plot_getdist(self,nwalkers,nsamples,avoid_sat=False,beta_only=False, rerun=False):
+    
         flat_samples = self.getdist_samples(nwalkers,nsamples, rerun=rerun)
         if beta_only:
             g = plots.get_single_plotter(width_inch=4)

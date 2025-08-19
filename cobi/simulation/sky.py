@@ -10,9 +10,11 @@ from cobi.simulation import CMB, Foreground, Mask, Noise
 from cobi.utils import Logger, inrad
 from cobi.utils import cli, deconvolveQU
 from cobi.simulation import HILC
+from cobi import sht
 
 from concurrent.futures import ThreadPoolExecutor
 
+NCPUS = os.cpu_count()
 
 class SkySimulation:
     def __init__(
@@ -26,6 +28,7 @@ class SkySimulation:
         beta: float = 0.35,
         mass: float = 1.5,
         Acb: float = 1e-6,
+        AEcb: float = -1.0e-3,
         lensing: bool = True,
         dust_model: int = 10,
         sync_model: int = 5,
@@ -39,6 +42,7 @@ class SkySimulation:
         hilc_bins: int = 10,
         deconv_maps: bool = False,
         fldname_suffix: str = "",
+        sht_backend: str = "healpy",
         verbose: bool = True,
     ):
         """
@@ -96,7 +100,7 @@ class SkySimulation:
         self.Acb = Acb
         self.cb_method = cb_model
         self.beta = beta
-        self.cmb = CMB(libdir, nside, cb_model,beta, mass, Acb, lensing, verbose=self.verbose)
+        self.cmb = CMB(libdir, nside, cb_model,beta, mass, Acb, np.radians(AEcb), lensing, verbose=self.verbose)
         self.foreground = Foreground(libdir, nside, dust_model, sync_model, bandpass, verbose=False)
         self.dust_model = dust_model
         self.sync_model = sync_model
@@ -133,6 +137,12 @@ class SkySimulation:
         self.hilc_bins = hilc_bins
         self.deconv_maps = deconv_maps
         self.__set_alpha__()
+        if sht_backend in ["ducc0", "ducc", "d"]:
+            self.hp = sht.HealpixDUCC(nside=self.nside)
+            self.healpy = False
+        else:
+            self.hp = None
+            self.healpy = True
 
     def __set_mask_fsky__(self, libdir):
         maskobj = Mask(libdir, self.nside, self.__class__.__name__[:3], gal_cut=self.gal_cut, verbose=self.verbose)
@@ -214,26 +224,7 @@ class SkySimulation:
         tube = self.config[band]["opt. tube"]
         fname = os.path.join(self.libdir,'obs', f"sims_a{str(alpha)}_f{fwhm}_t{tube}_b{band}_{idx:03d}.fits")
         return fname
-        
 
-    def saveObsQUs(self, idx: int, apply_mask: bool = True) -> None:
-        mask = self.mask if apply_mask else np.ones_like(self.mask)
-        bands = list(self.config.keys())
-        signal = []
-        for band in bands:
-            fwhm = self.config[band]["fwhm"]
-            alpha = self.get_alpha(idx, band)
-            signal.append(self.obsQUwAlpha(idx, band, fwhm, alpha))
-        noise = self.noise.noiseQU()
-        sky = np.array(signal) + noise
-        
-        if self.deconv_maps:
-            for i in tqdm(range(len(bands)), desc='Deconvolving QUs', unit='band'):
-                sky[i] = deconvolveQU(sky[i], self.config[bands[i]]['fwhm'])
-            
-        for i in tqdm(range(len(bands)), desc="Saving Observed QUs", unit="band"):
-            fname = self.obsQUfname(idx, bands[i])
-            hp.write_map(fname, sky[i] * mask, dtype=np.float64, overwrite=True) # type: ignore
     
     def SaveObsQUs(self, idx: int, apply_mask: bool = True, bands=None) -> None:
 
@@ -276,7 +267,7 @@ class SkySimulation:
         if os.path.isfile(fname):
             return hp.read_map(fname, field=[0, 1]) # type: ignore
         else:
-            self.saveObsQUs(idx)
+            self.SaveObsQUs(idx)
             return hp.read_map(fname, field=[0, 1]) # type: ignore
     
     def checkObsQU(self, idx: int,overwrite=False,what='filesize',bands=False) -> bool:
@@ -319,16 +310,22 @@ class SkySimulation:
             raise ValueError(f"Unknown check {what}. Please use 'filesize' or 'file'.")
 
     
-    def HILC_obsEB(self, idx: int) -> np.ndarray:
+    def HILC_obsEB(self, idx: int, ret=None) -> np.ndarray:
         fnameS = os.path.join(
                 self.libdir,
                 f"obs/hilcEB_N{self.nside}_A{str(self.Acb).replace('.','p')}{'_bp' if self.bandpass else ''}_{idx:03d}.fits",
             )
         fnameN = fnameS.replace('hilcEB','hilcNoise')
         if os.path.isfile(fnameS) and os.path.isfile(fnameN):
-            return hp.read_alm(fnameS, hdu=[1, 2]), hp.read_cl(fnameN)
+            if ret is None:
+                return hp.read_alm(fnameS, hdu=[1, 2]), hp.read_cl(fnameN)
+            elif ret == 'alm':
+                return hp.read_alm(fnameS, hdu=[1, 2])
+            elif ret == 'nl':
+                return hp.read_cl(fnameN)
+            else:
+                raise ValueError(f"Unknown return type {ret}. Please use 'alm' or 'nl'.")
         else:
-            noise = self.noise.noiseQU()
             alms = []
             nalms = []
             bands = list(self.config.keys())
@@ -336,8 +333,12 @@ class SkySimulation:
             for band in tqdm(bands, desc="Computing HILC Observed QUs", unit="band"):
                 fwhm = self.config[band]["fwhm"]
                 alpha = self.config[band]["alpha"]
+                noise = self.noise.noiseQU_freq(idx, band)
                 elm,blm = self.obsQUwAlpha(idx, band, fwhm, alpha, apply_tranf=False, return_alms=True)
-                nelm,nblm = hp.map2alm_spin([noise[i][0],noise[i][1]], 2, lmax=self.cmb.lmax)  
+                if self.healpy:
+                    nelm,nblm = hp.map2alm_spin([noise[0],noise[1]], 2, lmax=self.cmb.lmax)  
+                else:
+                    nelm,nblm = self.hp.map2alm(noise,lmax=self.lmax, nthreads=NCPUS)
                 bl = hp.gauss_beam(inrad(fwhm / 60), lmax=self.cmb.lmax, pol=True)
                 pwf = np.array(hp.pixwin(self.nside, pol=True,))
                 transfe = bl[:, 1] * pwf[1, :]
@@ -358,7 +359,14 @@ class SkySimulation:
             ilc_noise = [hp.alm2cl(ilc_noise[0]), hp.alm2cl(ilc_noise[1])]
             hp.write_alm(fnameS, cleaned, overwrite=True)
             hp.write_cl(fnameN, ilc_noise, overwrite=True)
-            return cleaned,ilc_noise
+            if ret is None:
+                return cleaned, ilc_noise
+            elif ret == 'alm':
+                return cleaned
+            elif ret == 'nl':
+                return ilc_noise
+            else:
+                raise ValueError(f"Unknown return type {ret}. Please use 'alm' or 'nl'.")
             
 
 
@@ -375,6 +383,7 @@ class LATsky(SkySimulation):
         beta: float = 0.35,
         mass: float = 1.5,
         Acb: float = 1e-6,
+        AEcb: float = -1.0e-3,
         lensing: bool = True,
         dust_model: int = 10,
         sync_model: int = 5,
@@ -388,6 +397,7 @@ class LATsky(SkySimulation):
         hilc_bins: int = 10,
         deconv_maps: bool = False,
         fldname_suffix: str = "",
+        sht_backend: str = "healpy",
         verbose: bool = True,
     ):
         super().__init__(
@@ -400,6 +410,7 @@ class LATsky(SkySimulation):
             beta = beta,
             mass = mass,
             Acb = Acb,
+            AEcb = AEcb,
             lensing = lensing,
             dust_model = dust_model,
             sync_model = sync_model,
@@ -413,6 +424,7 @@ class LATsky(SkySimulation):
             hilc_bins = hilc_bins,
             deconv_maps = deconv_maps,
             fldname_suffix = fldname_suffix,
+            sht_backend = sht_backend,
             verbose = verbose,
         )
 

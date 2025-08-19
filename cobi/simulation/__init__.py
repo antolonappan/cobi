@@ -1,4 +1,4 @@
-from .cmb import CMB
+from .cmb import CMB, synfast_pol
 from .fg import Foreground, BandpassInt, HILC
 from .mask import Mask
 from .noise import Noise, NoiseSpectra

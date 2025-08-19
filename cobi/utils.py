@@ -130,3 +130,26 @@ def change_coord(m, coord=['C', 'G']):
     new_ang = rot(*ang)
     new_pix = hp.ang2pix(nside, *new_ang)
     return m[..., new_pix]
+
+
+def slice_alms(teb, lmax_new):
+    """Returns the input teb alms sliced to the new lmax.
+
+    teb(numpy array): input teb alms
+    lmax_new(int): new lmax
+    """
+    nfields = len(teb)
+    lmax = hp.Alm.getlmax(len(teb[0]))
+    if nfields > 3:
+        lmax = nfields
+        nfields = 1
+    if lmax_new > lmax:
+        raise ValueError('lmax_new must be smaller or equal to lmax')
+    elif lmax_new == lmax:
+        return teb
+    else:
+        teb_new = np.zeros((nfields, hp.Alm.getsize(lmax_new)), dtype=teb.dtype)
+        indices_full = hp.Alm.getidx(lmax,*hp.Alm.getlm(lmax_new))
+        indices_new = hp.Alm.getidx(lmax_new,*hp.Alm.getlm(lmax_new))
+        teb_new[:,indices_new] = teb[:,indices_full]
+        return teb_new
