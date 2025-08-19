@@ -143,12 +143,15 @@ def slice_alms(teb, lmax_new):
     if nfields > 3:
         lmax = nfields
         nfields = 1
+        dtype = teb.dtype
+    else:
+        dtype = teb[0].dtype
     if lmax_new > lmax:
         raise ValueError('lmax_new must be smaller or equal to lmax')
     elif lmax_new == lmax:
         return teb
     else:
-        teb_new = np.zeros((nfields, hp.Alm.getsize(lmax_new)), dtype=teb.dtype)
+        teb_new = np.zeros((nfields, hp.Alm.getsize(lmax_new)), dtype=dtype)
         indices_full = hp.Alm.getidx(lmax,*hp.Alm.getlm(lmax_new))
         indices_new = hp.Alm.getidx(lmax_new,*hp.Alm.getlm(lmax_new))
         teb_new[:,indices_new] = teb[:,indices_full]
