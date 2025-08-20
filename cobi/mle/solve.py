@@ -1231,6 +1231,10 @@ class MLE:
 			for ii, freq in enumerate(self.spec.freqs):
 				res.ml[f"Iter {Niter+1}"][freq]         = ang_now[ii+res.ext_par]
 				res.std_fisher[f"Iter {Niter+1}"][freq] = std_now[ii+res.ext_par]
+		# We need to set the foreground params by hand
+		res.ml[f"Iter {Niter+1}"]["As"] = 1.0
+		res.ml[f"Iter {Niter+1}"]["Asd"] = 1.0
+		res.ml[f"Iter {Niter+1}"]["Ad"] = 1.0
 		if np.any( np.isnan(std_now) ):
 			raise StopIteration()
 
