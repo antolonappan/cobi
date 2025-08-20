@@ -14,7 +14,8 @@ rad2arcmin = 180*60/np.pi
 
 class MLE:
 	fit_options = ["alpha", "Ad + alpha", "As + Ad + alpha", "As + Asd + Ad + alpha",
-				   "beta + alpha", "Ad + beta + alpha", "As + Ad + beta + alpha","As + Asd + Ad + beta + alpha"]
+				   "beta + alpha", "Ad + beta + alpha", "As + Ad + beta + alpha","As + Asd + Ad + beta + alpha",
+				   "As + Asd + Ad + beta + alpha + no-model"]
 
 	def __init__(self, libdir, spec_lib, fit,
 				 alpha_per_split=False,
@@ -700,6 +701,8 @@ class MLE:
 			return self.__linear_system_As_Asd_Ad_alpha__(iC, Niter, res)
 		elif self.fit=="As + Asd + Ad + beta + alpha":
 			return self.__linear_system_As_Asd_Ad_beta_alpha__(iC, Niter, res)
+		elif self.fit=="As + Asd + Ad + beta + alpha + no-model":
+			return self.__linear_system_As_Asd_Ad_beta_alpha_nomodel__(iC, Niter, res)
 
 	def __linear_system_alpha__(self, iC, Niter, res):
 		linsys = LinearSystem(self, iC)
@@ -971,16 +974,16 @@ class MLE:
 		# build system matrix and independent term
 		sys_mat  = np.zeros((res.Nvar, res.Nvar), dtype=np.float64)
 		ind_term = np.zeros(res.Nvar, dtype=np.float64)
-		
+
 		# variables ordered as Ad, beta, alpha_i
 		sys_mat[0, 0] = linsys.R[0]                         # Ad - Ad  
 		sys_mat[0, 1] = 2*(linsys.LAMBDA[0] - linsys.mu[0]) # Ad - beta
 		sys_mat[1, 0] = 2*(linsys.LAMBDA[0] - linsys.mu[0])  
 		ind_term[0]   = linsys.N[0]                         # Ad
-		
+
 		sys_mat[1, 1] = 4*(linsys.G[0] + linsys.F[0] - 2*linsys.C[0]) # beta - beta
 		ind_term[1]   = 2*(linsys.O[0] - linsys.P[0])                 # beta
-		
+
 		for ii, band_i in enumerate(self.bands):
 			idx_i = self.inst[band_i]['alpha idx']
 			
@@ -1179,6 +1182,58 @@ class MLE:
 				res.std_fisher[f"Iter {Niter+1}"][freq] = std_now[ii+res.ext_par]
 		if np.any( np.isnan(std_now) ):
 			raise StopIteration()
+
+	def __linear_system_As_Asd_Ad_beta_alpha_nomodel__(self, iC, Niter, res):
+		# I need to set up a "beta + alpha" linear system, so I do that by changing self.fit
+		self.fit = "beta + alpha"
+		linsys = LinearSystem(self, iC)
+		self.fit = "As + Asd + Ad + beta + alpha + no-model" # change back for next iteration
+		linsys.compute_terms()
+		# build system matrix and independent term
+		sys_mat  = np.zeros((res.Nvar, res.Nvar), dtype=np.float64)
+		ind_term = np.zeros(res.Nvar, dtype=np.float64)
+
+		# variables ordered as beta, alpha_i        
+		sys_mat[0, 0] = 4*(linsys.G[0] + linsys.F[0] - 2*linsys.C[0]) # beta - beta
+		ind_term[0]   = 2*(linsys.O[0] - linsys.P[0])                 # beta
+
+		for ii, band_i in enumerate(self.bands):
+			idx_i = self.inst[band_i]['alpha idx']
+
+			# beta - alpha_i
+			b_a = np.sum(linsys.tau_ij[:,ii]) + np.sum(linsys.epsilon_ij[ii,:]) - np.sum(linsys.varphi_ij[:,ii]) - np.sum(linsys.ene_ij[ii,:])
+			sys_mat[0, idx_i+res.ext_par] += 4*b_a
+			sys_mat[idx_i+res.ext_par, 0] += 4*b_a
+
+			ind_term[idx_i+res.ext_par] += 2*(np.sum(linsys.D_ij[:,ii]) - np.sum(linsys.H_ij[ii,:])) # alpha_i
+			for jj, band_j in enumerate(self.bands):
+				idx_j = self.inst[band_j]['alpha idx']
+				# alpha_i - alpha_j terms
+				aux1 = np.sum(linsys.E_ijpq[:, jj, :, ii]) + np.sum(linsys.E_ijpq[:, ii, :, jj])
+				aux2 = np.sum(linsys.B_ijpq[jj, :, ii, :]) + np.sum(linsys.B_ijpq[ii, :, jj, :])
+				aux3 = np.sum(linsys.I_ijpq[jj, :, :, ii]) + np.sum(linsys.I_ijpq[ii, :, :, jj])
+				sys_mat[idx_i+res.ext_par, idx_j+res.ext_par] += 2*( aux1 + aux2 - 2*aux3 )
+
+		# solve Ax=B
+		# ang_now = np.matmul(np.linalg.pinv(sys_mat), ind_term) # risky alternative
+		ang_now = np.linalg.solve(sys_mat, ind_term)
+		cov_now = np.linalg.pinv(sys_mat)
+		std_now = np.sqrt(np.diagonal(cov_now)) 
+		# save results even if something went wrong
+		res.ml[f"Iter {Niter+1}"]         = {"beta":ang_now[0]}
+		res.std_fisher[f"Iter {Niter+1}"] = {"beta":std_now[0]}
+		res.cov_fisher[f"Iter {Niter+1}"] = cov_now
+		if self.alpha_per_split:
+			for ii, band in enumerate(self.bands):
+				res.ml[f"Iter {Niter+1}"][band]         = ang_now[ii+res.ext_par]
+				res.std_fisher[f"Iter {Niter+1}"][band] = std_now[ii+res.ext_par]
+		else:
+			for ii, freq in enumerate(self.spec.freqs):
+				res.ml[f"Iter {Niter+1}"][freq]         = ang_now[ii+res.ext_par]
+				res.std_fisher[f"Iter {Niter+1}"][freq] = std_now[ii+res.ext_par]
+		if np.any( np.isnan(std_now) ):
+			raise StopIteration()
+
 
 	############################################################################## 
 
