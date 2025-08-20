@@ -1254,6 +1254,7 @@ class MLE:
 		converged = False
 		niter     = 0
 		while not converged:
+			print(f"Starting iteration {niter}")
 			cov    = self.build_cov(niter, res)
 			invcov = np.linalg.pinv(cov/self.fsky)
 			try:
