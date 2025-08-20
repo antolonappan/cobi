@@ -140,6 +140,11 @@ class Result:
             self.ml["Iter 0"]         = { 'As':1.0, 'Asd':1.0,  'Ad':1.0, 'beta':beta_ini}
             self.std_fisher["Iter 0"] = { 'As':None,'Asd':None, 'Ad':None,'beta':None }
             self.variables           += 'As, Asd, Ad, beta'
+        elif fit=="As + Asd + Ad + beta + alpha + no-model":
+            ext_par = 1
+            self.ml["Iter 0"]         = { 'As':1.0, 'Asd':1.0,  'Ad':1.0,  'beta':beta_ini}
+            self.std_fisher["Iter 0"] = { 'beta':None }
+            self.variables           += 'beta'
             
         if alpha_per_split:
             self.Nalpha = spec.Nbands
