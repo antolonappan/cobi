@@ -27,7 +27,9 @@ class Mask:
         """
         self.logger = Logger(self.__class__.__name__,verbose)
         self.libdir = libdir
-        os.makedirs(self.libdir, exist_ok=True)
+        self.maskdir = os.path.join(libdir, "Masks")
+        if mpi.rank == 0:
+            os.makedirs(self.maskdir, exist_ok=True)
         self.nside = nside
         self.select = select
         self.apo_scale = apo_scale
@@ -51,10 +53,18 @@ class Mask:
                 raise ValueError(f"Invalid gal_cut value: {gal_cut}, it should be in [0,40,60,70,80,90]")
 
         
-
-
         self.gal_cut = gal_cut
-        self.mask = self.__load_mask__()
+        if apo_scale > 0:
+            maskfname = os.path.join(self.maskdir, f"{select}_G{gal_cut}_N{nside}_apo{apo_scale}_{apo_method}.fits")
+        else:
+            maskfname = os.path.join(self.maskdir, f"{select}_G{gal_cut}_N{nside}.fits")
+        if os.path.isfile(maskfname):
+            self.mask = hp.read_map(maskfname,dtype=np.float64)
+        else:
+            self.mask = self.__load_mask__()
+            if mpi.rank == 0:
+                hp.write_map(maskfname, self.mask, dtype=np.float64)
+        mpi.barrier()
         self.fsky = self.__calc_fsky__()
 
     def __mask_obj__(self, select: str):

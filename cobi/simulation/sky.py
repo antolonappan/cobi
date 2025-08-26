@@ -442,6 +442,7 @@ class SATsky(SkySimulation):
         beta: float = 0.35,
         mass: float = 1.5,
         Acb: float = 1e-6,
+        AEcb: float = -1.0e-3,
         lensing: bool = True,
         dust_model: int = 10,
         sync_model: int = 5,
@@ -455,6 +456,7 @@ class SATsky(SkySimulation):
         hilc_bins: int = 10,
         deconv_maps: bool = False,
         fldname_suffix: str = "",
+        sht_backend: str = "healpy",
         verbose: bool = True,
     ):
         super().__init__(
@@ -467,6 +469,7 @@ class SATsky(SkySimulation):
             beta = beta,
             mass = mass,
             Acb = Acb,
+            AEcb=AEcb,
             lensing = lensing,
             dust_model = dust_model,
             sync_model = sync_model,
@@ -480,6 +483,7 @@ class SATsky(SkySimulation):
             hilc_bins = hilc_bins,
             deconv_maps = deconv_maps,
             fldname_suffix = fldname_suffix,
+            sht_backend = sht_backend,
             verbose = verbose,
         )
 
