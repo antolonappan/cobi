@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import pymaster as nmt
 from tqdm.auto import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import emcee
 
 from cobi.simulation import LATsky, Mask
 from cobi.utils import cli, slice_alms
@@ -207,15 +208,19 @@ class QE:
             pl.dump(nalm, open(fname, 'wb'))
             return nalm
 
-    def __qcl__(self,idx, rm_bias=False):
+    def __qcl__(self,idx, rm_bias=False, rdn0=False):
+        if rdn0:
+            N0 = self.RDN0(idx)
+        else:
+            N0 = self.norm
         if rm_bias:
-            return (cs.utils.alm2cl(self.recon_lmax,self.qlm(idx))/self.filter.fsky) - self.mean_field_cl() - self.norm
+            return (cs.utils.alm2cl(self.recon_lmax,self.qlm(idx))/self.filter.fsky) - self.mean_field_cl() - N0
         else:
             return (cs.utils.alm2cl(self.recon_lmax,self.qlm(idx))/self.filter.fsky)
         
-    def qcl(self,idx,rm_bias=False,binned=False):
+    def qcl(self,idx,rm_bias=False,rdn0=False,binned=False):
         if binned:
-            cl = self.__qcl__(idx,rm_bias=rm_bias)
+            cl = self.__qcl__(idx,rm_bias=rm_bias,rdn0=rdn0)
             bcl = self.binner.bin_cell(cl[:self.lmax_bin+1])
             return bcl
         else:
@@ -429,3 +434,83 @@ class QE:
             n0cl = cs.utils.alm2cl(self.recon_lmax,glm)/(2*self.filter.fsky) # type: ignore
             pl.dump(n0cl,open(fname,'wb'))
             return n0cl
+    
+    def qcl_stat(self,rm_bias=True,rdn0=False,binned=True):
+        st = ''
+        if rm_bias:
+            st += '_rb'
+        if rdn0:
+            st += '_rdn0'
+        if binned:
+            st += '_b'
+        fname = os.path.join(self.basedir, f'qcl_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}{st}.pkl')
+        if os.path.isfile(fname):
+            return pl.load(open(fname,'rb'))
+        else:
+            cl = []
+            for i in tqdm(range(200),desc='Computing cl statistics',unit='sim'):
+                cl.append(self.qcl(i,rm_bias=rm_bias,rdn0=rdn0,binned=binned))
+            cl = np.array(cl)
+            pl.dump(cl,open(fname,'wb'))
+            return cl
+        
+    
+class AcbLikelihood:
+
+    def __init__(self, qelib: QE, lmin=2,lmax=50):
+        self.qe = qelib
+        self.lmax = lmax
+        qcl = self.qe.qcl_stat()*1e7
+        self.binner = self.qe.binner
+        self.b = self.qe.b
+        self.sel = np.where((self.b >= lmin) & (self.b <= lmax))[0]
+        self.mean = qcl.mean(axis=0)[self.sel]
+        self.cov = np.cov(qcl.T)[self.sel][:,self.sel]
+        self.std = qcl.std(axis=0)[self.sel]
+        self.icov = np.linalg.inv(self.cov)
+
+    def theory(self, Acb):
+        l = np.arange(self.qe.lmax_bin+1)
+        cl =  Acb * 2 * np.pi / ( l**2 + l + 1e-30)*1e7
+        cl[0], cl[1] = 0, 0
+        return self.binner.bin_cell(cl)[self.sel]
+    
+    def plot(self,Acb):
+        plt.figure(figsize=(6,6))
+        plt.errorbar(self.b[self.sel], self.mean, yerr=self.std[self.sel], fmt='o')
+        plt.loglog(self.b[self.sel], self.theory(Acb), label='Theory')
+        plt.xlabel(r'$l$')
+        plt.ylabel(r'$C_l^{\mathrm{BB}}$')
+        plt.title(r'$C_l^{\mathrm{BB}}$ vs $l$')
+        plt.grid()
+        plt.legend()
+        plt.show()
+
+    def ln_prior(self, Acb):
+        if 0 < Acb < 1e-5:
+            return 0.0
+        else:
+            return -np.inf
+        
+    def ln_likelihood(self, Acb):
+        theory = self.theory(Acb)
+        delta = theory - self.mean
+        chisq = (delta/self.std)**2
+        return -0.5 * chisq.sum()
+
+    def ln_posterior(self, Acb):
+        lp = self.ln_prior(Acb)
+        if not np.isfinite(lp):
+            return -np.inf
+        return lp + self.ln_likelihood(Acb)
+    
+    def sampler(self,nwalkers=32,nsamples=1000):
+        pos = np.array([3.5e-6]) * np.random.randn(nwalkers, 1)
+        sampler = emcee.EnsembleSampler(nwalkers, 1, self.ln_posterior)
+        sampler.run_mcmc(pos, nsamples, progress=True)
+        return sampler
+
+    def samples(self, nwalkers=100, nsamples=2000, discard=300):
+        sampler = self.sampler(nwalkers=nwalkers, nsamples=nsamples)
+        flat_samples = sampler.get_chain(discard=discard, thin=15, flat=True)
+        return flat_samples

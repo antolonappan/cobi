@@ -22,7 +22,7 @@ export OMP_NUM_THREADS=4
 
 #mpirun -np $SLURM_NTASKS python sim.py -qe
 
-for IDX in $(seq 11 199); do
+for IDX in $(seq 63 199); do
     echo "=== Starting RDN0 for sim ${IDX} ==="
     mpirun -np $SLURM_NTASKS python sim.py -rdn0 -idx $IDX
 done
