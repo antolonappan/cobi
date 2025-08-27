@@ -2,12 +2,12 @@
 #SBATCH --qos=debug
 #SBATCH --constraint=cpu
 #SBATCH --account=mp107d
-#SBATCH --nodes=2
+##SBATCH --nodes=2
 #SBATCH --ntasks=100
 ##SBATCH --cpus-per-task=4
 #SBATCH -J SOLAT
-#SBATCH -o socal.out
-#SBATCH -e socal.err
+#SBATCH -o so.out
+#SBATCH -e so.err
 #SBATCH --time=00:30:00
 #SBATCH --mail-type=begin,end,fail
 #SBATCH --mail-user=alonappan@ucsd.edu
@@ -21,4 +21,8 @@ export OMP_NUM_THREADS=4
 #mpirun -np $SLURM_NTASKS python sim.py -cinv
 
 #mpirun -np $SLURM_NTASKS python sim.py -qe
-mpirun -np $SLURM_NTASKS python sim.py -rdn0
+
+for IDX in $(seq 11 199); do
+    echo "=== Starting RDN0 for sim ${IDX} ==="
+    mpirun -np $SLURM_NTASKS python sim.py -rdn0 -idx $IDX
+done

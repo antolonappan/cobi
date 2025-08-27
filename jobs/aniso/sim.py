@@ -12,6 +12,7 @@ parser.add_argument('-sim', action='store_true', help='Run the simulation loop')
 parser.add_argument('-cinv', action='store_true', help='Run the CINV filtering')
 parser.add_argument('-qe', action='store_true', help='Run the QE reconstruction')
 parser.add_argument('-rdn0', action='store_true', help='Run the RDN0 reconstruction')
+parser.add_argument('-idx', type=int, default=0, help='Job index for array jobs')
 args = parser.parse_args()
 
 dir = '/global/cfs/cdirs/sobs/cosmic_birefringence/v1'
@@ -39,7 +40,7 @@ if args.cinv:
 if args.qe:
     mask = Mask(latsky.basedir, latsky.nside,'LATxGAL', 2, gal_cut=0.8)
     filt = FilterEB(latsky, mask, lmax=3000, sht_backend='d')
-    qe = QE(filt,100,3000,2048)
+    qe = QE(filt,100,2000,2000)
     for i in jobs[mpi.rank::mpi.size]:
         null = qe.qlm(i)
     mpi.barrier()
@@ -47,7 +48,6 @@ if args.qe:
 if args.rdn0:
     mask = Mask(latsky.basedir, latsky.nside,'LATxGAL', 2, gal_cut=0.8)
     filt = FilterEB(latsky, mask, lmax=3000, sht_backend='d')
-    qe = QE(filt,100,3000,2048)
-    for i in range(2):
-        null = qe.RDN0_mpi(i)
+    qe = QE(filt,100,2000,2000)
+    null = qe.RDN0_mpi(args.idx)
     mpi.barrier()

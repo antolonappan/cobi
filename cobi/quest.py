@@ -4,6 +4,7 @@ import numpy as np
 import healpy as hp
 import pickle as pl
 import matplotlib.pyplot as plt
+import pymaster as nmt
 from tqdm.auto import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -115,7 +116,7 @@ class FilterEB:
         return E,B
 
 
-    def plot_cinv(self,idx):
+    def plot_cinv(self,idx,lmin=2,lmax=3000):
         """
         plot the cinv filtered Cls for a given idx
 
@@ -129,6 +130,7 @@ class FilterEB:
         plt.figure(figsize=(4,4))
         plt.loglog(cle,label='Cinv E mode')
         plt.loglog(1/(self.cl_len[1,:len(ne)]  + ne), label='1/(S+N)')
+        plt.xlim(lmin,lmax)
         plt.legend()
 
 
@@ -138,7 +140,7 @@ class FilterEB:
     
 
 class QE:
-    def __init__(self, filter: FilterEB, lmin: int, lmax: int, recon_lmax: int, norm_nsim=100):
+    def __init__(self, filter: FilterEB, lmin: int, lmax: int, recon_lmax: int, norm_nsim=100, nlb=2, lmax_bin=100):
         self.basedir = os.path.join(filter.sky.libdir, 'qe')
         self.recdir = os.path.join(self.basedir, f'reco_min{lmin}_max{lmax}_rmax{recon_lmax}')
         self.rdn0dir = os.path.join(self.basedir, f'rdn0_min{lmin}_max{lmax}_rmax{recon_lmax}')
@@ -154,6 +156,9 @@ class QE:
         self.cl_len = filter.cl_len
         self.norm_nsim = norm_nsim
         self.norm = self.__norm__
+        self.lmax_bin = lmax_bin
+        self.binner = nmt.NmtBin.from_lmax_linear(lmax_bin,nlb)
+        self.b = self.binner.get_effective_ells()
        
 
 
@@ -197,14 +202,24 @@ class QE:
             return pl.load(open(fname, 'rb'))
         else:
             E,B = self.filter.cinv_EB(idx)
-            alm = cs.rec_rot.qeb(self.recon_lmax,self.lmin,self.lmax,self.cl_len[1,:self.lmax+1],E,B)
+            alm = cs.rec_rot.qeb(self.recon_lmax,self.lmin,self.lmax,self.cl_len[1,:self.lmax+1],E[:self.lmax+1,:self.lmax+1],B[:self.lmax+1,:self.lmax+1])
             nalm = alm * self.norm[:,None]
             pl.dump(nalm, open(fname, 'wb'))
             return nalm
 
-    def qcl(self,idx):
-        return (cs.utils.alm2cl(self.recon_lmax,self.qlm(idx))/self.filter.fsky) - self.mean_field_cl() - self.norm
-    
+    def __qcl__(self,idx, rm_bias=False):
+        if rm_bias:
+            return (cs.utils.alm2cl(self.recon_lmax,self.qlm(idx))/self.filter.fsky) - self.mean_field_cl() - self.norm
+        else:
+            return (cs.utils.alm2cl(self.recon_lmax,self.qlm(idx))/self.filter.fsky)
+        
+    def qcl(self,idx,rm_bias=False,binned=False):
+        if binned:
+            cl = self.__qcl__(idx,rm_bias=rm_bias)
+            bcl = self.binner.bin_cell(cl[:self.lmax_bin+1])
+            return bcl
+        else:
+            return self.__qcl__(idx,rm_bias=rm_bias)
 
     def mean_field(self):
         fname = os.path.join(self.basedir, f'mf100_fsky{self.filter.fsky:.2f}.pkl')
@@ -402,11 +417,11 @@ class QE:
             glm1 = cs.rec_rot.qeb(self.recon_lmax,self.lmin,self.lmax,
                                        self.cl_len[1,:self.lmax+1],
                                        E1[:self.lmax+1,:self.lmax+1],
-                                       B2[:self.lmax+1,:self.lmax+1]) - self.mean_field()
+                                       B2[:self.lmax+1,:self.lmax+1]) 
             glm2 = cs.rec_rot.qeb(self.recon_lmax,self.lmin,self.lmax,
                                         self.cl_len[1,:self.lmax+1],
                                         E2[:self.lmax+1,:self.lmax+1],
-                                        B1[:self.lmax+1,:self.lmax+1]) - self.mean_field()
+                                        B1[:self.lmax+1,:self.lmax+1]) 
             glm1 *= self.norm[:,None]
             glm2 *= self.norm[:,None]
             
