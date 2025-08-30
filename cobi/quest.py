@@ -115,6 +115,23 @@ class FilterEB:
             E,B = pl.load(open(fname,'rb'))
         
         return E,B
+    
+    def check_file_exist(self):
+        missing = []
+        file_err = []
+        for idx in tqdm(range(300),desc='Checking cinv files'):
+            fsky = f"{self.fsky:.2f}".replace('.','p')
+            fname = os.path.join(self.lib_dir,f"cinv_EB_{idx:04d}_fsky_{fsky}.pkl")
+            if not os.path.isfile(fname):
+                missing.append(idx)
+            else:
+                try:
+                    E,B = pl.load(open(fname,'rb'))
+                except:
+                    file_err.append(idx)
+        print(f"Total missing files: {len(missing)}")
+        print(f"Total file errors: {len(file_err)}")
+        return missing, file_err
 
 
     def plot_cinv(self,idx,lmin=2,lmax=3000):
@@ -207,6 +224,14 @@ class QE:
             nalm = alm * self.norm[:,None]
             pl.dump(nalm, open(fname, 'wb'))
             return nalm
+        
+    def check_file_exist(self):
+        missing = []
+        for idx in range(300):
+            fname = os.path.join(self.recdir, f'qlm_fsky{self.filter.fsky:.2f}_{idx:04d}.pkl')
+            if not os.path.isfile(fname):
+                missing.append(idx)
+        return missing
 
     def __qcl__(self,idx, rm_bias=False, rdn0=False):
         if rdn0:
@@ -457,10 +482,10 @@ class QE:
     
 class AcbLikelihood:
 
-    def __init__(self, qelib: QE, lmin=2,lmax=50):
+    def __init__(self, qelib: QE, lmin=2,lmax=50,rdn0=False,simple_chi=False):
         self.qe = qelib
         self.lmax = lmax
-        qcl = self.qe.qcl_stat()*1e7
+        qcl = self.qe.qcl_stat(rdn0=rdn0)*1e7
         self.binner = self.qe.binner
         self.b = self.qe.b
         self.sel = np.where((self.b >= lmin) & (self.b <= lmax))[0]
@@ -468,6 +493,7 @@ class AcbLikelihood:
         self.cov = np.cov(qcl.T)[self.sel][:,self.sel]
         self.std = qcl.std(axis=0)[self.sel]
         self.icov = np.linalg.inv(self.cov)
+        self.simple_chi = simple_chi
 
     def theory(self, Acb):
         l = np.arange(self.qe.lmax_bin+1)
@@ -495,8 +521,11 @@ class AcbLikelihood:
     def ln_likelihood(self, Acb):
         theory = self.theory(Acb)
         delta = theory - self.mean
-        chisq = (delta/self.std)**2
-        return -0.5 * chisq.sum()
+        if self.simple_chi:
+            chisq = (delta/self.std)**2
+            return -0.5 * chisq.sum()
+        else:
+            return -0.5 * (delta @ self.icov @ delta)
 
     def ln_posterior(self, Acb):
         lp = self.ln_prior(Acb)

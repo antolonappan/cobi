@@ -203,7 +203,7 @@ class SkySimulation:
     def obsQUwAlpha(
         self, idx: int, band: str, fwhm: float, alpha: float, apply_tranf: bool = True, return_alms: bool = False
     ) -> np.ndarray:
-        signal = self.signalOnlyQU(idx, band)
+        signal = self.signalOnlyQU(idx, band)*self.mask
         E, B = hp.map2alm_spin(signal, 2, lmax=self.cmb.lmax)
         Elm = (E * np.cos(inrad(2 * alpha))) - (B * np.sin(inrad(2 * alpha)))
         Blm = (E * np.sin(inrad(2 * alpha))) + (B * np.cos(inrad(2 * alpha)))
@@ -216,7 +216,7 @@ class SkySimulation:
         if return_alms:
             return np.array([Elm, Blm])
         else:
-            return hp.alm2map_spin([Elm, Blm], self.nside, 2, lmax=self.cmb.lmax)
+            return hp.alm2map_spin([Elm, Blm], self.nside, 2, lmax=self.cmb.lmax)*self.mask
 
     def obsQUfname(self, idx: int, band: str) -> str:
         alpha = self.config[band]["alpha"]
@@ -333,11 +333,13 @@ class SkySimulation:
             for band in tqdm(bands, desc="Computing HILC Observed QUs", unit="band"):
                 fwhm = self.config[band]["fwhm"]
                 alpha = self.config[band]["alpha"]
-                noise = self.noise.noiseQU_freq(idx, band)
-                elm,blm = self.obsQUwAlpha(idx, band, fwhm, alpha, apply_tranf=False, return_alms=True)
+                noise = hp.ud_grade(self.noise.noiseQU_freq(idx, band),self.nside)*self.mask
+                QU = self.obsQUwAlpha(idx, band, fwhm, alpha, apply_tranf=False, return_alms=False)
                 if self.healpy:
+                    elm, blm = hp.map2alm_spin(QU, 2, lmax=self.cmb.lmax)
                     nelm,nblm = hp.map2alm_spin([noise[0],noise[1]], 2, lmax=self.cmb.lmax)  
                 else:
+                    elm, blm = self.hp.map2alm(QU, lmax=self.lmax, nthreads=NCPUS)
                     nelm,nblm = self.hp.map2alm(noise,lmax=self.lmax, nthreads=NCPUS)
                 bl = hp.gauss_beam(inrad(fwhm / 60), lmax=self.cmb.lmax, pol=True)
                 pwf = np.array(hp.pixwin(self.nside, pol=True,))

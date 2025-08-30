@@ -19,7 +19,7 @@ dir = '/global/cfs/cdirs/sobs/cosmic_birefringence/v1'
 alpha = [-0.1,-0.1,0.2,0.2,.15,.15]
 #alpha = [0,0,0,0,0,0]
 alpha_err = 0.1
-latsky = LATsky(dir, nside=1024, cb_model='aniso',Acb=4.0e-6, AEcb=-1.0e-3,lensing=False,alpha=alpha,alpha_err=alpha_err,nsplits=1)
+latsky = LATsky(dir, nside=1024, cb_model='aniso',Acb=4.0e-6, AEcb=-1.0e-3,lensing=False,alpha=alpha,alpha_err=alpha_err,nsplits=1,noise_model='TOD')
 
 start_i= 0
 end_i = 300
@@ -32,14 +32,14 @@ if args.sim:
 
 if args.cinv:
     mask = Mask(latsky.basedir, latsky.nside,'LATxGAL', 2, gal_cut=0.8)
-    filt = FilterEB(latsky, mask, lmax=3000, sht_backend='d')
+    filt = FilterEB(latsky, mask, lmax=2100, sht_backend='d')
     for i in jobs[mpi.rank::mpi.size]:
         null = filt.cinv_EB(i)
     mpi.barrier()
 
 if args.qe:
     mask = Mask(latsky.basedir, latsky.nside,'LATxGAL', 2, gal_cut=0.8)
-    filt = FilterEB(latsky, mask, lmax=3000, sht_backend='d')
+    filt = FilterEB(latsky, mask, lmax=2100, sht_backend='d')
     qe = QE(filt,100,2000,2000)
     for i in jobs[mpi.rank::mpi.size]:
         null = qe.qlm(i)
@@ -47,7 +47,7 @@ if args.qe:
 
 if args.rdn0:
     mask = Mask(latsky.basedir, latsky.nside,'LATxGAL', 2, gal_cut=0.8)
-    filt = FilterEB(latsky, mask, lmax=3000, sht_backend='d')
+    filt = FilterEB(latsky, mask, lmax=2100, sht_backend='d')
     qe = QE(filt,100,2000,2000)
     null = qe.RDN0_mpi(args.idx)
     mpi.barrier()
