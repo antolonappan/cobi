@@ -219,7 +219,7 @@ class CMB:
         spectra = ISO_TD_SPECTRA.data[m]
         eb = np.zeros(self.lmax + 1)
         eb[2:] = spectra[:self.lmax + 1 - 2, 5]
-        return self.__dl2cl__(eb,unit_only=not dl)  # type: ignore
+        return self.__dl2cl__(eb,unit_only= dl)  # type: ignore
 
     def __td_tb__(self,dl=True) -> np.ndarray:
         ISO_TD_SPECTRA.directory = self.basedir
@@ -227,7 +227,7 @@ class CMB:
         spectra = ISO_TD_SPECTRA.data[m]
         tb = np.zeros(self.lmax + 1)
         tb[2:] = spectra[:self.lmax + 1 - 2, 6]
-        return self.__dl2cl__(tb,unit_only=not dl)      
+        return self.__dl2cl__(tb,unit_only= dl)      
         
     def compute_powers(self) -> Dict[str, Any]:
         """
@@ -464,7 +464,12 @@ class CMB:
         The method applies a rotation by `alpha` degrees to the E and B mode spectra to account for cosmic birefringence.
         """
 
-        powers = self.get_lensed_spectra(dl=dl) 
+        powers = self.get_lensed_spectra(dl=dl)
+        if beta == 0.0:
+            if self.beta is None:
+                pass
+            else:
+                beta = self.beta
         pow = {}
         pow["tt"] = powers["tt"]
         pow["te"] = powers["te"] * np.cos(2 * inrad(beta))  # type: ignore

@@ -180,3 +180,165 @@ class Sat4Lat:
             g = plots.get_subplot_plotter()
             g.triangle_plot([flat_samples], names, filled=True,title_limit=1)
 
+
+class Sat4Lat_AmplitudeFit:
+    """
+    Modified class to fit for an EB amplitude parameter (A_EB) and 
+    miscalibration angles (alpha) instead of the birefringence angle (beta).
+    """
+    def __init__(self, libdir, lmin, lmax, latlib, satlib, sat_err, temp_model,temp_value):
+        
+        latnc = latlib.lat.noise_model
+        satnc = satlib.lat.noise_model
+        if (latnc == 'NC') and (satnc == 'NC'):
+            self.libdir = os.path.join(latlib.lat.libdir, f"CalibrationTD_AmpFit_{temp_model}_{temp_value}")
+        elif (latnc == 'TOD') and (satnc == 'TOD'):
+            self.libdir = os.path.join(latlib.lat.libdir, f"Calibration_TODTD_AmpFit_{temp_model}_{temp_value}")
+        # ... (add other elif conditions as in your original code) ...
+        else:
+            raise ValueError(f"Invalid noise model {latnc} {satnc}")
+
+        os.makedirs(self.libdir, exist_ok=True)
+        self.latlib = latlib
+        self.sat_err = sat_err
+        self.binner = satlib.binInfo
+        self.Lmax = satlib.lmax
+        self.__select__ = selector(satlib, lmin, lmax)
+        self.addname = "bp" if latlib.lat.bandpass else ''
+
+        self.lat_mean, self.lat_std = self.calc_mean_std(latlib, 'LAT')
+        self.sat_mean, self.sat_std = self.calc_mean_std(satlib, 'SAT')
+        if temp_model == 'iso':
+            cmb = CMB(libdir,satlib.lat.nside,beta=temp_value)
+            self.eb_template_unbinned = cmb.get_cb_lensed_spectra(dl=False)['eb']
+        elif temp_model == 'iso_td':
+            cmb = CMB(libdir,satlib.lat.nside,model=temp_model,mass=temp_value)
+            self.eb_template_unbinned = cmb.get_cb_lensed_mass_spectra(dl=False)['eb']
+        else:
+            raise ValueError("only 'iso' and 'iso_td' allowed")
+        
+        ### MODIFIED ###
+        # Store the binned version of the provided EB template.
+        # The template should be the C_l^EB spectrum (not D_l).
+        self.binned_template = self.binner.bin_cell(self.eb_template_unbinned[:self.Lmax+1])[self.__select__]
+        
+        # We still need the lensed EE and BB for the alpha calculation
+        self.cl_len = CMB(libdir, satlib.lat.nside, beta=0.0).get_lensed_spectra(dl=False)
+
+        self.lmin = lmin
+        self.lmax = lmax
+
+        ### MODIFIED ###
+        # Updated parameter names and labels for A_EB instead of beta
+        self.__pnames__ = paranames(latlib, 'LAT') + paranames(satlib, 'SAT') + ['A_EB']
+        self.__plabels__ = latexnames(latlib, 'LAT') + latexnames(satlib, 'SAT') + [r'A_{EB}']
+
+    def calc_mean_std(self, lib, name):
+        sp = get_sp(lib, self.Lmax)
+        if name in ['LAT', 'SAT']:
+            return (sp.mean(axis=0)[:, self.__select__],
+                    sp.std(axis=0)[:, self.__select__])
+        else:
+            raise ValueError(f"Invalid name {name}")
+    
+    def plot_spectra(self, tele):
+        plt.figure(figsize=(4, 4))
+        if tele == 'LAT' and self.latlib is not None:
+            for i in range(2):
+                plt.loglog(self.binner.get_effective_ells()[self.__select__], self.lat_mean[i])
+        elif tele == 'SAT':
+            for i in range(2):
+                plt.loglog(self.binner.get_effective_ells()[self.__select__], self.sat_mean[i])
+        else:
+            raise ValueError(f"Invalid telescope {tele}")
+    
+    def theory_alpha(self, alpha_array):
+        ### MODIFIED ###
+        # This function now *only* calculates the effect of the miscalibration angle alpha.
+        # It's kept separate for clarity in the chisq function.
+        alpha_array = np.asarray(alpha_array)
+        # The EB spectrum induced by E-B mixing from a miscalibration angle alpha is sin(4*alpha)*(C_l^EE - C_l^BB)/2
+        th = 0.5 * (self.cl_len["ee"] - self.cl_len["bb"])[:, np.newaxis] * np.sin(np.deg2rad(4 * alpha_array))
+        return np.apply_along_axis(lambda th_slice: self.binner.bin_cell(th_slice[:self.Lmax+1])[self.__select__], 0, th).T
+
+    def chisq(self, theta):
+        ### MODIFIED ###
+        # The parameters in theta are now the alphas and A_EB
+        alpha_lat, alpha_sat, A_EB = np.array(theta[:2]), np.array(theta[2:4]), theta[-1]
+
+        # The theoretical model is now the sum of two parts:
+        # 1. The birefringence signal: A_EB * template
+        # 2. The miscalibration signal: calculated from alpha
+        birefringence_model =  self.binned_template/A_EB
+
+        # Calculate chi-squared for SAT
+        sat_miscal_model = self.theory_alpha(alpha_sat)
+        sat_total_model = birefringence_model + sat_miscal_model
+        sat_chi = np.sum(((self.sat_mean - sat_total_model) / self.sat_std)**2)
+        
+        # Calculate chi-squared for LAT
+        lat_miscal_model = self.theory_alpha(alpha_lat)
+        lat_total_model = birefringence_model + lat_miscal_model
+        lat_chi = np.sum(((self.lat_mean - lat_total_model) / self.lat_std)**2)
+
+        return sat_chi + lat_chi
+
+    def lnprior(self, theta):
+        sigma = self.sat_err
+        ### MODIFIED ###
+        # Unpack A_EB instead of beta
+        alphalat, alphasat, A_EB = np.array(theta[:2]), np.array(theta[2:4]), theta[-1]
+
+        lnp = -0.5 * (alphasat - 0)**2 / sigma**2 - np.log(sigma * np.sqrt(2 * np.pi))
+        
+        ### MODIFIED ###
+        # Set a flat prior for A_EB. You can change the range [-1, 1] as needed.
+        if np.all(alphalat > -0.5) and np.all(alphalat < 0.5) and 0 < A_EB < 2.0:
+            return np.sum(lnp)
+        return -np.inf
+
+    def ln_likelihood(self, theta):
+        return -0.5 * self.chisq(theta)
+
+    def ln_prob(self, theta):
+        lp = self.lnprior(theta)
+        if not np.isfinite(lp):
+            return -np.inf
+        return lp + self.ln_likelihood(theta)
+    
+    def samples(self, nwalkers=32, nsamples=1000, rerun=False):
+        ### MODIFIED ###
+        # Update the 'true' values for the MCMC initialization.
+        # Assuming true alphas are ~0 and true A_EB is, for example, 0.3
+        true = np.array([0.2, 0.2, 0, 0, 0.3]) 
+        
+        fname = os.path.join(self.libdir, f"samples_{nwalkers}_{nsamples}{self.addname}.pkl")
+        if os.path.exists(fname) and not rerun:
+            return pl.load(open(fname, 'rb'))
+        else:
+            ndim = len(true)
+            pos = true + 1e-3 * np.random.randn(nwalkers, ndim)
+            sampler = emcee.EnsembleSampler(nwalkers, ndim, self.ln_prob, threads=4)
+            sampler.run_mcmc(pos, nsamples, progress=True)
+            flat_samples = sampler.get_chain(discard=100, thin=15, flat=True)
+            pl.dump(flat_samples, open(fname, 'wb'))
+            return flat_samples
+
+    def getdist_samples(self, nwalkers, nsamples, rerun=False, label=None):
+        flat_samples = self.samples(nwalkers, nsamples, rerun=rerun)
+        return MCSamples(samples=flat_samples, names=self.__pnames__, labels=self.__plabels__, label=label)
+        
+    def plot_getdist(self, nwalkers, nsamples, avoid_sat=False, aeb_only=False, rerun=False):
+        ### MODIFIED ###
+        # Added an 'aeb_only' option for convenience, similar to 'beta_only'
+        flat_samples = self.getdist_samples(nwalkers, nsamples, rerun=rerun)
+        if aeb_only:
+            g = plots.get_single_plotter(width_inch=4)
+            g.plot_1d(flat_samples, 'A_EB', title_limit=1)
+        else:
+            names = self.__pnames__
+            if avoid_sat:
+                names = [item for item in names if 'SAT' not in item]
+            g = plots.get_subplot_plotter()
+            g.triangle_plot([flat_samples], names, filled=True, title_limit=1)
+
