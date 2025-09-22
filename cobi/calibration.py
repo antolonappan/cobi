@@ -9,7 +9,7 @@ import pickle as pl
 import emcee
 from getdist import plots, MCSamples
 import matplotlib.pyplot as plt
-
+from scipy.optimize import minimize
 
 def selector(lib,lmin,lmax,):
     b = lib.binInfo.get_effective_ells()
@@ -282,6 +282,19 @@ class Sat4Lat_AmplitudeFit:
         lat_chi = np.sum(((self.lat_mean - lat_total_model) / self.lat_std)**2)
 
         return sat_chi + lat_chi
+    
+    def MLE(self,Aeb):
+        
+        initial_guess = np.array([0.2, 0.2, 0.0, 0.0, Aeb])  # [alpha_lat1, alpha_lat2, alpha_sat1, alpha_sat2, A_EB]
+
+        result = minimize(self.chisq, initial_guess, method='Nelder-Mead')
+
+        if result.success:
+            print("MLE optimization successful.")
+            print("Optimized parameters:", result.x)
+            print("Minimum chi-squared:", result.fun)
+        else:
+            raise RuntimeError("MLE optimization failed.")
 
     def lnprior(self, theta):
         sigma = self.sat_err
@@ -306,7 +319,7 @@ class Sat4Lat_AmplitudeFit:
             return -np.inf
         return lp + self.ln_likelihood(theta)
     
-    def samples(self, nwalkers=32, nsamples=1000, rerun=False):
+    def samples(self, nwalkers=32, nsamples=1000, rerun=True):
         ### MODIFIED ###
         # Update the 'true' values for the MCMC initialization.
         # Assuming true alphas are ~0 and true A_EB is, for example, 0.3
@@ -320,7 +333,7 @@ class Sat4Lat_AmplitudeFit:
             pos = true + 1e-3 * np.random.randn(nwalkers, ndim)
             sampler = emcee.EnsembleSampler(nwalkers, ndim, self.ln_prob, threads=4)
             sampler.run_mcmc(pos, nsamples, progress=True)
-            flat_samples = sampler.get_chain(discard=100, thin=15, flat=True)
+            flat_samples = sampler.get_chain(discard=200, thin=15, flat=True)
             pl.dump(flat_samples, open(fname, 'wb'))
             return flat_samples
 
