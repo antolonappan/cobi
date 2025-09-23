@@ -287,11 +287,12 @@ class MLE:
 	def C_fgxfg(self, EiEj, BiBj, EiBj, BiEj):  
 		lmax = self.spec.lmax
 		ell  = np.arange(0, lmax+1, 1)
+		f    = 0.0 if ('no-model' in self.fit) else 1.0
 		##################### remove EB from T1, T2, T3
 		# synch * synch or dust * dust
 		Tfg = np.zeros((4, self.Nbands*(self.Nbands-self.avoid), self.Nbands*(self.Nbands-self.avoid), lmax+1), dtype=np.float64)
 		#(1s)
-		Tfg[0,:,:,:] = (EiEj[self.MNi,self.MNp,:]*BiBj[self.MNj,self.MNq,:] + EiBj[self.MNi,self.MNq,:]*BiEj[self.MNj,self.MNp,:])/(2*ell+1)
+		Tfg[0,:,:,:] = (EiEj[self.MNi,self.MNp,:]*BiBj[self.MNj,self.MNq,:] + f*EiBj[self.MNi,self.MNq,:]*BiEj[self.MNj,self.MNp,:])/(2*ell+1)
 		#(2s)
 		Tfg[1,:,:,:] = BiBj[self.MNi,self.MNp,:]*EiEj[self.MNj,self.MNq,:]/(2*ell+1) 
 		#(3s)
@@ -304,11 +305,12 @@ class MLE:
 				Eis_Ejd, Bis_Bjd, Eis_Bjd, Bis_Ejd):  
 		lmax = self.spec.lmax
 		ell  = np.arange(0, lmax+1, 1)
+		f    = 0.0 if ('no-model' in self.fit) else 1.0
 		##################### remove EB from T1, T2, T3
 		# synch-dust * synch-dust 
 		TSD = np.zeros((4, self.Nbands*(self.Nbands-self.avoid), self.Nbands*(self.Nbands-self.avoid), lmax+1), dtype=np.float64)
 		# (1SD)
-		TSD[0,:,:,:] = (EiEjs[self.MNi,self.MNp,:]*BiBjd[self.MNj,self.MNq,:] + Eis_Bjd[self.MNi,self.MNq,:]*Eis_Bjd[self.MNp,self.MNj,:])/(2*ell+1)
+		TSD[0,:,:,:] = (EiEjs[self.MNi,self.MNp,:]*BiBjd[self.MNj,self.MNq,:] + f*Eis_Bjd[self.MNi,self.MNq,:]*Eis_Bjd[self.MNp,self.MNj,:])/(2*ell+1)
 		# (2SD)
 		TSD[1,:,:,:] = BiBjs[self.MNi,self.MNp,:]*EiEjd[self.MNj,self.MNq,:]/(2*ell+1) 
 		# (3SD)
@@ -322,11 +324,12 @@ class MLE:
 			
 		lmax = self.spec.lmax
 		ell  = np.arange(0, lmax+1, 1)   
+		f    = 0.0 if ('no-model' in self.fit) else 1.0
 		##################### remove EB from T1, T2, T3
 		# dust-synch * dust-synch 
 		TDS = np.zeros((4, self.Nbands*(self.Nbands-self.avoid), self.Nbands*(self.Nbands-self.avoid), lmax+1), dtype=np.float64)
 		# (1DS)
-		TDS[0,:,:,:] = (EiEjd[self.MNi,self.MNp,:]*BiBjs[self.MNj,self.MNq,:] + Bis_Ejd[self.MNq,self.MNi,:]*Bis_Ejd[self.MNj,self.MNp,:])/(2*ell+1)
+		TDS[0,:,:,:] = (EiEjd[self.MNi,self.MNp,:]*BiBjs[self.MNj,self.MNq,:] + f*Bis_Ejd[self.MNq,self.MNi,:]*Bis_Ejd[self.MNj,self.MNp,:])/(2*ell+1)
 		# (2DS)
 		TDS[1,:,:,:] = BiBjd[self.MNi,self.MNp,:]*EiEjs[self.MNj,self.MNq,:]/(2*ell+1) 
 		# (3DS)
@@ -338,13 +341,14 @@ class MLE:
 	def C_fgxo(self,Eifg_Ejo, Bifg_Bjo, Eifg_Bjo, Bifg_Ejo):  
 		lmax = self.spec.lmax
 		ell=np.arange(0, lmax+1, 1)
+		f    = 0.0 if ('no-model' in self.fit) else 1.0
 		##################### remove EB from all except T0 and T1 (only T0 T1 T6 T7 left)
 		# synch * observed  or dust * obs
 		Tfg_o = np.zeros((4,self.Nbands*(self.Nbands-self.avoid),self.Nbands*(self.Nbands-self.avoid), lmax+1), dtype=np.float64)
 		# (1so)
-		Tfg_o[0,:,:,:] = (Eifg_Ejo[self.MNi,self.MNp,:]*Bifg_Bjo[self.MNj,self.MNq,:] + Eifg_Bjo[self.MNi,self.MNq,:]*Bifg_Ejo[self.MNj,self.MNp,:])/(2*ell+1)
+		Tfg_o[0,:,:,:] = (Eifg_Ejo[self.MNi,self.MNp,:]*Bifg_Bjo[self.MNj,self.MNq,:] + f*Eifg_Bjo[self.MNi,self.MNq,:]*Bifg_Ejo[self.MNj,self.MNp,:])/(2*ell+1)
 		# (1so*)
-		Tfg_o[1,:,:,:] = (Eifg_Ejo[self.MNp,self.MNi,:]*Bifg_Bjo[self.MNq,self.MNj,:] + Eifg_Bjo[self.MNp,self.MNj,:]*Bifg_Ejo[self.MNq,self.MNi,:])/(2*ell+1)
+		Tfg_o[1,:,:,:] = (Eifg_Ejo[self.MNp,self.MNi,:]*Bifg_Bjo[self.MNq,self.MNj,:] + f*Eifg_Bjo[self.MNp,self.MNj,:]*Bifg_Ejo[self.MNq,self.MNi,:])/(2*ell+1)
 		# (4so)
 		Tfg_o[2,:,:,:] =  Bifg_Bjo[self.MNi,self.MNq,:]*Eifg_Ejo[self.MNj,self.MNp,:]/(2*ell+1) 
 		# (4so*)
@@ -354,13 +358,14 @@ class MLE:
 	def C_sdxo(self,Eis_Ejo, Bis_Bjo, Eis_Bjo, Bis_Ejo, Eid_Ejo, Bid_Bjo, Eid_Bjo, Bid_Ejo):  
 		lmax = self.spec.lmax
 		ell  = np.arange(0, lmax+1, 1)
+		f    = 0.0 if ('no-model' in self.fit) else 1.0
 		##################### remove EB from all except T0 and T1 (only T0 T1 T6 T7 left)
 		# synch-dust * observed 
 		TSD_o = np.zeros((4,self.Nbands*(self.Nbands-self.avoid),self.Nbands*(self.Nbands-self.avoid), lmax+1), dtype=np.float64)
 		# (1SDo)
-		TSD_o[0,:,:,:] = (Eis_Ejo[self.MNi,self.MNp,:]*Bid_Bjo[self.MNj,self.MNq,:] + Eis_Bjo[self.MNi,self.MNq,:]*Bid_Ejo[self.MNj,self.MNp,:])/(2*ell+1)
+		TSD_o[0,:,:,:] = (Eis_Ejo[self.MNi,self.MNp,:]*Bid_Bjo[self.MNj,self.MNq,:] + f*Eis_Bjo[self.MNi,self.MNq,:]*Bid_Ejo[self.MNj,self.MNp,:])/(2*ell+1)
 		# (1SDo*)
-		TSD_o[1,:,:,:] = (Eis_Ejo[self.MNp,self.MNi,:]*Bid_Bjo[self.MNq,self.MNj,:] + Eis_Bjo[self.MNp,self.MNj,:]*Bid_Ejo[self.MNq,self.MNi,:])/(2*ell+1)
+		TSD_o[1,:,:,:] = (Eis_Ejo[self.MNp,self.MNi,:]*Bid_Bjo[self.MNq,self.MNj,:] + f*Eis_Bjo[self.MNp,self.MNj,:]*Bid_Ejo[self.MNq,self.MNi,:])/(2*ell+1)
 		# (4SDo)
 		TSD_o[2,:,:,:] = Bis_Bjo[self.MNi,self.MNq,:]*Eid_Ejo[self.MNj,self.MNp,:]/(2*ell+1)
 		# (4SDo*)
@@ -370,13 +375,14 @@ class MLE:
 	def C_dsxo(self,Eis_Ejo, Bis_Bjo, Eis_Bjo, Bis_Ejo, Eid_Ejo, Bid_Bjo, Eid_Bjo, Bid_Ejo):  
 		lmax = self.spec.lmax
 		ell  = np.arange(0, lmax+1, 1)
+		f    = 0.0 if ('no-model' in self.fit) else 1.0
 		##################### remove EB from all except T0 and T1 (only T0 T1 T6 T7 left)
 		# dust-synch * observed  
 		TDS_o = np.zeros((4, self.Nbands*(self.Nbands-self.avoid),self.Nbands*(self.Nbands-self.avoid), lmax+1), dtype=np.float64)
 		# (1DSo)
-		TDS_o[0,:,:,:] = (Eid_Ejo[self.MNi,self.MNp,:]*Bis_Bjo[self.MNj,self.MNq,:] + Eid_Bjo[self.MNi,self.MNq,:]*Bis_Ejo[self.MNj,self.MNp,:])/(2*ell+1)
+		TDS_o[0,:,:,:] = (Eid_Ejo[self.MNi,self.MNp,:]*Bis_Bjo[self.MNj,self.MNq,:] + f*Eid_Bjo[self.MNi,self.MNq,:]*Bis_Ejo[self.MNj,self.MNp,:])/(2*ell+1)
 		# (1DSo*)
-		TDS_o[1,:,:,:] = (Eid_Ejo[self.MNp,self.MNi,:]*Bis_Bjo[self.MNq,self.MNj,:] + Eid_Bjo[self.MNp,self.MNj,:]*Bis_Ejo[self.MNq,self.MNi,:])/(2*ell+1)
+		TDS_o[1,:,:,:] = (Eid_Ejo[self.MNp,self.MNi,:]*Bis_Bjo[self.MNq,self.MNj,:] + f*Eid_Bjo[self.MNp,self.MNj,:]*Bis_Ejo[self.MNq,self.MNi,:])/(2*ell+1)
 		# (4DSo)
 		TDS_o[2,:,:,:] = Bid_Bjo[self.MNi,self.MNq,:]*Eis_Ejo[self.MNj,self.MNp,:]/(2*ell+1)
 		# (4DSo*)
@@ -386,13 +392,14 @@ class MLE:
 	def C_sxd(self, Eis_Ejd, Bis_Bjd, Eis_Bjd, Bis_Ejd):  
 		lmax = self.spec.lmax
 		ell  = np.arange(0, lmax+1, 1)
+		f    = 0.0 if ('no-model' in self.fit) else 1.0
 		##################### remove EB from T2, T3, T4, T5, T6, T7
 		# synch * dust 
 		Ts_d=np.zeros((8, self.Nbands*(self.Nbands-self.avoid), self.Nbands*(self.Nbands-self.avoid), lmax+1), dtype=np.float64)
 		# (1sd)
-		Ts_d[0,:,:,:] = (Eis_Ejd[self.MNi,self.MNp,:]*Bis_Bjd[self.MNj,self.MNq,:] + Eis_Bjd[self.MNi,self.MNq,:]*Bis_Ejd[self.MNj,self.MNp,:])/(2*ell+1)
+		Ts_d[0,:,:,:] = (Eis_Ejd[self.MNi,self.MNp,:]*Bis_Bjd[self.MNj,self.MNq,:] + f*Eis_Bjd[self.MNi,self.MNq,:]*Bis_Ejd[self.MNj,self.MNp,:])/(2*ell+1)
 		# (1sd*)
-		Ts_d[1,:,:,:] = (Eis_Ejd[self.MNp,self.MNi,:]*Bis_Bjd[self.MNq,self.MNj,:] + Eis_Bjd[self.MNp,self.MNj,:]*Bis_Ejd[self.MNq,self.MNi,:])/(2*ell+1)
+		Ts_d[1,:,:,:] = (Eis_Ejd[self.MNp,self.MNi,:]*Bis_Bjd[self.MNq,self.MNj,:] + f*Eis_Bjd[self.MNp,self.MNj,:]*Bis_Ejd[self.MNq,self.MNi,:])/(2*ell+1)
 		# (2sd)
 		Ts_d[2,:,:,:] = Bis_Bjd[self.MNi,self.MNp,:]*Eis_Ejd[self.MNj,self.MNq,:]/(2*ell+1)
 		# (2sd*)
@@ -411,13 +418,14 @@ class MLE:
 				Eis_Ejd, Bis_Bjd, Eis_Bjd, Bis_Ejd):  
 		lmax = self.spec.lmax
 		ell  = np.arange(0, lmax+1,1)
+		f    = 0.0 if ('no-model' in self.fit) else 1.0
 		##################### remove EB from T2, T3, T4, T5, T6, T7
 		# synch-dust * dust-synch
 		TSD_DS = np.zeros((8, self.Nbands*(self.Nbands-self.avoid), self.Nbands*(self.Nbands-self.avoid), lmax+1), dtype=np.float64)
 		# (1SDDS)
-		TSD_DS[0,:,:,:] = (Eis_Ejd[self.MNi,self.MNp,:]*Bis_Bjd[self.MNq,self.MNj,:] + EiBjs[self.MNi,self.MNq,:]*BiEjd[self.MNj,self.MNp,:])/(2*ell+1)
+		TSD_DS[0,:,:,:] = (Eis_Ejd[self.MNi,self.MNp,:]*Bis_Bjd[self.MNq,self.MNj,:] + f*EiBjs[self.MNi,self.MNq,:]*BiEjd[self.MNj,self.MNp,:])/(2*ell+1)
 		# (1SDDS*)
-		TSD_DS[1,:,:,:] = (Eis_Ejd[self.MNp,self.MNi,:]*Bis_Bjd[self.MNj,self.MNq,:] + EiBjd[self.MNi,self.MNq,:]*BiEjs[self.MNj,self.MNp,:])/(2*ell+1)
+		TSD_DS[1,:,:,:] = (Eis_Ejd[self.MNp,self.MNi,:]*Bis_Bjd[self.MNj,self.MNq,:] + f*EiBjd[self.MNi,self.MNq,:]*BiEjs[self.MNj,self.MNp,:])/(2*ell+1)
 		# (2SDDS)
 		TSD_DS[2,:,:,:] = Bis_Bjd[self.MNi,self.MNp,:]*Eis_Ejd[self.MNq,self.MNj,:]/(2*ell+1)
 		# (2SDDS*)
@@ -436,13 +444,14 @@ class MLE:
 	def C_sxsd(self,EiEjs, BiBjs, EiBjs, BiEjs, Eis_Ejd, Bis_Bjd, Eis_Bjd, Bis_Ejd):  
 		lmax = self.spec.lmax
 		ell  = np.arange(0, lmax+1, 1)
+		f    = 0.0 if ('no-model' in self.fit) else 1.0
 		##################### remove EB from T2, T3, T4, T5, T6, T7
 		# synch * synch-dust 
 		Ts_SD = np.zeros((8, self.Nbands*(self.Nbands-self.avoid), self.Nbands*(self.Nbands-self.avoid), lmax+1), dtype=np.float64)
 		# (1sSD)
-		Ts_SD[0,:,:,:] = (EiEjs[self.MNi,self.MNp,:]*Bis_Bjd[self.MNj,self.MNq,:] + Eis_Bjd[self.MNi,self.MNq,:]*BiEjs[self.MNj,self.MNp,:])/(2*ell+1)
+		Ts_SD[0,:,:,:] = (EiEjs[self.MNi,self.MNp,:]*Bis_Bjd[self.MNj,self.MNq,:] + f*Eis_Bjd[self.MNi,self.MNq,:]*BiEjs[self.MNj,self.MNp,:])/(2*ell+1)
 		# (1sSD*)
-		Ts_SD[1,:,:,:] = (EiEjs[self.MNp,self.MNi,:]*Bis_Bjd[self.MNq,self.MNj,:] + Eis_Bjd[self.MNp,self.MNj,:]*BiEjs[self.MNq,self.MNi,:])/(2*ell+1)
+		Ts_SD[1,:,:,:] = (EiEjs[self.MNp,self.MNi,:]*Bis_Bjd[self.MNq,self.MNj,:] + f*Eis_Bjd[self.MNp,self.MNj,:]*BiEjs[self.MNq,self.MNi,:])/(2*ell+1)
 		# (2sSD)
 		Ts_SD[2,:,:,:] = Eis_Ejd[self.MNi,self.MNq,:]*BiBjs[self.MNj,self.MNp,:]/(2*ell+1)
 		# (2sSD*)
@@ -460,13 +469,14 @@ class MLE:
 	def C_sxds(self,EiEjs, BiBjs, EiBjs, BiEjs, Eis_Ejd, Bis_Bjd, Eis_Bjd, Bis_Ejd):  
 		lmax = self.spec.lmax
 		ell  = np.arange(0, lmax+1, 1)
+		f    = 0.0 if ('no-model' in self.fit) else 1.0
 		##################### remove EB from T2, T3, T4, T5, T6, T7
 		# synch * dust-synch 
 		Ts_DS=np.zeros((8, self.Nbands*(self.Nbands-self.avoid), self.Nbands*(self.Nbands-self.avoid), lmax+1), dtype=np.float64)
 		# (1sDS)
-		Ts_DS[0,:,:,:] = (Eis_Ejd[self.MNi,self.MNp,:]*BiBjs[self.MNj,self.MNq,:] + EiBjs[self.MNi,self.MNq,:]*Bis_Ejd[self.MNj,self.MNp,:])/(2*ell+1)
+		Ts_DS[0,:,:,:] = (Eis_Ejd[self.MNi,self.MNp,:]*BiBjs[self.MNj,self.MNq,:] + f*EiBjs[self.MNi,self.MNq,:]*Bis_Ejd[self.MNj,self.MNp,:])/(2*ell+1)
 		# (1sDS*)
-		Ts_DS[1,:,:,:] = (Eis_Ejd[self.MNp,self.MNi,:]*BiBjs[self.MNq,self.MNj,:] + EiBjs[self.MNp,self.MNj,:]*Bis_Ejd[self.MNq,self.MNi,:])/(2*ell+1)
+		Ts_DS[1,:,:,:] = (Eis_Ejd[self.MNp,self.MNi,:]*BiBjs[self.MNq,self.MNj,:] + f*EiBjs[self.MNp,self.MNj,:]*Bis_Ejd[self.MNq,self.MNi,:])/(2*ell+1)
 		# (2sDS)
 		Ts_DS[2,:,:,:] = EiEjs[self.MNi,self.MNq,:]*Bis_Bjd[self.MNj,self.MNp,:]/(2*ell+1)
 		# (2sDS*)
@@ -483,14 +493,15 @@ class MLE:
 		
 	def C_dxsd(self, EiEjd, BiBjd, EiBjd, BiEjd, Eis_Ejd, Bis_Bjd, Eis_Bjd, Bis_Ejd):  
 		lmax = self.spec.lmax
-		ell = np.arange(0, lmax+1, 1)
+		ell  = np.arange(0, lmax+1, 1)
+		f    = 0.0 if ('no-model' in self.fit) else 1.0
 		##################### remove EB from T2, T3, T4, T5, T6, T7
 		# dust * synch-dust 
 		Td_SD=np.zeros((8, self.Nbands*(self.Nbands-self.avoid), self.Nbands*(self.Nbands-self.avoid), lmax+1), dtype=np.float64)
 		# (1dSD)
-		Td_SD[0,:,:,:] = (Eis_Ejd[self.MNp,self.MNi,:]*BiBjd[self.MNj,self.MNq,:] + EiBjd[self.MNi,self.MNq,:]*Eis_Bjd[self.MNp,self.MNj,:])/(2*ell+1)
+		Td_SD[0,:,:,:] = (Eis_Ejd[self.MNp,self.MNi,:]*BiBjd[self.MNj,self.MNq,:] + f*EiBjd[self.MNi,self.MNq,:]*Eis_Bjd[self.MNp,self.MNj,:])/(2*ell+1)
 		# (1dSD*)
-		Td_SD[1,:,:,:] = (Eis_Ejd[self.MNi,self.MNp,:]*BiBjd[self.MNq,self.MNj,:] + EiBjd[self.MNp,self.MNj,:]*Eis_Bjd[self.MNi,self.MNq,:])/(2*ell+1)
+		Td_SD[1,:,:,:] = (Eis_Ejd[self.MNi,self.MNp,:]*BiBjd[self.MNq,self.MNj,:] + f*EiBjd[self.MNp,self.MNj,:]*Eis_Bjd[self.MNi,self.MNq,:])/(2*ell+1)
 		# (2dSD)
 		Td_SD[2,:,:,:] = EiEjd[self.MNi,self.MNq,:]*Bis_Bjd[self.MNp,self.MNj,:]/(2*ell+1)
 		# (2dSD*)
@@ -508,13 +519,14 @@ class MLE:
 	def C_dxds(self, EiEjd, BiBjd, EiBjd, BiEjd, Eis_Ejd, Bis_Bjd, Eis_Bjd, Bis_Ejd):  
 		lmax = self.spec.lmax
 		ell  = np.arange(0, lmax+1, 1)
+		f    = 0.0 if ('no-model' in self.fit) else 1.0
 		##################### remove EB from T2, T3, T4, T5, T6, T7
 		# dust * dust-synch 
 		Td_DS=np.zeros((8, self.Nbands*(self.Nbands-self.avoid), self.Nbands*(self.Nbands-self.avoid), lmax+1), dtype=np.float64)
 		# (1dDS)
-		Td_DS[0,:,:,:] = (EiEjd[self.MNi,self.MNp,:]*Bis_Bjd[self.MNq,self.MNj,:] + Bis_Ejd[self.MNq,self.MNi,:]*BiEjd[self.MNj,self.MNp,:])/(2*ell+1)
+		Td_DS[0,:,:,:] = (EiEjd[self.MNi,self.MNp,:]*Bis_Bjd[self.MNq,self.MNj,:] + f*Bis_Ejd[self.MNq,self.MNi,:]*BiEjd[self.MNj,self.MNp,:])/(2*ell+1)
 		# (1dDS*)
-		Td_DS[1,:,:,:] = (EiEjd[self.MNp,self.MNi,:]*Bis_Bjd[self.MNj,self.MNq,:] + Bis_Ejd[self.MNj,self.MNp,:]*BiEjd[self.MNq,self.MNi,:])/(2*ell+1)
+		Td_DS[1,:,:,:] = (EiEjd[self.MNp,self.MNi,:]*Bis_Bjd[self.MNj,self.MNq,:] + f*Bis_Ejd[self.MNj,self.MNp,:]*BiEjd[self.MNq,self.MNi,:])/(2*ell+1)
 		# (2dDS)
 		Td_DS[2,:,:,:] = Eis_Ejd[self.MNq,self.MNi,:]*BiBjd[self.MNj,self.MNp,:]/(2*ell+1)
 		# (2dDS*)
