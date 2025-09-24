@@ -28,6 +28,7 @@ class Spectra:
                  dust_model: int = -1,
                  sync_model: int = -1,
                  binwidth: int = 1,
+                 lmax: int = 0,
                  ) -> None:
         """
         Initializes the Spectra class for computing and handling power spectra of observed CMB maps.
@@ -65,7 +66,10 @@ class Spectra:
         comdir     = os.path.join(common_dir, f"spectra_{self.nside}{'_d' if deconv else ''}_aposcale{str(aposcale).replace('.','p')}{'_pureB' if pureB else ''}" + fld_ext)
         self.__set_dir__(libdiri, comdir)
         
-        self.lmax     = min(2000,3 * self.lat.nside - 1)
+        if lmax > 0:
+            self.lmax = lmax
+        else:
+            self.lmax     = min(2000,3 * self.lat.nside - 1)
         
         self.temp_bp  = template_bandpass
 

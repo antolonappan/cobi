@@ -19,7 +19,7 @@ class MLE:
     def __init__(self, libdir, spec_lib, fit,
                  alpha_per_split=False,
                  rm_same_tube=False,
-                 binwidth=20, bmin=51, bmax=1000,verbose=True):
+                 binwidth=20, bmin=51, bmax=1000,avoid_bands=[],verbose=True):
         self.logger = Logger(self.__class__.__name__, verbose)
         self.niter_max = 100
         self.tol       = 0.5 # arcmin  
@@ -55,6 +55,13 @@ class MLE:
         #TODO you could ask to use a specific combination of bands (excluding some)
         self.bands  = self.spec.bands
         self.Nbands = self.spec.Nbands
+
+        if len(avoid_bands)>0:
+            self.logger.log(f"Removing bands {avoid_bands} from the analysis", 'info')
+            self.bands = [b for b in self.bands if b.split('-')[0] not in avoid_bands]
+            self.Nbands -= len(avoid_bands)
+            self.logger.log(f"Using bands {self.bands} for the analysis", 'info')
+        
         self.inst   = {}
         for ii, band in enumerate(self.bands):
             self.inst[band] = {"fwhm": self.spec.lat.config[band]['fwhm'], 
@@ -73,9 +80,12 @@ class MLE:
             print("Fitting a common polarisation angle per frequency")
             counter = 0
             for ii, freq in enumerate(self.spec.freqs):
-                for split in range(self.spec.lat.nsplits):
-                     self.inst[f'{freq}-{split+1}']["alpha idx"] = counter
-                counter += 1
+                if str(freq) in avoid_bands:
+                    continue
+                else:
+                    for split in range(self.spec.lat.nsplits):
+                        self.inst[f'{freq}-{split+1}']["alpha idx"] = counter
+                    counter += 1
         
         self.rm_same_tube = rm_same_tube
         if self.rm_same_tube:
@@ -84,13 +94,6 @@ class MLE:
         else:
             avoid = 1 # always remove auto-spectra
         self.avoid = avoid
-
-        # matrices for indexing
-        self.MNi  = np.zeros((self.Nbands*(self.Nbands-avoid), self.Nbands*(self.Nbands-avoid)), dtype=np.uint8)
-        self.MNj  = np.zeros((self.Nbands*(self.Nbands-avoid), self.Nbands*(self.Nbands-avoid)), dtype=np.uint8)
-        self.MNp  = np.zeros((self.Nbands*(self.Nbands-avoid), self.Nbands*(self.Nbands-avoid)), dtype=np.uint8)
-        self.MNq  = np.zeros((self.Nbands*(self.Nbands-avoid), self.Nbands*(self.Nbands-avoid)), dtype=np.uint8)
-        
         IJidx = []
         for ii, band_i in enumerate(self.bands):
             for jj, band_j in enumerate(self.bands):
@@ -98,26 +101,38 @@ class MLE:
                     if not self.same_tube(band_i, band_j):
                         IJidx.append((ii, jj))
                 else:
-                    if jj!=ii: 
-                        IJidx.append((ii,jj))
+                    if jj != ii:
+                        IJidx.append((ii, jj))
+
+        # 2. Get the ACTUAL number of valid pairs from the length of the list
+        num_valid_pairs = len(IJidx)
         self.IJidx = np.array(IJidx, dtype=np.uint8)
 
-        MNidx = [] 
-        for mm in range(0, self.Nbands*(self.Nbands-avoid), 1):
-            for nn in range(0, self.Nbands*(self.Nbands-avoid), 1):
-                    MNidx.append((mm,nn))
-        self.MNidx = np.array(MNidx, dtype=np.uint16) # data type valid for <=70 bands, optimizing memory use
+        # 3. Use the correct number to size the matrices and create the loops
+        self.MNi = np.zeros((num_valid_pairs, num_valid_pairs), dtype=np.uint8)
+        self.MNj = np.zeros((num_valid_pairs, num_valid_pairs), dtype=np.uint8)
+        self.MNp = np.zeros((num_valid_pairs, num_valid_pairs), dtype=np.uint8)
+        self.MNq = np.zeros((num_valid_pairs, num_valid_pairs), dtype=np.uint8)
 
+        MNidx = []
+        for mm in range(num_valid_pairs):
+            for nn in range(num_valid_pairs):
+                MNidx.append((mm, nn))
+        
+        self.MNidx = np.array(MNidx, dtype=np.uint16)
+        
+        # 4. Populate the matrices
         for MN_pair in self.MNidx:
-            ii, jj, pp, qq, mm, nn =self.get_index(MN_pair)
-            self.MNi[mm, nn] = ii; self.MNj[mm, nn] = jj
-            self.MNp[mm, nn] = pp; self.MNq[mm, nn] = qq
-            
-            
-            
+            ii, jj, pp, qq, mm, nn = self.get_index(MN_pair)
+            self.MNi[mm, nn] = ii
+            self.MNj[mm, nn] = jj
+            self.MNp[mm, nn] = pp
+            self.MNq[mm, nn] = qq
+        # --- END OF CORRECTION ---
+
     def same_tube(self, band_1, band_2):
         return self.inst[band_1]["opt. tube"] == self.inst[band_2]["opt. tube"]
-    
+
     def get_index(self, mn_pair):
         mm, nn = mn_pair
         ii, jj = self.IJidx[mm]
