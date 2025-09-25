@@ -117,6 +117,7 @@ class Spectra:
             case _:
                 raise ValueError("Invalid parallelization option")
         self.logger.log(msg,'info')
+
         
         
     def get_apodised_mask(self) -> np.ndarray:
@@ -1164,9 +1165,67 @@ class Spectra:
             del (oxo, dxo, dxd, sxd, sxs, sxo)
         else:
             del (oxo, dxo, dxd)
+    
+    def _compute_keep_idx_bands(self, avoid_bands):
+        """Indices for axes of length Nbands (e.g., 12), based on self.bands."""
+        if not avoid_bands:
+            return np.arange(self.Nbands)
+        avoid = set(map(str, avoid_bands))
+        keep = [i for i, b in enumerate(self.bands) if b.split('-')[0] not in avoid]
+        if not keep:
+            raise ValueError("All bands filtered out via self.bands.")
+        return np.asarray(keep, dtype=int)
+
+    def _compute_keep_idx_freq(self, avoid_bands):
+        """Indices for axes of length Nbands//2 (e.g., 6), based on self.freq."""
+        if self.Nbands % 2 != 0:
+            raise ValueError("Nbands must be even to use a freq axis of Nbands//2.")
+        Nfreq = self.Nbands // 2
+        if not hasattr(self, 'freqs') or len(self.freqs) != Nfreq:
+            raise ValueError("self.freq must exist and have length Nbands//2.")
+        if not avoid_bands:
+            return np.arange(Nfreq)
+        avoid = set(map(str, avoid_bands))
+        keep = [i for i, f in enumerate(self.freqs) if str(f) not in avoid]
+        if not keep:
+            raise ValueError("All freqs filtered out via self.freq.")
+        return np.asarray(keep, dtype=int)
+
+    def _filter_bands_and_freq_axes(self, arr, keep_idx_bands, keep_idx_freq):
+        """
+        Sequentially index any axis sized Nbands with keep_idx_bands and
+        any axis sized Nbands//2 with keep_idx_freq. Logs shapes before/after.
+        """
+        if not isinstance(arr, np.ndarray):
+            return arr
+        out = arr
+        Nfreq = self.Nbands // 2
+
+        while True:
+            axes_bands = [ax for ax, sz in enumerate(out.shape) if sz == self.Nbands]
+            axes_freq  = [ax for ax, sz in enumerate(out.shape) if sz == Nfreq]
+
+            if axes_bands:
+                ax = axes_bands[0]
+                slicer = [slice(None)] * out.ndim
+                slicer[ax] = keep_idx_bands
+                out = out[tuple(slicer)]
+                continue  # re-scan shapes
+            elif axes_freq:
+                ax = axes_freq[0]
+                slicer = [slice(None)] * out.ndim
+                slicer[ax] = keep_idx_freq
+                out = out[tuple(slicer)]
+                continue  # re-scan shapes
+            else:
+                break
+
+        return out
+
 
     def get_spectra(self, idx: int, 
-                    sync: bool = False
+                    sync: bool = False,
+                    avoid_bands: Optional[List[str]] = None
     ) -> Dict:
         """
         Retrieves all relevant spectra for a given realization index.
@@ -1185,6 +1244,15 @@ class Spectra:
             sxo = self.sync_x_obs(idx)
             sxs = self.sync_x_sync()
             sxd = self.sync_x_dust()
-            return {'oxo':oxo, 'dxd':dxd, 'sxs':sxs, 'dxo':dxo, 'sxo':sxo, 'sxd':sxd}
+            out = {'oxo': oxo, 'dxd': dxd, 'sxs': sxs, 'dxo': dxo, 'sxo': sxo, 'sxd': sxd}
         else:
-            return {'oxo':oxo, 'dxd':dxd, 'dxo':dxo}
+            out = {'oxo': oxo, 'dxd': dxd, 'dxo': dxo}
+        
+        if avoid_bands is None:
+            return out
+        else:
+            keep_idx_bands = self._compute_keep_idx_bands(avoid_bands)
+            keep_idx_freq  = self._compute_keep_idx_freq(avoid_bands)
+            for k, v in out.items():
+                out[k] = self._filter_bands_and_freq_axes(v, keep_idx_bands, keep_idx_freq)
+            return out
