@@ -269,14 +269,12 @@ class MLE:
         Tcmb[1,:,:,:] = pwf**4 * bl_BB * self.cmb_cls['bb'][:lmax+1]**2 /(2*ell+1)     
         return np.moveaxis(bin_cov_matrix(Tcmb, self.bin_conf), 3, 1)
 
-    def C_oxo(self, EiEjo, BiBjo, EiBjo, BiEjo): 
-        print(EiEjo.shape, BiBjo.shape, EiBjo.shape, BiEjo.shape) 
+    def C_oxo(self, EiEjo, BiBjo, EiBjo, BiEjo):
         lmax = self.spec.lmax
         ell  = np.arange(0, lmax+1, 1)
         ############################ remove all except T0(1), T5(6), T6(7)
         # observed * observed
         To = np.zeros((3, self.Nbands*(self.Nbands-self.avoid), self.Nbands*(self.Nbands-self.avoid), lmax+1), dtype=np.float64)
-        print(To.shape, To[0,:,:,:].shape)
         #(1) observed
         To[0,:,:,:] = (EiEjo[self.MNi,self.MNp,:]*BiBjo[self.MNj,self.MNq,:] + EiBjo[self.MNi,self.MNq,:]*BiEjo[self.MNj,self.MNp,:])/(2*ell+1)
         #(6) observed
