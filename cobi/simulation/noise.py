@@ -381,8 +381,10 @@ class Noise:
                           "145":['fdw_mf', 'mf_f090_mf_f150',1], 
                           "225":['fdw_uhf', 'uhf_f230_uhf_f290',0], 
                           "280":['fdw_uhf', 'uhf_f230_uhf_f290',1]}[band]
-        
-        fbase = f'so_lat_mbs_mss0002_{model}_{band}_lmax5400_4way_set{split}_noise_sim_map{idx:04}.fits'
+        if self.nsplits > 2: # This is only to preserve previous runs and results, changed on 25th Sep 2025 for checking with 4 splits
+            fbase = f'so_lat_mbs_mss0002_{model}_{band}_lmax5400_4way_set{split-1}_noise_sim_map{idx:04}.fits'
+        else:
+            fbase = f'so_lat_mbs_mss0002_{model}_{band}_lmax5400_2way_set{split}_noise_sim_map{idx:04}.fits'
         fpath = f'{fdir}/{fbase}'
 
         n = enmap.read_map(fpath,sel=np.s_[j, 0])

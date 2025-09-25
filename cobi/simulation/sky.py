@@ -180,8 +180,11 @@ class SkySimulation:
                 alpha = self.config[band_1]["alpha"]
                 sample = np.random.normal(alpha, self.alpha_err, 300)
                 # Assign same sample to both '-1' and '-2'
-                self.alpha_dict[f"{base_band}-1"] = sample
-                self.alpha_dict[f"{base_band}-2"] = sample
+                for split in range(1, self.nsplits + 1):
+                    band_key = f"{base_band}-{split}"
+                    self.alpha_dict[band_key] = sample
+                # self.alpha_dict[f"{base_band}-1"] = sample
+                # self.alpha_dict[f"{base_band}-2"] = sample
             if mpi.rank == 0:
                 pl.dump(self.alpha_dict, open(fname, 'wb'))
         

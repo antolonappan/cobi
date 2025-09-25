@@ -206,7 +206,8 @@ class MLE:
         if (not os.path.isfile(file)) or overwrite:
             res = self.calculate(idx, return_result=True)
             if res is None: return {}
-        else: res = pl.load(open(file, "rb"))
+        else: 
+            res = pl.load(open(file, "rb"))
         max_iter = len(res.ml.keys())
         if max_iter <= 1:
              self.logger.log(f"Calculation for index {idx} did not converge or failed.", 'warning'); return {}
@@ -406,9 +407,16 @@ class MLE:
         if add_beta: alphas+=res.ml[iter_key].get('beta',0.0)
         return alphas
 
-    def result_name(self, idx: int) -> str:
-        fit_tag=self.fit.replace(' + ','_'); alpha_tag='alphaPerSplit' if self.alpha_per_split else 'alphaPerFreq'
-        tube_tag='_rmSameTube' if self.rm_same_tube else ''; spec_flags=f"{'_tempBP' if self.spec.temp_bp else ''}"
-        bin_tag=f"Nb{self.nlb}_bmin{self.bmin}_bmax{self.bmax}"; spec_tag=f"aposcale{str(self.spec.aposcale).replace('.','p')}"
-        fname=f"ml_params_{fit_tag}_{alpha_tag}{tube_tag}{spec_flags}_{bin_tag}_{spec_tag}_{idx:03d}.pkl"
-        return os.path.join(self.libdir,fname)
+    # def result_name(self, idx: int) -> str:
+    #     fit_tag=self.fit.replace(' + ','_'); alpha_tag='alphaPerSplit' if self.alpha_per_split else 'alphaPerFreq'
+    #     tube_tag='_rmSameTube' if self.rm_same_tube else ''; spec_flags=f"{'_tempBP' if self.spec.temp_bp else ''}"
+    #     bin_tag=f"Nb{self.nlb}_bmin{self.bmin}_bmax{self.bmax}"; spec_tag=f"aposcale{str(self.spec.aposcale).replace('.','p')}"
+    #     fname=f"ml_params_{fit_tag}_{alpha_tag}{tube_tag}{spec_flags}_{bin_tag}_{spec_tag}_{idx:03d}.pkl"
+    #     return os.path.join(self.libdir,fname)
+    
+    def result_name(self, idx):
+        fit_tag  = f"{self.fit.replace(' + ','_')}{'_sameAlphaPerSplit' if self.alpha_per_split else '_diffAlphaPerSplit'}{'_rmSameTube' if self.rm_same_tube else ''}{'_tempBP'if self.spec.temp_bp else ''}" 
+        bin_tag  = f"Nb{self.nlb}_bmin{self.bmin}_bmax{self.bmax}"
+        spec_tag = f"aposcale{str(self.spec.aposcale).replace('.','p')}{'_CO' if self.spec.CO else ''}{'_PS' if self.spec.PS else ''}{'_pureB' if self.spec.pureB else ''}_N{self.nside}"
+        fname =  f"ml_params_{fit_tag}_{bin_tag}_{spec_tag}_{idx:03d}.pkl"
+        return os.path.join(self.libdir, fname)
