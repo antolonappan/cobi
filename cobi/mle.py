@@ -161,7 +161,6 @@ class MLE:
         if alpha_per_split:
             for i, band in enumerate(self.bands): self.inst[band]["alpha idx"] = i
         else:
-            counter = 0
             # Use a dictionary to handle non-contiguous frequency numbers
             freq_map = {freq: i for i, freq in enumerate(self.freqs)}
             for freq_val, idx in freq_map.items():
