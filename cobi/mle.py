@@ -119,7 +119,6 @@ class MLE:
     FIT_OPTIONS = ["alpha", "Ad + alpha", "As + Ad + alpha", "As + Asd + Ad + alpha",
                    "beta + alpha", "Ad + beta + alpha", "As + Ad + beta + alpha", "As + Asd + Ad + beta + alpha"]
     
-
     def __init__(self, libdir, spec_lib, fit, alpha_per_split=False, rm_same_tube=False,
                  binwidth=20, bmin=51, bmax=1000, verbose=True, 
                  avoid_spectra: Optional[List[str]] = None):
@@ -128,12 +127,12 @@ class MLE:
         self.niter_max = 100; self.tol = 0.5; self.spec = spec_lib; self.fit = fit
         self.alpha_per_split = alpha_per_split; self.rm_same_tube = rm_same_tube
         self.nside = self.spec.nside; self.fsky = self.spec.fsky
-        self.avoid_spectra = avoid_spectra # NEW: Store the list of spectra to avoid
-
+        self.avoid_spectra = [str(s) for s in avoid_spectra] if avoid_spectra else None
 
         if self.avoid_spectra:
-            avoid_set = set(map(str, self.avoid_spectra))
+            avoid_set = set(self.avoid_spectra)
             self.logger.log(f"Avoiding frequency channels: {avoid_set}", 'info')
+            # The spec_lib.bands are strings like '27-1', freqs are numbers like 27
             self.bands = [b for b in self.spec.bands if b.split('-')[0] not in avoid_set]
             self.freqs = [f for f in self.spec.freqs if str(f) not in avoid_set]
         else:
@@ -142,8 +141,7 @@ class MLE:
         
         self.Nbands = len(self.bands)
         self.Nfreq = len(self.freqs)
-        if self.Nbands == 0:
-            raise ValueError("All frequency channels have been filtered out by `avoid_spectra`.")
+        if self.Nbands == 0: raise ValueError("All frequency channels have been filtered out.")
 
         fld_ext = f"{spec_lib.dust_model}{spec_lib.sync_model}" if spec_lib.lat.dust_model != spec_lib.dust_model else ""
         self.libdir = os.path.join(spec_lib.lat.libdir, 'mle' + fld_ext)
@@ -159,28 +157,25 @@ class MLE:
         bin_def = bin_from_edges(lower, upper)
         self.bin_conf = bin_configuration(bin_def); self.Nbins = bin_def[0]
         
-
         self.inst = {b:{"fwhm":spec_lib.lat.config[b]['fwhm'],"opt. tube":spec_lib.lat.config[b]['opt. tube'],"cl idx":i} for i,b in enumerate(self.bands)}
         if alpha_per_split:
             for i, band in enumerate(self.bands): self.inst[band]["alpha idx"] = i
         else:
             counter = 0
-            for freq in self.freqs:
-
-                matching_bands = [b for b in self.bands if b.startswith(str(freq))]
+            # Use a dictionary to handle non-contiguous frequency numbers
+            freq_map = {freq: i for i, freq in enumerate(self.freqs)}
+            for freq_val, idx in freq_map.items():
+                matching_bands = [b for b in self.bands if b.startswith(str(freq_val))]
                 for band_name in matching_bands:
-                    self.inst[band_name]["alpha idx"] = counter
-                counter += 1
+                    self.inst[band_name]["alpha idx"] = idx
         
         self._setup_indexing()
 
     def calculate(self, idx: int, return_result: bool = False) -> Any:
-
         res = _Result(self.spec, self.fit, idx, self.alpha_per_split, self.rm_same_tube, 
                       self.nlb, self.bmin, self.bmax, self.bands, self.freqs)
         
         try:
-
             input_cls = self.spec.get_spectra(idx, sync='As' in self.fit, avoid_bands=self.avoid_spectra)
         except TypeError:
             self.spec.compute(idx, sync='As' in self.fit)
@@ -206,7 +201,7 @@ class MLE:
         with open(self.result_name(idx), "wb") as f: pl.dump(res, f, protocol=pl.HIGHEST_PROTOCOL)
         if return_result: return res
 
-    def estimate_angles(self, idx: int, overwrite: bool = False, Niter: int = -1, to_degrees: bool = False) -> Dict:
+    def estimate_angles(self, idx: int, overwrite: bool = False, Niter: int = -1, to_degrees: bool = True) -> Dict:
         file = self.result_name(idx)
         if (not os.path.isfile(file)) or overwrite:
             res = self.calculate(idx, return_result=True)
@@ -233,37 +228,56 @@ class MLE:
         m, n = np.meshgrid(range(self.num_pairs), range(self.num_pairs), indexing='ij')
         self.MNi, self.MNj, self.MNp, self.MNq = self.IJidx[m,0], self.IJidx[m,1], self.IJidx[n,0], self.IJidx[n,1]
 
-    def _process_cls(self, incls):
-        lmax = self.spec.lmax; self.bin_terms, self.cov_terms = {}, {}
-        raw = {}; cl_shape = (self.Nbands, self.Nbands, lmax + 1)
-
-        raw['EEo_ij']=incls['oxo'][:,:,0,:lmax+1]; raw['BBo_ij']=incls['oxo'][:,:,1,:lmax+1]; raw['EBo_ij']=incls['oxo'][:,:,2,:lmax+1]
-        raw['EiEj_o']=incls['oxo'][:,:,0,:lmax+1]; raw['BiBj_o']=incls['oxo'][:,:,1,:lmax+1]; raw['EiBj_o']=incls['oxo'][:,:,2,:lmax+1]
+    def _process_cls(self, incls: Dict):
+        lmax = self.spec.lmax
+        self.bin_terms, self.cov_terms = {}, {}
+        raw = {} 
+        cl_shape = (self.Nbands, self.Nbands, lmax + 1)
+        
+        raw['EEo_ij']=incls['oxo'][:,:,0,:lmax+1]; raw['BBo_ij']=incls['oxo'][:,:,1,:lmax+1]
+        raw['EBo_ij']=incls['oxo'][:,:,2,:lmax+1]; raw['EiEj_o']=incls['oxo'][:,:,0,:lmax+1]
+        raw['BiBj_o']=incls['oxo'][:,:,1,:lmax+1]; raw['EiBj_o']=incls['oxo'][:,:,2,:lmax+1]
         raw['BiEj_o']=incls['oxo'][:,:,2,:lmax+1].transpose(1,0,2)
 
+        str_freqs = [str(f) for f in self.freqs]
+
         for ii, band_i in enumerate(self.bands):
-            freq_i = np.where(self.spec.lat.freqs == band_i[:-2])[0][0]
+            freq_i_str = band_i.split('-')[0]
+            freq_i = str_freqs.index(freq_i_str)
+
             for jj, band_j in enumerate(self.bands):
-                freq_j = np.where(self.spec.lat.freqs == band_j[:-2])[0][0]
+                freq_j_str = band_j.split('-')[0]
+                freq_j = str_freqs.index(freq_j_str)
+
                 if 'beta' in self.fit:
-                    if ii==0 and jj==0: raw['EEcmb_ij']=np.zeros(cl_shape); raw['BBcmb_ij']=np.zeros(cl_shape)
-                    raw['EEcmb_ij'][ii,jj,:]=self._convolve_gaussBeams_pwf("ee",self.inst[band_i]['fwhm'],self.inst[band_j]['fwhm'],lmax)
-                    raw['BBcmb_ij'][ii,jj,:]=self._convolve_gaussBeams_pwf("bb",self.inst[band_i]['fwhm'],self.inst[band_j]['fwhm'],lmax)
+                    if ii==0 and jj==0:
+                        raw['EEcmb_ij'] = np.zeros(cl_shape)
+                        raw['BBcmb_ij'] = np.zeros(cl_shape)
+                    fwhm_i, fwhm_j = self.inst[band_i]['fwhm'], self.inst[band_j]['fwhm']
+                    raw['EEcmb_ij'][ii,jj,:] = self._convolve_gaussBeams_pwf("ee", fwhm_i, fwhm_j, lmax)
+                    raw['BBcmb_ij'][ii,jj,:] = self._convolve_gaussBeams_pwf("bb", fwhm_i, fwhm_j, lmax)
+                
                 if 'Ad' in self.fit:
                     if ii==0 and jj==0:
-                        for k in ['EBd_ij','EiEj_d','BiBj_d','EiBj_d','BiEj_d','Eid_Ejo','Bid_Bjo','Eid_Bjo','Bid_Ejo']: raw[k]=np.zeros(cl_shape)
-                    raw['EBd_ij'][ii,jj,:]=incls['dxd'][freq_i,freq_j,2,:lmax+1]; raw['EiEj_d'][ii,jj,:]=incls['dxd'][freq_i,freq_j,0,:lmax+1]
-                    raw['BiBj_d'][ii,jj,:]=incls['dxd'][freq_i,freq_j,1,:lmax+1]; raw['EiBj_d'][ii,jj,:]=incls['dxd'][freq_i,freq_j,2,:lmax+1]
-                    raw['BiEj_d'][ii,jj,:]=incls['dxd'][freq_j,freq_i,2,:lmax+1]; raw['Eid_Ejo'][ii,jj,:]=incls['dxo'][freq_i,jj,0,:lmax+1]
-                    raw['Bid_Bjo'][ii,jj,:]=incls['dxo'][freq_i,jj,1,:lmax+1]; raw['Eid_Bjo'][ii,jj,:]=incls['dxo'][freq_i,jj,2,:lmax+1]
+                        for k in ['EBd_ij','EiEj_d','BiBj_d','EiBj_d','BiEj_d','Eid_Ejo','Bid_Bjo','Eid_Bjo','Bid_Ejo']:
+                            raw[k]=np.zeros(cl_shape)
+                    raw['EBd_ij'][ii,jj,:]=incls['dxd'][freq_i,freq_j,2,:lmax+1]
+                    raw['EiEj_d'][ii,jj,:]=incls['dxd'][freq_i,freq_j,0,:lmax+1]
+                    raw['BiBj_d'][ii,jj,:]=incls['dxd'][freq_i,freq_j,1,:lmax+1]
+                    raw['EiBj_d'][ii,jj,:]=incls['dxd'][freq_i,freq_j,2,:lmax+1]
+                    raw['BiEj_d'][ii,jj,:]=incls['dxd'][freq_j,freq_i,2,:lmax+1]
+                    raw['Eid_Ejo'][ii,jj,:]=incls['dxo'][freq_i,jj,0,:lmax+1]
+                    raw['Bid_Bjo'][ii,jj,:]=incls['dxo'][freq_i,jj,1,:lmax+1]
+                    raw['Eid_Bjo'][ii,jj,:]=incls['dxo'][freq_i,jj,2,:lmax+1]
                     raw['Bid_Ejo'][ii,jj,:]=incls['dxo'][freq_i,jj,3,:lmax+1]
 
         for k, v in raw.items(): self.bin_terms[k + "_b"] = bin_spec_matrix(v, self.bin_conf)
-        self.cov_terms["C_oxo"]=self._C_oxo(raw['EiEj_o'],raw['BiBj_o'],raw['EiBj_o'],raw['BiEj_o'])
-        if 'beta' in self.fit: self.cov_terms["C_cmb"]=self._C_cmb()
+        self.cov_terms["C_oxo"] = self._C_oxo(raw['EiEj_o'],raw['BiBj_o'],raw['EiBj_o'],raw['BiEj_o'])
+        if 'beta' in self.fit: self.cov_terms["C_cmb"] = self._C_cmb()
         if 'Ad' in self.fit:
-            self.cov_terms["C_dxd"]=self._C_fgxfg(raw['EiEj_d'],raw['BiBj_d'],raw['EiBj_d'],raw['BiEj_d'])
-            self.cov_terms["C_dxo"]=self._C_fgxo(raw['Eid_Ejo'],raw['Bid_Bjo'],raw['Eid_Bjo'],raw['Bid_Ejo'])
+            self.cov_terms["C_dxd"] = self._C_fgxfg(raw['EiEj_d'],raw['BiBj_d'],raw['EiBj_d'],raw['BiEj_d'])
+            self.cov_terms["C_dxo"] = self._C_fgxo(raw['Eid_Ejo'],raw['Bid_Bjo'],raw['Eid_Bjo'],raw['Bid_Ejo'])
+
 
     def _build_cov(self, niter, res):
         p=res.ml[f"Iter {niter}"]; ai,aj,ap,aq=self._get_alpha_blocks(niter,res)
