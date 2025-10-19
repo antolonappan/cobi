@@ -1178,9 +1178,9 @@ class Spectra:
 
     def _compute_keep_idx_freq(self, avoid_bands):
         """Indices for axes of length Nbands//2 (e.g., 6), based on self.freq."""
-        if self.Nbands % 2 != 0:
+        if self.Nbands % self.lat.nsplits != 0:
             raise ValueError("Nbands must be even to use a freq axis of Nbands//2.")
-        Nfreq = self.Nbands // 2
+        Nfreq = self.Nbands // self.lat.nsplits
         if not hasattr(self, 'freqs') or len(self.freqs) != Nfreq:
             raise ValueError("self.freq must exist and have length Nbands//2.")
         if not avoid_bands:
@@ -1199,7 +1199,7 @@ class Spectra:
         if not isinstance(arr, np.ndarray):
             return arr
         out = arr
-        Nfreq = self.Nbands // 2
+        Nfreq = self.Nbands // self.lat.nsplits
 
         while True:
             axes_bands = [ax for ax, sz in enumerate(out.shape) if sz == self.Nbands]
