@@ -4,7 +4,7 @@ import healpy as hp
 import pymaster as nmt
 import os
 from tqdm import tqdm
-from cobi.simulation import LATsky, Foreground,Mask, SATsky
+from cobi.simulation import LATsky, Foreground,Mask, SATsky, LATskyC, SATskyC
 from cobi.utils import Logger
 from cobi import mpi
 from typing import Dict, Optional, Any, Union, List, Tuple
@@ -1256,3 +1256,167 @@ class Spectra:
             for k, v in out.items():
                 out[k] = self._filter_bands_and_freq_axes(v, keep_idx_bands, keep_idx_freq)
             return out
+
+
+
+class SpectraCross:
+    def __init__(self, libdir:str, lat:LATskyC, sat:SATskyC, binwidth:int=5, galcut:int=40, aposcale:int=2,lmax:int=3000):
+        self.libdir = os.path.join(libdir,'SpectraCross')
+        os.makedirs(self.libdir, exist_ok=True)
+        self.lat = lat
+        self.sat = sat
+        if lat.nside != sat.nside:
+            raise ValueError("LAT and SAT nside must be the same")
+        self.nside = lat.nside
+        self.binwidth = binwidth
+        self.galcut = galcut
+        self.aposcale = aposcale
+        self.lmax = lmax
+        self.binInfo = nmt.NmtBin.from_lmax_linear(self.lmax, binwidth)
+        if list(lat.freqs) != list(sat.freqs):
+            assert lat.nsplits == sat.nsplits, "Number of splits must be the same for LAT and SAT"
+            raise ValueError("LAT and SAT frequencies must be the same for cross spectra")
+        self.freqs = lat.freqs
+        self.nsplits = lat.nsplits
+        self.__create_maptags__()
+
+        self.__sat_workspace__ = self.__get_coupling_matrix__('SAT')
+        self.__lat_workspace__ = self.__get_coupling_matrix__('LAT')
+        self.__satlat_workspace__ = self.__get_coupling_matrix__('SATxLAT')
+
+    def __create_maptags__(self)-> list:
+        latmaptags = [f'LAT_{f}' for f in self.freqs]
+        latmaptags = [f'{tag}-{i+1}' for tag in latmaptags for i in range(self.nsplits)]
+        satmaptags = [f'SAT_{f}' for f in self.freqs]
+        satmaptags = [f'{tag}-{i+1}' for tag in satmaptags for i in range(self.nsplits)]
+        self.maptags = latmaptags + satmaptags
+
+
+    def __get_mask__(self,tel:str)-> Mask:
+        if tel=='LAT':
+            mask_str = self.lat.__class__.__name__[:3]
+            mask_str += 'xGAL'
+            maskobj = Mask(self.lat.basedir, self.nside, mask_str, self.aposcale,gal_cut=self.galcut)
+        elif tel=='SAT':
+            mask_str = self.sat.__class__.__name__[:3]
+            mask_str += 'xGAL'
+            maskobj = Mask(self.sat.basedir, self.nside, mask_str, self.aposcale,gal_cut=self.galcut)
+        elif tel=='SATxLAT':
+            mask_str = 'SATxLATxGAL'
+            maskobj = Mask(self.sat.basedir, self.nside, mask_str, self.aposcale,gal_cut=self.galcut)
+        else:
+            raise ValueError(f"Unknown telescope: {tel}")
+        return maskobj
+    
+    def get_mask(self,tel:str)-> np.ndarray:
+        fname = os.path.join(self.libdir,f'mask_{tel}_galcut{self.galcut}_aposcale{self.aposcale}.fits')
+        if os.path.exists(fname):
+            mask = hp.read_map(fname,dtype=np.float64)
+        else:
+            maskobj = self.__get_mask__(tel)
+            mask = maskobj.mask
+            hp.write_map(fname, mask)
+        return mask
+    
+    @property
+    def satmask(self) -> np.ndarray:
+        return self.get_mask('SAT')
+
+    @property
+    def latmask(self) -> np.ndarray:
+        return self.get_mask('LAT')
+    
+    @property
+    def satlatmask(self) -> np.ndarray:
+        return self.get_mask('SATxLAT')
+    
+    def __get_coupling_matrix__(self,tel) -> None:
+        wrk = nmt.NmtWorkspace()
+        fname = os.path.join(self.libdir,f'coupling_matrix_{tel}.fits')
+        if not os.path.isfile(fname):
+            if tel=='LAT':
+                mask = self.latmask
+            elif tel=='SAT':
+                mask = self.satmask
+            elif tel=='SATxLAT':
+                mask = self.satlatmask
+            else:
+                raise ValueError(f"Unknown telescope: {tel}")
+            mask_f = nmt.NmtField(mask, [mask, mask], lmax=self.lmax)
+            wrk.compute_coupling_matrix(mask_f, mask_f, self.binInfo)
+            del mask_f
+            wrk.write_to(fname)
+        else:
+            wrk.read_from(fname)
+        return wrk
+
+    def compute_master(self, tel:str, f_a: nmt.NmtField, f_b: nmt.NmtField) -> np.ndarray:
+        cl_coupled   = nmt.compute_coupled_cell(f_a, f_b)
+        if tel=='LAT':
+            workspace = self.__lat_workspace__
+        elif tel=='SAT':
+            workspace = self.__sat_workspace__
+        elif tel=='SATxLAT':
+            workspace = self.__satlat_workspace__
+        else:
+            raise ValueError(f"Unknown telescope: {tel}")
+        cl_decoupled = workspace.decouple_cell(cl_coupled)
+        return cl_decoupled
+    
+    def __get_QU_maps__(self, idx:int, maptag:str)-> tuple:
+        tel, freq = maptag.split('_')
+        if tel=='LAT':
+            qmap, umap = self.lat.obsQU(idx,freq)
+            mask = self.latmask
+        elif tel=='SAT':
+            qmap, umap = self.sat.obsQU(idx,freq)
+            mask = self.satmask
+        else:
+            raise ValueError(f"Unknown telescope: {tel}")
+        return qmap, umap, mask
+    
+    def __get_nmt_index__(self, which:str)-> tuple:
+        if which=='EB':
+            ij = 1
+            ji = 2
+        elif which=='EE':
+            ij = 0
+            ji = 0
+        elif which=='BB':
+            ij = 3
+            ji = 3
+        else:
+            raise ValueError(f"Unknown spectra type: {which}")
+        return ij, ji
+
+    def spectra_matrix(self, idx:int, which='EB')->np.ndarray:
+        fname = os.path.join(self.libdir,f'spectra_matrix_binwidth{self.binwidth}_galcut{self.galcut}_aposcale{self.aposcale}_{which}_idx{idx}.pkl')
+        if os.path.exists(fname):
+            return pl.load(open(fname,'rb'))
+        else:
+            matrix = np.zeros((len(self.maptags), len(self.maptags), self.binInfo.get_n_bands()))
+            for i in tqdm(range(len(self.maptags)), desc='Outer loop', position=0):
+                maptag_i = self.maptags[i]
+                qi, ui, maski = self.__get_QU_maps__(idx, maptag_i)
+                f_i = nmt.NmtField(maski, [qi*maski, ui*maski], lmax=self.lmax,masked_on_input=True)
+                for j in tqdm(range(i + 1), desc='Inner loop', position=1, leave=False):
+                    if i == j:
+                        f_j = f_i
+                        maptag_j = maptag_i
+                    else:
+                        maptag_j = self.maptags[j]
+                        qj, uj, maskj = self.__get_QU_maps__(idx, maptag_j)
+                        f_j = nmt.NmtField(maskj, [qj*maskj, uj*maskj], lmax=self.lmax,masked_on_input=True)
+                    if maptag_i.startswith('LAT') and maptag_j.startswith('LAT'):
+                        tel = 'LAT'
+                    elif maptag_i.startswith('SAT') and maptag_j.startswith('SAT'):
+                        tel = 'SAT'
+                    else:
+                        tel = 'SATxLAT'
+                    cl_decoupled = self.compute_master(tel, f_i, f_j)
+                    ij, ji = self.__get_nmt_index__(which)
+                    matrix[i, j, :] = cl_decoupled[ij]
+                    if i != j:
+                        matrix[j, i, :] = cl_decoupled[ji]
+            pl.dump(matrix, open(fname,'wb'))
+            return matrix
