@@ -9,7 +9,8 @@ from cobi.utils import Logger
 from cobi import mpi
 from typing import Dict, Optional, Any, Union, List, Tuple
 from concurrent.futures import ThreadPoolExecutor
-
+import pickle as pl
+import operator
 # PDP: eventually we might want to also mask Galactic dust
 
 class Spectra:
@@ -1258,7 +1259,6 @@ class Spectra:
             return out
 
 
-
 class SpectraCross:
     def __init__(self, libdir:str, lat:LATskyC, sat:SATskyC, binwidth:int=5, galcut:int=40, aposcale:int=2,lmax:int=3000):
         self.libdir = os.path.join(libdir,'SpectraCross')
@@ -1284,7 +1284,7 @@ class SpectraCross:
         self.__lat_workspace__ = self.__get_coupling_matrix__('LAT')
         self.__satlat_workspace__ = self.__get_coupling_matrix__('SATxLAT')
 
-    def __create_maptags__(self)-> list:
+    def __create_maptags__(self)-> None:
         latmaptags = [f'LAT_{f}' for f in self.freqs]
         latmaptags = [f'{tag}-{i+1}' for tag in latmaptags for i in range(self.nsplits)]
         satmaptags = [f'SAT_{f}' for f in self.freqs]
@@ -1389,7 +1389,7 @@ class SpectraCross:
             raise ValueError(f"Unknown spectra type: {which}")
         return ij, ji
 
-    def spectra_matrix(self, idx:int, which='EB')->np.ndarray:
+    def __spectra_matrix_core__(self, idx:int, which='EB')->np.ndarray:
         fname = os.path.join(self.libdir,f'spectra_matrix_binwidth{self.binwidth}_galcut{self.galcut}_aposcale{self.aposcale}_{which}_idx{idx}.pkl')
         if os.path.exists(fname):
             return pl.load(open(fname,'rb'))
@@ -1420,3 +1420,80 @@ class SpectraCross:
                         matrix[j, i, :] = cl_decoupled[ji]
             pl.dump(matrix, open(fname,'wb'))
             return matrix
+        
+
+    def data_matrix(self, idx:int, 
+                    which:str = 'EB', 
+                    sat_lrange:tuple = (None, None), 
+                    lat_lrange:tuple = (None, None),
+                    avg_splits:bool = False,
+                    common_mask_op = operator.and_)->np.ndarray:
+    
+        matrix = self.__spectra_matrix_core__(idx, which)
+        bin_centers = self.binInfo.get_effective_ells()
+        current_maptags = self.maptags.copy() # Make a copy to modify if needed
+        n_bins = self.binInfo.get_n_bands()
+        
+        sat_indices = [i for i, tag in enumerate(current_maptags) if tag.startswith('SAT')]
+        lat_indices = [i for i, tag in enumerate(current_maptags) if tag.startswith('LAT')]
+        
+        # Build ell-range masks
+        sat_ell_mask = np.ones(n_bins, dtype=bool)
+        if sat_lrange[0] is not None:
+            sat_ell_mask &= (bin_centers >= sat_lrange[0])
+        if sat_lrange[1] is not None:
+            sat_ell_mask &= (bin_centers <= sat_lrange[1])
+        
+        lat_ell_mask = np.ones(n_bins, dtype=bool)
+        if lat_lrange[0] is not None:
+            lat_ell_mask &= (bin_centers >= lat_lrange[0])
+        if lat_lrange[1] is not None:
+            lat_ell_mask &= (bin_centers <= lat_lrange[1])
+        
+        # Apply masks to different correlation types
+        # SAT-SAT correlations: use SAT mask
+        for i in sat_indices:
+            for j in sat_indices:
+                matrix[i, j, ~sat_ell_mask] = 0
+        
+        # LAT-LAT correlations: use LAT mask
+        for i in lat_indices:
+            for j in lat_indices:
+                matrix[i, j, ~lat_ell_mask] = 0
+        
+        # SAT-LAT cross-correlations: use union of both masks (common valid range)
+        cross_ell_mask = common_mask_op(sat_ell_mask, lat_ell_mask)
+        for i in sat_indices:
+            for j in lat_indices:
+                matrix[i, j, ~cross_ell_mask] = 0
+                matrix[j, i, ~cross_ell_mask] = 0
+        
+        # Average over splits if requested
+        if avg_splits:
+            # Group by frequency (without split number)
+            freq_groups = {}
+            for i, tag in enumerate(current_maptags):
+                # Extract base tag without split number (e.g., 'LAT_93' from 'LAT_93-1')
+                base_tag = tag.rsplit('-', 1)[0]
+                if base_tag not in freq_groups:
+                    freq_groups[base_tag] = []
+                freq_groups[base_tag].append(i)
+            
+            # Create averaged matrix
+            n_groups = len(freq_groups)
+            averaged_matrix = np.zeros((n_groups, n_groups, n_bins))
+            new_maptags = list(freq_groups.keys())
+            
+            for i, (tag_i, indices_i) in enumerate(freq_groups.items()):
+                for j, (tag_j, indices_j) in enumerate(freq_groups.items()):
+                    # Average over all split combinations
+                    values = []
+                    for idx_i in indices_i:
+                        for idx_j in indices_j:
+                            values.append(matrix[idx_i, idx_j, :])
+                    averaged_matrix[i, j, :] = np.nanmean(values, axis=0)
+            
+            matrix = averaged_matrix
+            current_maptags = new_maptags
+        
+        return matrix
