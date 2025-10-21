@@ -11,6 +11,7 @@ from getdist import plots, MCSamples
 import matplotlib.pyplot as plt
 from scipy.stats import chi2
 from scipy.optimize import minimize
+from cobi.spectra import SpectraCross
 
 def selector(lib,lmin,lmax,):
     b = lib.binInfo.get_effective_ells()
@@ -530,6 +531,7 @@ class Sat4Lat_AmplitudeFit_test:
         ### MODIFIED ###
         # Update the 'true' values for the MCMC initialization.
         # Assuming true alphas are ~0 and true A_EB is, for example, 0.3
+    
         true = np.array([0.2, 0.2, 0, 0, 0.3]) 
         
         fname = os.path.join(self.libdir, f"samples_{nwalkers}_{nsamples}{self.addname}_max{self.lmax}_min{self.lmin}.pkl")
@@ -573,7 +575,7 @@ class Sat4Lat_AmplitudeFit_test:
         p_val = chi2.sf(chi2_min, self.dof)
         return p_val
     
-lass Sat4LatCross:
+class Sat4LatCross:
     """
     Performs a calibration analysis using cross-power spectra between LAT and SAT.
 
@@ -734,8 +736,7 @@ lass Sat4LatCross:
         }
         fwhm_dict.update({
             f'SAT_{freq}': fwhm for freq, fwhm in zip(self.spec_cross.sat.freqs, self.spec_cross.sat.fwhm)
-        })
-        print(fwhm_dict)  
+        })  
         for i, tag_i in enumerate(self.maptags):
             for j, tag_j in enumerate(self.maptags):
                 # Get base tag to look up FWHM, e.g., 'LAT_93' from 'LAT_93-1'
@@ -803,7 +804,7 @@ lass Sat4LatCross:
         lnp_sat = -0.5 * np.sum(alphas_sat**2 / self.sat_err**2)
 
         # Flat priors for LAT alphas and beta within reasonable bounds
-        if np.all(np.abs(alphas) < 0.5) and -0.2 < beta < 0.2:
+        if np.all(np.abs(alphas) < 0.5) and 0 < beta < 0.5:
              return lnp_sat
         return -np.inf
 
@@ -830,7 +831,10 @@ lass Sat4LatCross:
         
         print(f"Running MCMC with {nwalkers} walkers for {nsamples} steps...")
         # A sensible starting point for the walkers
-        fiducial_params = np.array([0.2,0.2,0.0,0.0,0.35])
+        if self.avg_splits:
+            fiducial_params = np.array([0.2,0.2,0.0,0.0,0.35])
+        else:
+            fiducial_params = np.array([0.2,0.2,0.2,0.2,0.0,0.0,0.0,0.0,0.35])
         ndim = len(fiducial_params)
         
         pos = fiducial_params + 1e-1 * np.random.randn(nwalkers, ndim)
@@ -878,26 +882,39 @@ lass Sat4LatCross:
 
         fig, axes = plt.subplots(n_tags, n_tags, figsize=(n_tags * 3, n_tags * 3),
                                  sharex=True, sharey='row')
-        fig.suptitle('Spectra Matrix: Data Mean, Std Dev, and Theory', fontsize=16)
 
         theory_spec = None
         if theta is not None:
-            theory_spec = self.theory(theta) / self.beam_arr
+            theory_spec = self.theory(theta)
 
         data_spec = self.mean_spec / self.beam_arr
         error_spec = self.std_spec / self.beam_arr
-
+        
         for i in range(n_tags):
             for j in range(n_tags):
                 ax = axes[i, j]
+                is_diagonal = (i == j)
+
+                # Determine if the current subplot should be visible based on selection
+                plot_this = False
+                if self.spectra_selection == 'all':
+                    plot_this = True
+                elif self.spectra_selection == 'auto_only' and is_diagonal:
+                    plot_this = True
+                elif self.spectra_selection == 'cross_only' and not is_diagonal:
+                    plot_this = True
+                
+                if not plot_this:
+                    ax.set_visible(False)
+                    continue
 
                 # Plot data mean and std
                 ax.errorbar(ells, data_spec[i, j], yerr=error_spec[i, j], fmt='.', capsize=2,
-                            label='Data Mean +/- 1σ', color='black', markersize=4)
+                            label='Data Mean +/- 1σ', color='black', markersize=4,alpha=0.5)
 
                 # Plot theory if provided
                 if theory_spec is not None:
-                    ax.loglog(ells, theory_spec[i, j], color='red', linestyle='--', label='Theory')
+                    ax.loglog(ells, theory_spec[i, j], color='red', label='Theory')
 
                 # Apply the likelihood mask to visually grey out unused data
                 mask_1d = self.__likelihood_mask__[i, j, :]
@@ -918,7 +935,7 @@ lass Sat4LatCross:
                 ax.axhline(0, color='grey', linestyle=':', linewidth=0.75)
                 ax.grid(True, linestyle='--', alpha=0.6)
                 ax.set_ylim(1e-8, 1e-1)
-                ax.set_xlim(30,2000)
+                ax.set_xlim(10, 3000)
 
         # Use the row labels on the right side
         for i, tag in enumerate(self.maptags):
@@ -927,8 +944,16 @@ lass Sat4LatCross:
                                    va='center', ha='left', fontsize=10)
 
 
-        handles, labels = axes[0,0].get_legend_handles_labels()
-        fig.legend(handles, labels, loc='upper right')
+        handles, labels = [], []
+        for ax in axes.flatten():
+            if ax.get_visible():
+                h, l = ax.get_legend_handles_labels()
+                handles.extend(h)
+                labels.extend(l)
+                break # Get legend from the first visible plot
+        
+        if handles:
+            fig.legend(handles, labels, loc='upper right')
 
         plt.tight_layout(rect=[0.03, 0.03, 0.92, 0.95])
 

@@ -1389,9 +1389,15 @@ class SpectraCross:
         else:
             raise ValueError(f"Unknown spectra type: {which}")
         return ij, ji
+    
+    def __spectra_matrix__fname__(self, idx:int, which='EB', check=False)-> str | bool:
+        if check:
+            fname = os.path.join(self.libdir,f'spectra_matrix_binwidth{self.binwidth}_galcut{self.galcut}_aposcale{self.aposcale}_{which}_idx{idx}.pkl')
+            return os.path.isfile(fname)
+        return os.path.join(self.libdir,f'spectra_matrix_binwidth{self.binwidth}_galcut{self.galcut}_aposcale{self.aposcale}_{which}_idx{idx}.pkl')
 
     def __spectra_matrix_core__(self, idx:int, which='EB')->np.ndarray:
-        fname = os.path.join(self.libdir,f'spectra_matrix_binwidth{self.binwidth}_galcut{self.galcut}_aposcale{self.aposcale}_{which}_idx{idx}.pkl')
+        fname = self.__spectra_matrix__fname__(idx, which)
         if os.path.exists(fname):
             return pl.load(open(fname,'rb'))
         else:
