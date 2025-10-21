@@ -11,6 +11,7 @@ from typing import Dict, Optional, Any, Union, List, Tuple
 from concurrent.futures import ThreadPoolExecutor
 import pickle as pl
 import operator
+import gc
 # PDP: eventually we might want to also mask Galactic dust
 
 class Spectra:
@@ -1399,6 +1400,8 @@ class SpectraCross:
                 maptag_i = self.maptags[i]
                 qi, ui, maski = self.__get_QU_maps__(idx, maptag_i)
                 f_i = nmt.NmtField(maski, [qi*maski, ui*maski], lmax=self.lmax,masked_on_input=True)
+                del qi, ui, maski
+
                 for j in tqdm(range(i + 1), desc='Inner loop', position=1, leave=False):
                     if i == j:
                         f_j = f_i
@@ -1407,6 +1410,7 @@ class SpectraCross:
                         maptag_j = self.maptags[j]
                         qj, uj, maskj = self.__get_QU_maps__(idx, maptag_j)
                         f_j = nmt.NmtField(maskj, [qj*maskj, uj*maskj], lmax=self.lmax,masked_on_input=True)
+                        del qj, uj, maskj
                     if maptag_i.startswith('LAT') and maptag_j.startswith('LAT'):
                         tel = 'LAT'
                     elif maptag_i.startswith('SAT') and maptag_j.startswith('SAT'):
@@ -1418,6 +1422,9 @@ class SpectraCross:
                     matrix[i, j, :] = cl_decoupled[ij]
                     if i != j:
                         matrix[j, i, :] = cl_decoupled[ji]
+                    del f_j
+                del f_i
+                gc.collect()
             pl.dump(matrix, open(fname,'wb'))
             return matrix
         
