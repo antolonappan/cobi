@@ -1,7 +1,6 @@
 name: cb
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_gnu
@@ -25,7 +24,6 @@ dependencies:
   - cycler=0.12.1=pyhd8ed1ab_0
   - debugpy=1.8.6=py310hf71b8c6_0
   - decorator=5.1.1=pyhd8ed1ab_0
-  - ducc0=0.34.0=py310hf71b8c6_1
   - exceptiongroup=1.2.2=pyhd8ed1ab_0
   - executing=2.1.0=pyhd8ed1ab_0
   - fftw=3.3.10=nompi_hf1063bd_110
@@ -91,14 +89,12 @@ dependencies:
   - ncurses=6.5=he02047a_1
   - nest-asyncio=1.6.0=pyhd8ed1ab_0
   - numba=0.60.0=py310h5dc88bb_0
-  - numpy=1.22.4=py310h4ef5377_0
   - openjpeg=2.5.2=h488ebb8_0
   - openssl=3.3.2=hb9d3cd8_0
   - packaging=24.1=pyhd8ed1ab_0
   - parso=0.8.4=pyhd8ed1ab_0
   - pexpect=4.9.0=pyhd8ed1ab_0
   - pickleshare=0.7.5=py_1003
-  - pillow=10.4.0=py310he228d35_1
   - pip=24.2=pyh8b19718_1
   - platformdirs=4.3.6=pyhd8ed1ab_0
   - prompt-toolkit=3.0.48=pyha770c72_0
@@ -142,4 +138,14 @@ dependencies:
   - zipp=3.20.2=pyhd8ed1ab_0
   - zstandard=0.23.0=py310ha39cb0e_1
   - zstd=1.5.6=ha6fb4c9_0
-#prefix: /pscratch/sd/l/lonappan/software_pkgs/cb
+  - pip:
+      - corner==2.2.3
+      - ducc0==0.39.1
+      - emcee==3.1.6
+      - getdist==1.7.4
+      - lenspyx==2.0.52
+      - numpy==1.23.0
+      - pillow==12.0.0
+      - pixell==0.30.2
+      - so-noise-models==3.1.1
+prefix: /pscratch/sd/l/lonappan/software_pkgs/cb
