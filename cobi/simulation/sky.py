@@ -23,6 +23,7 @@ class SkySimulation:
 		fwhm: np.ndarray,
 		tube: np.ndarray,
 		mask: str,
+		telescope: str,
 		cb_model: str = "iso",
 		beta: float = 0.35,
 		mass: float = 1.5,
@@ -44,7 +45,6 @@ class SkySimulation:
 		nhits: str = None,
 		nhits_fac: float = 1.0,
 		fore_realization: bool = False,
-		telescope: str,
 	):
 		"""
 		Initializes the SkySimulation class for generating and handling sky simulations.
