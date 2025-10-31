@@ -12,12 +12,12 @@ from cobi.utils import Logger, change_coord
 #atm_noise or atm_corr, same for the noise map as well
 
 def NoiseSpectra(sensitivity_mode, fsky, lmax, atm_noise, telescope):
-    match telescope:
-        case "LAT":
-            teles = so_models.SOLatV3point1(sensitivity_mode)
-        case "SAT":
-            teles = so_models.SOSatV3point1(sensitivity_mode)
-        case "LiteBIRD":
+	match telescope:
+		case "LAT":
+			teles = so_models.SOLatV3point1(sensitivity_mode)
+		case "SAT":
+			teles = so_models.SOSatV3point1(sensitivity_mode)
+		case "LiteBIRD":
 			bands = np.array(['L40','L50','L60','L68a','L68b','L78a','L78b','L89a','L89b','L100','L119','L140','M100','M119','M140','M166','M195','H195','H235','H280','H337','H402'])
 			noise_arr = np.array([37.42,33.46,21.31,19.91,31.76,15.56,19.14,12.28,28.77,10.34,7.69,7.24,8.48,5.70,6.39,5.57,7.04,10.50,10.79,13.80,21.95,47.45]) # in uK_CMB*arcmin
 			ell = np.arange(lmax+1)
@@ -26,32 +26,32 @@ def NoiseSpectra(sensitivity_mode, fsky, lmax, atm_noise, telescope):
 			for i in range(len(bands)):
 				Nell_dict[f"{bands[i]}"] = np.ones_like(ell) * np.radians(noise_arr[i] / 60)**2
 			return Nell_dict
-    
-    corr_pairs = [(0,1),(2,3),(4,5)]
-    
-    ell, N_ell_LA_T_full,N_ell_LA_P_full = teles.get_noise_curves(fsky, lmax, 1, full_covar=True, deconv_beam=False)
-    del N_ell_LA_T_full
-    bands = teles.get_bands().astype(int)
-    Nbands = len(bands)
-    N_ell_LA_P  = N_ell_LA_P_full[range(Nbands),range(Nbands)] #type: ignore
-    N_ell_LA_Px = [N_ell_LA_P_full[i,j] for i,j in corr_pairs] #type: ignore
-    Nell_dict = {}
-    Nell_dict["ell"] = ell
-    if atm_noise:
-        for i in range(3):
-            for j in range(3):
-                if j < 2:
-                    Nell_dict[f"{bands[i*2+j]}"] = N_ell_LA_P[i*2+j]
-                else:
-                    k = i*2+j
-                    Nell_dict[f"{bands[k-2]}x{bands[k-1]}"] = N_ell_LA_Px[i]
-    else:
-        WN = np.radians(teles.get_white_noise(fsky)**.5*np.sqrt(2) / 60)**2
-        for i in range(Nbands):
-            Nell_dict[f"{bands[i]}"] = WN[i]*np.ones_like(ell)
+
+	corr_pairs = [(0,1),(2,3),(4,5)]
+
+	ell, N_ell_LA_T_full,N_ell_LA_P_full = teles.get_noise_curves(fsky, lmax, 1, full_covar=True, deconv_beam=False)
+	del N_ell_LA_T_full
+	bands = teles.get_bands().astype(int)
+	Nbands = len(bands)
+	N_ell_LA_P  = N_ell_LA_P_full[range(Nbands),range(Nbands)] #type: ignore
+	N_ell_LA_Px = [N_ell_LA_P_full[i,j] for i,j in corr_pairs] #type: ignore
+	Nell_dict = {}
+	Nell_dict["ell"] = ell
+	if atm_noise:
+		for i in range(3):
+			for j in range(3):
+				if j < 2:
+					Nell_dict[f"{bands[i*2+j]}"] = N_ell_LA_P[i*2+j]
+				else:
+					k = i*2+j
+					Nell_dict[f"{bands[k-2]}x{bands[k-1]}"] = N_ell_LA_Px[i]
+	else:
+		WN = np.radians(teles.get_white_noise(fsky)**.5*np.sqrt(2) / 60)**2
+		for i in range(Nbands):
+			Nell_dict[f"{bands[i]}"] = WN[i]*np.ones_like(ell)
 
 
-    return Nell_dict
+	return Nell_dict
 
 
 class Noise:
