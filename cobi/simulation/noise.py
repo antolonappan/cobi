@@ -17,7 +17,15 @@ def NoiseSpectra(sensitivity_mode, fsky, lmax, atm_noise, telescope):
             teles = so_models.SOLatV3point1(sensitivity_mode)
         case "SAT":
             teles = so_models.SOSatV3point1(sensitivity_mode)
-    
+        case "LiteBIRD":
+			bands = np.array(['L40','L50','L60','L68a','L68b','L78a','L78b','L89a','L89b','L100','L119','L140','M100','M119','M140','M166','M195','H195','H235','H280','H337','H402'])
+			noise_arr = np.array([37.42,33.46,21.31,19.91,31.76,15.56,19.14,12.28,28.77,10.34,7.69,7.24,8.48,5.70,6.39,5.57,7.04,10.50,10.79,13.80,21.95,47.45]) # in uK_CMB*arcmin
+			ell = np.arange(lmax+1)
+			Nell_dict = {}
+			Nell_dict['ell'] = ell
+			for i in range(len(bands)):
+				Nell_dict[f"{bands[i]}"] = np.ones_like(ell) * np.radians(noise_arr[i] / 60)**2
+			return Nell_dict
     
     corr_pairs = [(0,1),(2,3),(4,5)]
     
@@ -466,5 +474,3 @@ class Noise:
             return self.noiseQU_TOD_freq(idx, freq)
         else:
             raise ValueError(f"Invalid simulation type: {self.sim}", "Choose from 'NC' or 'TOD'.")
-        
-        

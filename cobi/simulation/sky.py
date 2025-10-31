@@ -44,6 +44,7 @@ class SkySimulation:
         nhits: str = None,
         nhits_fac: float = 1.0,
         fore_realization: bool = False,
+        telescope: str,
     ):
         """
         Initializes the SkySimulation class for generating and handling sky simulations.
@@ -95,7 +96,7 @@ class SkySimulation:
         if self.__class__.__name__ == "SAT" and nside != 512:
             self.logger.log(f"SAT simulations are only supported for nside=512. Resetting the given NSIDE={nside} to 512.")
             self.dnside = 512
-            
+        self.telescope = telescope
         self.nside = nside
         self.Acb = Acb
         self.cb_method = cb_model
@@ -111,7 +112,7 @@ class SkySimulation:
         self.mask = hp.read_map(mask, field=0, dtype=np.double)
         self.fsky = calc_fsky(self.mask)
         self.noise_model = noise_model
-        self.noise = Noise(nside, 0.4, self.__class__.__name__[:3], noise_model, nhits, nhits_fac, atm_noise, nsplits, verbose=self.verbose,)
+        self.noise = Noise(nside, 0.4, self.telescope, noise_model, nhits, nhits_fac, atm_noise, nsplits, verbose=self.verbose,)
         self.fore_realization = fore_realization
         self.config = {}
         for split in range(nsplits):
@@ -406,7 +407,69 @@ class LATsky(SkySimulation):
             verbose = verbose,
             nhits = nhits,
             nhits_fac = nhits_fac,
-            fore_realization = fore_realization
+            fore_realization = fore_realization,
+            telescope = 'LAT'
+        )
+
+class LiteBIRDsky(SkySimulation):
+    freqs = np.array(['L40','L50','L60','L68a','L68b','L78a','L78b','L89a','L89b','L100','L119','L140','M100','M119','M140','M166','M195','H195','H235','H280','H337','H402'])
+    fwhm = np.array([70.5,58.5,51.1,41.6,47.1,36.9,43.8,33.0,41.5,30.2,26.3,23.7,37.8,33.6,30.8,28.9,28.0,28.6,24.7,22.5,20.9,17.9])  # arcmin
+
+    def __init__(
+        self,
+        libdir: str,
+        nside: int,
+        mask: str,
+        cb_model: str = "iso",
+        beta: float = 0.35,
+        mass: float = 1.5,
+        Acb: float = 1e-6,
+        lensing: bool = True,
+        dust_model: str = 'd10',
+        sync_model: str = 's5',
+        bandpass: bool = False,
+        alpha: float = 0.0,
+        alpha_err: float = 0.0,
+        noise_model: str = "NC",
+        atm_noise: bool = True,
+        nsplits: int = 2,
+        gal_cut: int = 0,
+        hilc_bins: int = 10,
+        deconv_maps: bool = False,
+        fldname_suffix: str = "",
+        verbose: bool = True,
+        nhits: str = None,
+        nhits_fac: float = 1.0,
+        fore_realization: bool = False,
+    ):
+        super().__init__(
+            libdir = libdir,
+            nside = nside,
+            mask = mask,
+            freqs = LATsky.freqs,
+            fwhm = LATsky.fwhm,
+            cb_model = cb_model,
+            beta = beta,
+            mass = mass,
+            Acb = Acb,
+            lensing = lensing,
+            dust_model = dust_model,
+            sync_model = sync_model,
+            bandpass = bandpass,
+            alpha = alpha,
+            alpha_err = alpha_err,
+            noise_model = noise_model,
+            atm_noise = atm_noise,
+            nsplits = nsplits,
+            gal_cut = gal_cut,
+            hilc_bins = hilc_bins,
+            deconv_maps = deconv_maps,
+            fldname_suffix = fldname_suffix,
+            verbose = verbose,
+            nhits = nhits,
+            nhits_fac = nhits_fac,
+            fore_realization = fore_realization,
+            telescope = 'LiteBIRD'
         )
 
 
