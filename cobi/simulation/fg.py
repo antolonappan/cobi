@@ -3,6 +3,7 @@ This file contains the implementation of the Foreground class for generating and
 """
 # General imports
 import os
+import re
 import pysm3
 import numpy as np
 import healpy as hp
@@ -172,7 +173,7 @@ class Foreground:
 				return hp.read_map(fname, field=[0, 1]) # type: ignore
 			else:
 				maps = hp.read_map(self.dust_model_path % idx, field=(0,1,2))
-				sed_factor_i = sed_dust(float(band), self.beta_dust_map, self.temp_dust_map)
+				sed_factor_i = sed_dust(float(re.sub(r'[a-zA-Z]', '', band)), self.beta_dust_map, self.temp_dust_map)
 				maps *= sed_factor_i
 				mask_ = np.logical_not(np.isfinite(maps)) # we need to mask non-finite pixels from the sed.
 				maps[mask_] = 0.0
