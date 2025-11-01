@@ -111,10 +111,10 @@ class Foreground:
 			self.bp_profile = None
 			self.logger.log("Bandpass integration is disabled", level="info")
 		if self.fore_realization:
-			self.beta_dust_map = hp.read_map('/home/chervias/Planck_data/COM_CompMap_Dust-GNILC-Model-Spectral-Index_2048_R2.01.fits', field=0)
-			self.temp_dust_map = hp.read_map('/home/chervias/Planck_data/COM_CompMap_Dust-GNILC-Model-Temperature_2048_R2.01.fits', field=0)
+			self.beta_dust_map = hp.read_map('/home/chervias/Planck_data/COM_CompMap_Dust-GNILC-Model-Spectral-Index_2048_R2.01.fits', field=0); self.beta_dust_map = hp.ud_grade(self.beta_dust_map, self.nside)
+			self.temp_dust_map = hp.read_map('/home/chervias/Planck_data/COM_CompMap_Dust-GNILC-Model-Temperature_2048_R2.01.fits', field=0); self.temp_dust_map = hp.ud_grade(self.temp_dust_map, self.nside)
 			if self.dust_model == 'df_baseline':
-				self.dust_model_path = '/home/chervias/Filaments/nonzeroEB/output/DustFilaments_TQU_45M_400pc_SOLAT_Dust-gnilc-unires-limit50-sigmatheta14_nside2048_baseline_seed%04i_AllScaleMap_f353p0.fits'
+				self.dust_model_path = '/home/chervias/Filaments/nonzeroEB/output/DustFilaments_TQU_55M_400pc_GalPlane80_Dust-gnilc-unires-limit50-sigmatheta14_nside512_baseline_seed%04i_AllScaleMap_f353p0.fits'
 			elif self.dust_model == 'df_fiducial':
 				self.dust_model_path = '/home/chervias/Filaments/nonzeroEB/output/DustFilaments_TQU_45M_400pc_SOLAT_Dust-gnilc-unires-limit50-sigmatheta14_nside2048_ALD_fiducial_seed%04i_AllScaleMap_f353p0.fits'
 
@@ -218,8 +218,8 @@ class Foreground:
 				maps = sky.get_emission(nu, weights)
 				maps *= pysm3.utils.bandpass_unit_conversion(nu, weights=weights, output_unit=u.uK_CMB)
 			else:
-				maps = sky.get_emission(int(band) * u.GHz) # type: ignore
-				maps = maps.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(int(band) * u.GHz)) # type: ignore
+				maps = sky.get_emission(int(re.sub(r'[a-zA-Z]', '', band)) * u.GHz) # type: ignore
+				maps = maps.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(int(re.sub(r'[a-zA-Z]', '', band)) * u.GHz)) # type: ignore
 
 			if mpi.rank == 0:
 				hp.write_map(fname, maps[1:], dtype=np.float32) # type: ignore

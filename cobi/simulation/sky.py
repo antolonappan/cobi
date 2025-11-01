@@ -412,11 +412,11 @@ class LATsky(SkySimulation):
 		)
 
 class LiteBIRDsky(SkySimulation):
-	freqs = np.array(['40','50','60','68a','68b','78a','78b','89a','89b','100','119','140','100','119','140','166','195','195','235','280','337','402'])
-	fwhm = np.array([70.5,58.5,51.1,41.6,47.1,36.9,43.8,33.0,41.5,30.2,26.3,23.7,37.8,33.6,30.8,28.9,28.0,28.6,24.7,22.5,20.9,17.9])  # arcmin
-	tube = np.array(["LF", "LF", "LF", "LF", "LF", "LF", "LF", "LF", "LF", "LF", "LF", "LF", "MF", "MF", "MF", "MF", "MF", "MF", "HF", "HF", "HF", "HF"])  # tube each frequency occupies
+    freqs = np.array(['L40','L50','L60','L68a','L68b','L78a','L78b','L89a','L89b','L100','L119','L140','M100','M119','M140','M166','M195','H195','H235','H280','H337','H402'])
+    fwhm = np.array([70.5,58.5,51.1,41.6,47.1,36.9,43.8,33.0,41.5,30.2,26.3,23.7,37.8,33.6,30.8,28.9,28.0,28.6,24.7,22.5,20.9,17.9])  # arcmin
+    tube = np.array(["LF", "LF", "LF", "LF", "LF", "LF", "LF", "LF", "LF", "LF", "LF", "LF", "MF", "MF", "MF", "MF", "MF", "MF", "HF", "HF", "HF", "HF"])  # tube each frequency occupies
 
-	def __init__(
+    def __init__(
 		self,
 		libdir: str,
 		nside: int,
@@ -443,7 +443,7 @@ class LiteBIRDsky(SkySimulation):
 		nhits_fac: float = 1.0,
 		fore_realization: bool = False,
 	):
-		super().__init__(
+        super().__init__(
 			libdir = libdir,
 			nside = nside,
 			mask = mask,
@@ -473,7 +473,6 @@ class LiteBIRDsky(SkySimulation):
 			fore_realization = fore_realization,
 			telescope = 'LiteBIRD'
 		)
-
 
 class SATsky(SkySimulation):
     freqs = np.array(["27", "39", "93", "145", "225", "280"])
