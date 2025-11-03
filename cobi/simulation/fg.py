@@ -116,7 +116,7 @@ class Foreground:
 			if self.dust_model == 'df_baseline':
 				self.dust_model_path = '/home/chervias/Filaments/nonzeroEB/output/DustFilaments_TQU_55M_400pc_GalPlane80_Dust-gnilc-unires-limit50-sigmatheta14_nside512_baseline_seed%04i_AllScaleMap_f353p0.fits'
 			elif self.dust_model == 'df_fiducial':
-				self.dust_model_path = '/home/chervias/Filaments/nonzeroEB/output/DustFilaments_TQU_45M_400pc_SOLAT_Dust-gnilc-unires-limit50-sigmatheta14_nside2048_ALD_fiducial_seed%04i_AllScaleMap_f353p0.fits'
+				self.dust_model_path = '/home/chervias/Filaments/nonzeroEB/output/DustFilaments_TQU_55M_400pc_GalPlane80_Dust-gnilc-unires-limit50-sigmatheta14_nside512_ALD_fiducial_seed%04i_AllScaleMap_f353p0.fits'
 
 		else:
 			self.dust_model_path = None
