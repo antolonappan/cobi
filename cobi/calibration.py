@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from typing import Any, Optional, Tuple, Dict, List, Union
 from abc import ABC, abstractmethod
 from cobi.simulation import CMB
+from cobi.utils import Logger
 import os
 import healpy as hp
 import pickle as pl
@@ -75,9 +76,11 @@ class BaseSat4LatCross(ABC):
                  lat_lrange: Tuple[Optional[int], Optional[int]] = (None, None),
                  fit_per_split: bool = True,
                  spectra_selection: str = 'all',
-                 libdir_suffix: str = 'BaseSat4LatCross') -> None:
+                 libdir_suffix: str = 'BaseSat4LatCross',
+                 verbose: bool = False) -> None:
 
-        print(f"Initializing {self.__class__.__name__}...")
+        self.logger = Logger(self.__class__.__name__, verbose=verbose)
+        self.logger.log(f"Initializing {self.__class__.__name__}...", level="info")
         self.spec_cross = spec_cross
         self.libdir = os.path.join(spec_cross.libdir, libdir_suffix)
         os.makedirs(self.libdir, exist_ok=True)
@@ -109,7 +112,7 @@ class BaseSat4LatCross(ABC):
         self.__pnames__: List[str] = []
         self.__plabels__: List[str] = []
         
-        print(f"Initialized {self.__class__.__name__}.\n")
+        self.logger.log(f"Initialized {self.__class__.__name__}.", level="info")
 
     # -------------------------------------------------------------------------
     # Abstract methods - must be implemented by subclasses
@@ -159,21 +162,35 @@ class BaseSat4LatCross(ABC):
         lat_mask = (ells >= (lat_lmin or 0)) & (ells <= (lat_lmax or np.inf))
         cross_mask = sat_mask & lat_mask
 
-        n_tags, n_bins = len(self.maptags), self.binner.get_n_bands()
+        n_tags = len(self.maptags)
+        n_bins = len(ells)
         mask = np.zeros((n_tags, n_tags, n_bins), dtype=bool)
+        
         is_lat = np.array([tag.startswith('LAT') for tag in self.maptags])
-        lat_auto = np.outer(is_lat, is_lat)
-        sat_auto = np.outer(~is_lat, ~is_lat)
-        cross = ~(lat_auto | sat_auto)
+        
+        for i in range(n_tags):
+            for j in range(n_tags):
+                # Determine which ell mask to use
+                if is_lat[i] and is_lat[j]:
+                    # LAT x LAT
+                    ell_mask = lat_mask
+                elif not is_lat[i] and not is_lat[j]:
+                    # SAT x SAT
+                    ell_mask = sat_mask
+                else:
+                    # LAT x SAT cross
+                    ell_mask = cross_mask
+            
+                # Apply spectra selection
+                if self.spectra_selection == 'auto_only':
+                    if i == j:  # Auto-spectrum
+                        mask[i, j] = ell_mask
+                elif self.spectra_selection == 'cross_only':
+                    if i != j:  # Cross-spectrum
+                        mask[i, j] = ell_mask
+                else:  # 'all'
+                    mask[i, j] = ell_mask
 
-        mask[lat_auto] = lat_mask
-        mask[sat_auto] = sat_mask
-        mask[cross] = cross_mask
-
-        if self.spectra_selection == 'auto_only':
-            mask &= (lat_auto | sat_auto)[:, :, None]
-        elif self.spectra_selection == 'cross_only':
-            mask &= cross[:, :, None]
         return mask
 
     def _calc_mean_std(self, num_sims: int = 50) -> Tuple[np.ndarray, np.ndarray]:
@@ -188,10 +205,10 @@ class BaseSat4LatCross(ABC):
         """
         fname = os.path.join(self.libdir, f'mean_std_spec_{num_sims}_sims.pkl')
         if os.path.exists(fname):
-            print("Loading cached mean/std spectra...")
+            self.logger.log("Loading cached mean/std spectra...", level="info")
             with open(fname, 'rb') as f:
                 return pl.load(f)
-        print(f"Computing mean/std over {num_sims} simulations...")
+        self.logger.log(f"Computing mean/std over {num_sims} simulations...", level="info")
         all_specs = [
             self.spec_cross.data_matrix(i, which='EB',
                                         sat_lrange=self.sat_lrange,
@@ -259,12 +276,17 @@ class BaseSat4LatCross(ABC):
             f"samples_cross_{nwalkers}_{nsamples}_fitper_{self.fit_per_split}_ndim_{len(self.__pnames__)}.pkl"
             )
         if os.path.exists(fname) and not rerun:
-            print(f"Loading cached samples: {fname}")
+            self.logger.log(f"Loading cached samples: {fname}", level="info")
             with open(fname, 'rb') as f:
                 loaded_samples = pl.load(f)
                 return np.array(loaded_samples)
         ndim = len(self.__pnames__)
-        pos = (fiducial_params or np.zeros(ndim)) + 1e-1 * np.random.randn(nwalkers, ndim)
+        if fiducial_params is not None:
+            if len(fiducial_params) != ndim:
+                raise ValueError(f"fiducial_params length {len(fiducial_params)} does not match ndim {ndim}")
+        else:
+            fiducial_params = np.zeros(ndim)
+        pos = fiducial_params + 1e-3 * np.random.randn(nwalkers, ndim)
         sampler = emcee.EnsembleSampler(nwalkers, ndim, self.ln_prob, threads=8)
         sampler.run_mcmc(pos, nsamples, progress=True)
         flat_samples = sampler.get_chain(discard=200, thin=20, flat=True)
@@ -272,17 +294,19 @@ class BaseSat4LatCross(ABC):
             pl.dump(flat_samples, f)
         return np.array(flat_samples)
 
-    def getdist_samples(self, nwalkers: int, nsamples: int, rerun: bool = False, 
+    def getdist_samples(self, nwalkers: int, nsamples: int, rerun: bool = False,
+                        fiducial_params: Optional[np.ndarray] = None,
                         label: Optional[str] = None) -> MCSamples:
-        samples = self.run_mcmc(nwalkers, nsamples, rerun=rerun)
+        samples = self.run_mcmc(nwalkers, nsamples, rerun=rerun, fiducial_params=fiducial_params)
         return MCSamples(samples=samples, names=self.__pnames__, labels=self.__plabels__, label=label)
 
     # -------------------------------------------------------------------------
     # Shared Plotting
     # -------------------------------------------------------------------------
 
-    def plot_posteriors(self, nwalkers: int, nsamples: int, rerun: bool = False, label: Optional[str] = None):
-        samples = self.getdist_samples(nwalkers, nsamples, rerun=rerun, label=label)
+    def plot_posteriors(self, nwalkers: int, nsamples: int, rerun: bool = False, label: Optional[str] = None,
+                        fiducial_params: Optional[np.ndarray] = None):
+        samples = self.getdist_samples(nwalkers, nsamples, rerun=rerun, label=label, fiducial_params=fiducial_params)
         g = plots.get_subplot_plotter()
         g.triangle_plot([samples], filled=True, title_limit=1)
         return g
@@ -435,7 +459,7 @@ class BaseSat4LatCross(ABC):
         # Save or show
         if save_path:
             plt.savefig(save_path, dpi=150)
-            print(f"Figure saved to {save_path}")
+            self.logger.log(f"Figure saved to {save_path}", level="info")
             plt.close()
         else:
             plt.show()
@@ -462,7 +486,8 @@ class Sat4LatCross(BaseSat4LatCross):
                  sat_lrange: Tuple[Optional[int], Optional[int]] = (None, None), 
                  lat_lrange: Tuple[Optional[int], Optional[int]] = (None, None),
                  fit_per_split: bool = True, 
-                 spectra_selection: str = 'all') -> None:
+                 spectra_selection: str = 'all',
+                 verbose: bool = False) -> None:
         """
         Initialize calibration analysis for birefringence angle fitting.
         
@@ -474,9 +499,10 @@ class Sat4LatCross(BaseSat4LatCross):
             lat_lrange: LAT ell range for fitting (lmin, lmax)
             fit_per_split: Whether to fit per split or per frequency
             spectra_selection: Which spectra to include ('all', 'auto_only', 'cross_only')
+            verbose: Whether to enable verbose output
         """
         super().__init__(spec_cross, sat_err, sat_lrange, lat_lrange,
-                         fit_per_split, spectra_selection, 'CalibrationAnalysis')
+                         fit_per_split, spectra_selection, 'CalibrationAnalysis', verbose)
         self.cl_len = CMB(spec_cross.libdir, spec_cross.nside, beta=beta_fid).get_lensed_spectra(dl=False)
         if fit_per_split:
             self.__pnames__  = [f"a_{t}" for t in self.maptags] + ['beta']
@@ -486,26 +512,51 @@ class Sat4LatCross(BaseSat4LatCross):
             self.__plabels__ = [_format_alpha_label(f) for f in self.freq_bases] + [r"\beta"]
 
     def theory(self, theta: np.ndarray) -> np.ndarray:
+        """
+        Compute theoretical EB spectra between all map pairs
+        using the exact birefringence + miscalibration formula:
+            C_ell^{E_iB_j} = cos(2α_i+2β)sin(2α_j+2β)C_EE
+                            - sin(2α_i+2β)cos(2α_j+2β)C_BB
+        """
+        # Unpack angles
+        # α_i = per-map miscalibration
+        # β   = global cosmic birefringence
         if self.fit_per_split:
             alphas = theta[:-1]
         else:
             base_a = {b: theta[i] for i, b in enumerate(self.freq_bases)}
             alphas = np.array([base_a[t.rsplit('-', 1)[0]] for t in self.maptags])
         beta = theta[-1]
-        cl_diff = 0.5 * (self.cl_len["ee"] - self.cl_len["bb"])
+
+        # Get Cℓ^EE and Cℓ^BB
+        cl_ee = self.cl_len["ee"][:self.Lmax+1]
+        cl_bb = self.cl_len["bb"][:self.Lmax+1]
+
         model = np.zeros_like(self.mean_spec)
-        for i in range(len(self.maptags)):
-            for j in range(len(self.maptags)):
-                term = np.sin(np.deg2rad(2 * alphas[i] + 2 * alphas[j] + 4 * beta))
-                model[i, j] = self.binner.bin_cell(cl_diff[:self.Lmax+1] * term)
+
+        for i in range(len(self.maptags)):          # E_i
+            for j in range(len(self.maptags)):      # B_j
+                # angles in radians
+                ai = np.deg2rad(alphas[i])
+                aj = np.deg2rad(alphas[j])
+                b  = np.deg2rad(beta)
+
+                term = (
+                    np.cos(2*ai + 2*b) * np.sin(2*aj + 2*b) * cl_ee
+                    - np.sin(2*ai + 2*b) * np.cos(2*aj + 2*b) * cl_bb
+                )
+
+                model[i, j] = self.binner.bin_cell(term)
+
         return model
+
 
     def lnprior(self, theta: np.ndarray) -> float:
         alphas, beta = theta[:-1], theta[-1]
         if np.any(np.abs(alphas) > 0.5) or not (0 < beta < 0.5):
             return -np.inf
         sat_idx = [i for i, t in enumerate(self.maptags if self.fit_per_split else self.freq_bases) if t.startswith('SAT')]
-        return float(-0.5 * np.sum(np.array(alphas)[sat_idx] ** 2 / self.sat_err**2))
+        return float(-0.5 * np.sum(np.array(alphas)[sat_idx] ** 2 / self.sat_err**2 - np.log(self.sat_err * np.sqrt(2 * np.pi))))
 
 # ============================================================
 # =============== SUBCLASS 2: AMPLITUDE FIT ==================
@@ -533,7 +584,8 @@ class Sat4LatCross_AmplitudeFit(BaseSat4LatCross):
                  sat_lrange: Tuple[Optional[int], Optional[int]] = (None, None), 
                  lat_lrange: Tuple[Optional[int], Optional[int]] = (None, None),
                  fit_per_split: bool = True, 
-                 spectra_selection: str = 'all', 
+                 spectra_selection: str = 'all',
+                 sim_idx: int|None = None,
                  verbose: bool = False) -> None:
         """
         Initialize calibration analysis for amplitude parameter fitting.
@@ -547,10 +599,12 @@ class Sat4LatCross_AmplitudeFit(BaseSat4LatCross):
             lat_lrange: LAT ell range for fitting (lmin, lmax)
             fit_per_split: Whether to fit per split or per frequency
             spectra_selection: Which spectra to include ('all', 'auto_only', 'cross_only')
+            sim_idx: Simulation index to use for data (default: 0)
             verbose: Whether to enable verbose output
         """
-        suffix = f'CalibrationAnalysis_AmpFit_{temp_model}_{temp_value}'
-        super().__init__(spec_cross, sat_err, sat_lrange, lat_lrange, fit_per_split, spectra_selection, suffix)
+        self.sim_idx = sim_idx
+        suffix = f'CalibrationAnalysis_AmpFit_{temp_model}_{temp_value}_sim{sim_idx}'
+        super().__init__(spec_cross, sat_err, sat_lrange, lat_lrange, fit_per_split, spectra_selection, suffix, verbose)
 
         if temp_model == 'iso':
             cmb = CMB(spec_cross.libdir, spec_cross.nside, beta=temp_value, verbose=verbose)
@@ -571,6 +625,55 @@ class Sat4LatCross_AmplitudeFit(BaseSat4LatCross):
         else:
             self.__pnames__  = [f"a_{f}" for f in self.freq_bases] + ['A_EB']
             self.__plabels__ = [_format_alpha_label(f) for f in self.freq_bases] + [r"A_{EB}"]
+        if fit_per_split:
+            self.lat_alpha_mean = np.array([0.2]*4)
+        else:
+            self.lat_alpha_mean = np.array([0.2]*2)
+        self.lat_alpha_err = 0.2
+
+    def _calc_mean_std(self, num_sims: int = 50) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Override parent method to use a specific simulation realization instead of mean.
+        
+        Args:
+            num_sims: Number of simulations (used for std calculation only)
+            
+        Returns:
+            Tuple of (single_realization_spectrum, std_spectrum) arrays
+        """
+
+        if self.sim_idx is None:
+            fname = os.path.join(self.libdir, f'realization_spec_sim_mean_{num_sims}_sims.pkl')
+        else:
+            fname = os.path.join(self.libdir, f'realization_spec_sim{self.sim_idx}_{num_sims}_sims.pkl')
+        if os.path.exists(fname):
+            self.logger.log(f"Loading cached realization spectrum for sim_idx={self.sim_idx}...", level="info")
+            with open(fname, 'rb') as f:
+                return pl.load(f)
+        
+        self.logger.log(f"Computing realization spectrum for sim_idx={self.sim_idx} and std over {num_sims} simulations...", level="info")
+        
+        # Get the specific realization
+        # Compute std from multiple simulations for error bars
+        all_specs = [
+            self.spec_cross.data_matrix(i, which='EB',
+                                        sat_lrange=self.sat_lrange,
+                                        lat_lrange=self.lat_lrange,
+                                        avg_splits=False)
+            for i in tqdm(range(num_sims))
+        ]
+        all_specs = np.array(all_specs)
+        std_spec = np.std(all_specs, axis=0)
+
+        if self.sim_idx is None:
+            single_spec = np.mean(all_specs, axis=0)
+        else:
+            single_spec = all_specs[self.sim_idx]
+
+        with open(fname, 'wb') as f:
+            pl.dump((single_spec, std_spec), f)
+        
+        return single_spec, std_spec
 
     def _get_alphas(self, theta: np.ndarray) -> np.ndarray:
         """
@@ -588,17 +691,299 @@ class Sat4LatCross_AmplitudeFit(BaseSat4LatCross):
         return np.array([base_a[t.rsplit('-', 1)[0]] for t in self.maptags])
 
     def theory(self, theta: np.ndarray) -> np.ndarray:
-        alphas, A_EB = self._get_alphas(theta), theta[-1]
+        alphas = self._get_alphas(theta)
+        A_EB   = theta[-1]
+
+        cl_ee = self.cl_len["ee"][:self.Lmax+1]
+        cl_bb = self.cl_len["bb"][:self.Lmax+1]
+
         model = np.zeros_like(self.mean_spec)
+
         for i in range(len(self.maptags)):
             for j in range(len(self.maptags)):
-                ang = np.sin(np.deg2rad(2 * alphas[i] + 2 * alphas[j]))
-                model[i, j] = self.binner.bin_cell(self.cl_diff_unbinned * ang) + self.binned_template / A_EB
+                ai = np.deg2rad(alphas[i])
+                aj = np.deg2rad(alphas[j])
+
+                # physical rotation part (unbinned)
+                term_unbinned = (
+                    np.cos(2*ai) * np.sin(2*aj) * cl_ee
+                    - np.sin(2*ai) * np.cos(2*aj) * cl_bb
+                )
+
+                # bin + add scaled template
+                model[i, j] = (
+                self.binner.bin_cell(term_unbinned)
+                + (np.cos(2*ai + 2*aj) * self.binned_template / A_EB)
+              )
+
         return model
+
 
     def lnprior(self, theta: np.ndarray) -> float:
         alphas, A_EB = theta[:-1], theta[-1]
-        if np.any(np.abs(alphas) > 0.5) or not (0 < A_EB < 2.0):
+        if np.any(np.abs(alphas) > 0.5) or not (0 < A_EB < 2):
             return -np.inf
-        sat_idx = [i for i, t in enumerate(self.maptags if self.fit_per_split else self.freq_bases) if t.startswith('SAT')]
-        return float(-0.5 * np.sum(np.array(alphas)[sat_idx] ** 2 / self.sat_err**2))
+        
+        # Only SAT prior
+        sat_idx = [i for i, t in enumerate(self.maptags if self.fit_per_split else self.freq_bases) 
+                if t.startswith('SAT')]
+        #lat_idx = [i for i, t in enumerate(self.maptags if self.fit_per_split else self.freq_bases) 
+        #        if t.startswith('LAT')]
+        sat_prior = -0.5 * np.sum((np.array(alphas)[sat_idx] - 0)** 2 / self.sat_err**2 - 
+                                np.log(self.sat_err * np.sqrt(2 * np.pi)))
+        #lat_prior = -0.5 * np.sum((np.array(alphas)[lat_idx]-self.lat_alpha_mean) ** 2 / self.lat_alpha_err**2 - 
+        #                       np.log(self.lat_alpha_err * np.sqrt(2 * np.pi)))
+
+        #return float(sat_prior + lat_prior)
+        return float(sat_prior)
+
+
+def selector(lib,lmin,lmax,):
+    b = lib.binInfo.get_effective_ells()
+    select = np.where((b>lmin) & (b<lmax))[0]
+    return select
+def selectorf(lib,avoid_freq):
+    freqs = lib.lat.freqs
+    select = np.where(np.array([freq not in avoid_freq for freq in freqs]))[0]
+    return select
+
+def get_sp(lib,lmax,avoid_freq=[]):
+    bl_arr = []
+    for i in range(2):# changed
+        bl_arr.append(lib.binInfo.bin_cell(hp.gauss_beam(np.radians(lib.lat.fwhm[i]/60),lmax)**2))
+    bl_arr = np.array(bl_arr)
+    obs_arr = []
+    # for i in range(100):
+    #     sp = lib.obs_x_obs(i)
+    #     obs_arr.append(sp)
+    # obs_arr = np.array(obs_arr)
+    # obs_arr = obs_arr[:,np.arange(2),np.arange(2),2,2:] # changed
+    for i in range(100):
+        sp = lib.obs_x_obs(i, False) 
+        first  = (sp[1, 0, 2, 2:] + sp[0, 1, 2, 2:]) / 2
+        second = (sp[2, 3, 2, 2:] + sp[3, 2, 2, 2:]) / 2
+        obs_arr.append(np.stack([first, second], axis=0))
+    obs_arr = np.asarray(obs_arr)         
+    return obs_arr/bl_arr
+
+def paranames(lib,name,avoid=[]):
+    return [f"a{name}{fe}" for fe in lib.lat.freqs if fe not in avoid] 
+def latexnames(lib, name, avoid=[]):
+    return [r'\alpha_{{{}}}^{{{}}}'.format(name, fe) for fe in lib.lat.freqs if fe not in avoid]
+
+
+class Sat4Lat_AmplitudeFit:
+    """
+    Modified class to fit for an EB amplitude parameter (A_EB) and 
+    miscalibration angles (alpha) instead of the birefringence angle (beta).
+    """
+    def __init__(self, libdir, lmin, lmax, latlib, satlib, sat_err, temp_model,temp_value,use_diag=True,idx=None,verbose=False):
+        
+        latnc = latlib.lat.noise_model
+        satnc = satlib.lat.noise_model
+        if (latnc == 'NC') and (satnc == 'NC'):
+            self.libdir = os.path.join(latlib.lat.libdir, f"CalibrationTD_AmpFit_{temp_model}_{temp_value}")
+        elif (latnc == 'TOD') and (satnc == 'TOD'):
+            self.libdir = os.path.join(latlib.lat.libdir, f"Calibration_TODTD_AmpFit_{temp_model}_{temp_value}")
+        # ... (add other elif conditions as in your original code) ...
+        else:
+            raise ValueError(f"Invalid noise model {latnc} {satnc}")
+
+        os.makedirs(self.libdir, exist_ok=True)
+        self.latlib = latlib
+        self.sat_err = sat_err
+        self.binner = satlib.binInfo
+        self.Lmax = satlib.lmax
+        self.__select__ = selector(satlib, lmin, lmax)
+        self.addname = "bp" if latlib.lat.bandpass else ''
+        
+        self.use_diag = use_diag
+        self.idx = idx
+        self.lat_mean_90, self.lat_icov_90 = self.calc_mean_icov(latlib, 'LAT', 0)
+        self.lat_mean_150, self.lat_icov_150 = self.calc_mean_icov(latlib, 'LAT', 1)
+        self.sat_mean_90, self.sat_icov_90 = self.calc_mean_icov(satlib, 'SAT', 0)
+        self.sat_mean_150, self.sat_icov_150 = self.calc_mean_icov(satlib, 'SAT', 1)
+        if temp_model == 'iso':
+            cmb = CMB(libdir,satlib.lat.nside,beta=temp_value,verbose=verbose)
+            self.eb_template_unbinned = cmb.get_cb_lensed_spectra(dl=False)['eb']
+        elif temp_model == 'iso_td':
+            cmb = CMB(libdir,satlib.lat.nside,model=temp_model,mass=temp_value,verbose=verbose)
+            self.eb_template_unbinned = cmb.get_cb_lensed_mass_spectra(dl=False)['eb']
+        else:
+            raise ValueError("only 'iso' and 'iso_td' allowed")
+        
+        ### MODIFIED ###
+        # Store the binned version of the provided EB template.
+        # The template should be the C_l^EB spectrum (not D_l).
+        self.binned_template = self.binner.bin_cell(self.eb_template_unbinned[:self.Lmax+1])[self.__select__]
+        
+        # We still need the lensed EE and BB for the alpha calculation
+        self.cl_len = CMB(libdir, satlib.lat.nside, beta=0.0,verbose=verbose).get_lensed_spectra(dl=False)
+
+        self.lmin = lmin
+        self.lmax = lmax
+
+        ### MODIFIED ###
+        # Updated parameter names and labels for A_EB instead of beta
+        self.__pnames__ = paranames(latlib, 'LAT') + paranames(satlib, 'SAT') + ['A_EB']
+        self.__plabels__ = latexnames(latlib, 'LAT') + latexnames(satlib, 'SAT') + [r'A_{EB}']
+        self.dof = 2*len(self.__select__) * 2 - len(self.__pnames__) # 2 spectra (EB) for 2 freq for lat and sat
+        
+
+
+    def calc_mean_icov(self, lib, name, idx):
+        """
+        Calculates the mean and the inverse covariance matrix of the spectra.
+        """
+        USE_DIAG = self.use_diag
+        sp = get_sp(lib, self.Lmax)[:,idx,self.__select__]
+        if self.idx is not None:
+            mean = sp[self.idx]
+        else:
+            mean = sp.mean(axis=0)
+        cov = np.cov(sp.T)
+        if USE_DIAG:
+            cov = np.diag(np.diag(cov))
+        else:
+            alpha = 1e-5 
+            reg_term = alpha * np.mean(np.diag(cov)) * np.identity(cov.shape[0])
+            cov += reg_term
+        icov = np.linalg.inv(cov)
+        if name in ['LAT', 'SAT']:
+            return (mean, icov)
+        else:
+            raise ValueError(f"Invalid name {name}")
+        
+    def plot_spectra(self, tele):
+        plt.figure(figsize=(4, 4))
+        if tele == 'LAT' and self.latlib is not None:
+            for i in range(2):
+                plt.loglog(self.binner.get_effective_ells()[self.__select__], self.lat_mean[i])
+        elif tele == 'SAT':
+            for i in range(2):
+                plt.loglog(self.binner.get_effective_ells()[self.__select__], self.sat_mean[i])
+        else:
+            raise ValueError(f"Invalid telescope {tele}")
+    
+    def theory_alpha(self, alpha_array):
+        ### MODIFIED ###
+        # This function now *only* calculates the effect of the miscalibration angle alpha.
+        # It's kept separate for clarity in the chisq function.
+        alpha_array = np.asarray(alpha_array)
+        # The EB spectrum induced by E-B mixing from a miscalibration angle alpha is sin(4*alpha)*(C_l^EE - C_l^BB)/2
+        th = 0.5 * (self.cl_len["ee"] - self.cl_len["bb"])[:, np.newaxis] * np.sin(np.deg2rad(4 * alpha_array))
+        return np.apply_along_axis(lambda th_slice: self.binner.bin_cell(th_slice[:self.Lmax+1])[self.__select__], 0, th).T
+
+    def chisq(self, theta):
+        alpha_lat, alpha_sat, A_EB = np.array(theta[:2]), np.array(theta[2:4]), theta[-1]
+        birefringence_model = self.binned_template / A_EB
+        alpha_lat_90, alpha_lat_150 = alpha_lat
+        alpha_sat_90, alpha_sat_150 = alpha_sat
+        
+        #SAT
+        sat_miscal_model_90 = self.theory_alpha(np.array([alpha_sat_90]))
+        sat_total_model_90 = birefringence_model + sat_miscal_model_90
+        diff_90 = self.sat_mean_90 - sat_total_model_90
+        sat_chi_90 = diff_90 @ self.sat_icov_90 @ diff_90.T 
+        sat_miscal_model_150 = self.theory_alpha(np.array([alpha_sat_150]))
+        sat_total_model_150 = birefringence_model + sat_miscal_model_150
+        diff_150 = self.sat_mean_150 - sat_total_model_150
+        sat_chi_150 = diff_150 @ self.sat_icov_150 @ diff_150.T 
+        sat_chi = sat_chi_90 + sat_chi_150
+
+        #LAT
+        lat_miscal_model_90 = self.theory_alpha(np.array([alpha_lat_90]))
+        lat_total_model_90 = birefringence_model + lat_miscal_model_90
+        diff_90 = self.lat_mean_90 - lat_total_model_90
+        lat_chi_90 = diff_90 @ self.lat_icov_90 @ diff_90.T 
+        lat_miscal_model_150 = self.theory_alpha(np.array([alpha_lat_150]))
+        lat_total_model_150 = birefringence_model + lat_miscal_model_150
+        diff_150 = self.lat_mean_150 - lat_total_model_150
+        lat_chi_150 = diff_150 @ self.lat_icov_150 @ diff_150.T 
+        lat_chi = lat_chi_90 + lat_chi_150      
+
+        return sat_chi + lat_chi
+
+    
+    def MLE(self,Aeb):
+        
+        initial_guess = np.array([0.2, 0.2, 0.0, 0.0, Aeb])  # [alpha_lat1, alpha_lat2, alpha_sat1, alpha_sat2, A_EB]
+
+        result = minimize(self.chisq, initial_guess, method='Nelder-Mead')
+
+        if result.success:
+            print("MLE optimization successful.")
+            print("Optimized parameters:", result.x)
+            print("Minimum chi-squared:", result.fun)
+        else:
+            raise RuntimeError("MLE optimization failed.")
+
+    def lnprior(self, theta):
+        sigma = self.sat_err
+        ### MODIFIED ###
+        # Unpack A_EB instead of beta
+        alphalat, alphasat, A_EB = np.array(theta[:2]), np.array(theta[2:4]), theta[-1]
+
+        lnp = -0.5 * (alphasat - 0)**2 / sigma**2 - np.log(sigma * np.sqrt(2 * np.pi))
+        
+        ### MODIFIED ###
+        # Set a flat prior for A_EB. You can change the range [-1, 1] as needed.
+        if np.all(alphalat > -0.5) and np.all(alphalat < 0.5) and 0 < A_EB < 2.0:
+            return np.sum(lnp)
+        return -np.inf
+
+    def ln_likelihood(self, theta):
+        return -0.5 * self.chisq(theta)
+
+    def ln_prob(self, theta):
+        lp = self.lnprior(theta)
+        if not np.isfinite(lp):
+            return -np.inf
+        return lp + self.ln_likelihood(theta)
+    
+    def samples(self, nwalkers=32, nsamples=1000, rerun=True):
+        ### MODIFIED ###
+        # Update the 'true' values for the MCMC initialization.
+        # Assuming true alphas are ~0 and true A_EB is, for example, 0.3
+        true = np.array([0.2, 0.2, 0, 0, 0.3]) 
+        
+        fname = os.path.join(self.libdir, f"samples_{nwalkers}_{nsamples}{self.addname}_max{self.lmax}_min{self.lmin}.pkl")
+        if os.path.exists(fname) and not rerun:
+            return pl.load(open(fname, 'rb'))
+        else:
+            ndim = len(true)
+            pos = true + 1e-3 * np.random.randn(nwalkers, ndim)
+            sampler = emcee.EnsembleSampler(nwalkers, ndim, self.ln_prob, threads=4)
+            sampler.run_mcmc(pos, nsamples, progress=True)
+            flat_samples = sampler.get_chain(discard=200, thin=15, flat=True)
+            pl.dump(flat_samples, open(fname, 'wb'))
+            return flat_samples
+
+    def getdist_samples(self, nwalkers, nsamples, rerun=False, label=None):
+        flat_samples = self.samples(nwalkers, nsamples, rerun=rerun)
+        return MCSamples(samples=flat_samples, names=self.__pnames__, labels=self.__plabels__, label=label)
+        
+    def plot_getdist(self, nwalkers, nsamples, avoid_sat=False, aeb_only=False, rerun=False):
+        ### MODIFIED ###
+        # Added an 'aeb_only' option for convenience, similar to 'beta_only'
+        flat_samples = self.getdist_samples(nwalkers, nsamples, rerun=rerun)
+        if aeb_only:
+            g = plots.get_single_plotter(width_inch=4)
+            g.plot_1d(flat_samples, 'A_EB', title_limit=1)
+        else:
+            names = self.__pnames__
+            if avoid_sat:
+                names = [item for item in names if 'SAT' not in item]
+            g = plots.get_subplot_plotter()
+            g.triangle_plot([flat_samples], names, filled=True, title_limit=1)
+    
+    def mle(self,nwalkers,nsamples,rerun=False):
+        s = self.samples(nwalkers,nsamples,rerun=rerun)
+        theta = np.median(s,axis=0)
+        chi2_min = self.chisq(theta)
+        return chi2_min
+    
+    def p_value(self,nwalkers,nsamples,rerun=False):
+        chi2_min = self.mle(nwalkers,nsamples,rerun=rerun)
+        p_val = chi2.sf(chi2_min, self.dof)
+        return p_val

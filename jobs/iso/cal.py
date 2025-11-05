@@ -18,12 +18,11 @@ nc = 'NC'
 
 lat = LATskyC(libdir, nside, cb_model, beta, alpha=alpha_lat,alpha_err=alpha_lat_err, bandpass=True,verbose=True,nsplits=2,noise_model=nc)
 sat = SATskyC(libdir, nside, cb_model, beta, alpha_err=alpha_sat_err, bandpass=False,verbose=True,nsplits=2,noise_model=nc)
-spec = SpectraCross(libdir, lat, sat, binwidth=5, galcut=40, aposcale=2)
+spec = SpectraCross(libdir, lat, sat, binwidth=50, galcut=40, aposcale=2)
 
-#start_i = 0
-#end_i = 100
-#jobs = np.arange(start_i, end_i)
-jobs = np.array([63, 74, 75, 77, 83, 85, 91, 96])
+start_i = 0
+end_i = 50
+jobs = np.arange(start_i, end_i)
 
 for i in jobs[mpi.rank::mpi.size]:
     #lat.SaveObsQUs(i)

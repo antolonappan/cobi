@@ -1261,9 +1261,7 @@ class Spectra:
 
 
 class SpectraCross:
-    def __init__(self, libdir:str, lat:LATskyC, sat:SATskyC, binwidth:int=5, galcut:int=40, aposcale:int=2,lmax:int=3000):
-        self.libdir = os.path.join(libdir,'SpectraCross')
-        os.makedirs(self.libdir, exist_ok=True)
+    def __init__(self, libdir:str, lat:LATskyC, sat:SATskyC, binwidth:int=1, galcut:int=40, aposcale:int=2,lmax:int=3000):
         self.lat = lat
         self.sat = sat
         if lat.nside != sat.nside:
@@ -1280,6 +1278,11 @@ class SpectraCross:
         self.freqs = lat.freqs
         self.nsplits = lat.nsplits
         self.__create_maptags__()
+
+        self.libdir = os.path.join(libdir,f"SpectraCross_n{self.nside}_b{self.binwidth}_g{self.galcut}_a{str(self.aposcale).replace('.','p')}_l{self.lmax}")
+        self.specdir = os.path.join(self.libdir,'spectra')
+        os.makedirs(self.libdir, exist_ok=True)
+        os.makedirs(self.specdir, exist_ok=True)
 
         self.__sat_workspace__ = self.__get_coupling_matrix__('SAT')
         self.__lat_workspace__ = self.__get_coupling_matrix__('LAT')
@@ -1316,7 +1319,7 @@ class SpectraCross:
         else:
             maskobj = self.__get_mask__(tel)
             mask = maskobj.mask
-            hp.write_map(fname, mask)
+            hp.write_map(fname, mask,dtype=np.float64)
         return mask
     
     @property
@@ -1392,9 +1395,9 @@ class SpectraCross:
     
     def __spectra_matrix__fname__(self, idx:int, which='EB', check=False)-> str | bool:
         if check:
-            fname = os.path.join(self.libdir,f'spectra_matrix_binwidth{self.binwidth}_galcut{self.galcut}_aposcale{self.aposcale}_{which}_idx{idx}.pkl')
+            fname = os.path.join(self.specdir,f'spectra_matrix_{which}_{idx:03d}.pkl')
             return os.path.isfile(fname)
-        return os.path.join(self.libdir,f'spectra_matrix_binwidth{self.binwidth}_galcut{self.galcut}_aposcale{self.aposcale}_{which}_idx{idx}.pkl')
+        return os.path.join(self.specdir,f'spectra_matrix_{which}_{idx:03d}.pkl')
 
     def __spectra_matrix_core__(self, idx:int, which='EB')->np.ndarray:
         fname = self.__spectra_matrix__fname__(idx, which)
