@@ -277,7 +277,7 @@ class Spectra:
     def Sync_qu_maps(self, ii: int) -> np.ndarray:
         return self.__get_fg_QUmap__(self.freqs[ii], 'sync')
     
-    def obs_x_obs_check(self, idx: int) -> None:
+    def obs_x_obs_check(self, idx: int, read_test=False) -> None:
         """
         Checks if the observed x observed power spectra have been computed for all frequency bands.
 
@@ -291,6 +291,12 @@ class Spectra:
                 f"obs_x_obs_{self.bands[ii]}{'_obsBP' if self.lat.bandpass else ''}{'_d' if self.lat.deconv_maps else ''}_{idx:03d}.npy",
             )
             c.append(os.path.isfile(fname))
+            if read_test and os.path.isfile(fname):
+                try:
+                    _ = np.load(fname)
+                except:
+                    print(f"Error loading {fname}")
+
         return c
 
     def __obs_x_obs_helper_series__(self, ii: int, idx: int, recache: bool = False) -> np.ndarray:
@@ -1278,8 +1284,10 @@ class SpectraCross:
         self.freqs = lat.freqs
         self.nsplits = lat.nsplits
         self.__create_maptags__()
+        laerr = lat.alpha_err
+        saerr = sat.alpha_err
 
-        self.libdir = os.path.join(libdir,f"SpectraCross_n{self.nside}_b{self.binwidth}_g{self.galcut}_a{str(self.aposcale).replace('.','p')}_l{self.lmax}")
+        self.libdir = os.path.join(libdir,f"SpectraCross_n{self.nside}_b{self.binwidth}_g{self.galcut}_a{str(self.aposcale).replace('.','p')}_l{self.lmax}_laerr{str(laerr).replace('.','p')}_saerr{str(saerr).replace('.','p')}")
         self.specdir = os.path.join(self.libdir,'spectra')
         os.makedirs(self.libdir, exist_ok=True)
         os.makedirs(self.specdir, exist_ok=True)

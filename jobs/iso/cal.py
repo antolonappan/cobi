@@ -12,16 +12,16 @@ nside = 2048
 cb_model = "iso"
 beta = 0.35
 alpha_lat = [0.2,0.2]
-alpha_lat_err = 0.2
-alpha_sat_err = 0.1
+alpha_lat_err = 0.1
+alpha_sat_err = 0.07
 nc = 'NC'
 
 lat = LATskyC(libdir, nside, cb_model, beta, alpha=alpha_lat,alpha_err=alpha_lat_err, bandpass=True,verbose=True,nsplits=2,noise_model=nc)
 sat = SATskyC(libdir, nside, cb_model, beta, alpha_err=alpha_sat_err, bandpass=False,verbose=True,nsplits=2,noise_model=nc)
-spec = SpectraCross(libdir, lat, sat, binwidth=50, galcut=40, aposcale=2)
+spec = SpectraCross(libdir, lat, sat, binwidth=10, galcut=40, aposcale=2)
 
-start_i = 0
-end_i = 50
+start_i = 50
+end_i = 100
 jobs = np.arange(start_i, end_i)
 
 for i in jobs[mpi.rank::mpi.size]:

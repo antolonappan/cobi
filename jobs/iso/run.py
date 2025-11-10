@@ -42,16 +42,11 @@ beta = 0.35
 # nm = 'NC'
 
 #setting 4
-# alpha = [-0.1,-0.1,0.2,0.2,.15,.15]
-# alpha_err = 0.1
-# bp = True
-# nm = 'NC'
-
-#setting 5
 alpha = [-0.1,-0.1,0.2,0.2,.15,.15]
 alpha_err = 0.1
 bp = True
-nm = 'TOD'
+nm = 'NC'
+
 
 # Initialize LATsky and Spectra
 lat = LATsky(libdir, nside, cb_model, beta, alpha=alpha, alpha_err=alpha_err, bandpass=bp,noise_model=nm)
@@ -89,7 +84,7 @@ if args.specsync:
 if args.mle:
     fit = "Ad + beta + alpha"
     binwidth = 10
-    bmin = 50
+    bmin = 200
     bmax = 2000
     mle = MLE(libdir,spec,fit, alpha_per_split=False,rm_same_tube=True,binwidth=binwidth,bmin=bmin,bmax=bmax)
     for i in jobs[mpi.rank::mpi.size]:
