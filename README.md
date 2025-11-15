@@ -2,7 +2,9 @@
 
 [![Documentation Status](https://readthedocs.org/projects/cobi/badge/?version=latest)](https://cobi.readthedocs.io/)
 [![GitHub Pages](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://antolonappan.github.io/cobi/)
+[![Tests](https://github.com/antolonappan/cobi/workflows/Tests/badge.svg)](https://github.com/antolonappan/cobi/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
 A comprehensive Python package for cosmic birefringence analysis using Simons Observatory Large Aperture Telescope (LAT) and Small Aperture Telescopes (SAT) data.
 
