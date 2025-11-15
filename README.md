@@ -56,92 +56,200 @@ pip install -e .
 
 ```python
 from cobi.simulation import CMB
+import matplotlib.pyplot as plt
 
-# Generate CMB map with β = 0.3° isotropic rotation
+# Isotropic birefringence: constant rotation angle
 cmb = CMB(
-    nside=512,
-    lmax=1500,
-    beta=0.3,  # birefringence angle in degrees
-    output_dir='./sims'
+    libdir='./sims',
+    nside=2048,
+    model='iso',
+    beta=0.35,  # rotation angle in degrees
+    lensing=True,
+    verbose=True
 )
 
-# Create realization
-cmb_map = cmb.get_map(idx=0, apply_beta=True)
+# Visualize EB power spectrum (signature of birefringence)
+plt.loglog(cmb.get_cb_lensed_spectra(beta=0.35)['eb'], label='β=0.35°')
+plt.loglog(cmb.get_cb_lensed_spectra(beta=0.1)['eb'], label='β=0.1°')
+plt.xlabel('$\\ell$')
+plt.ylabel('$C_\\ell^{EB}$')
+plt.legend()
 ```
 
-### 2. Compute Power Spectra
+**Anisotropic birefringence** (spatially-varying rotation):
 
 ```python
-from cobi.spectra import SpectraSingle
+# Patchy reionization model with scale-invariant power spectrum
+cmb_aniso = CMB(
+    libdir='./sims',
+    nside=1024,
+    model='aniso',
+    Acb=4.0e-6,  # amplitude parameter
+    lensing=False,
+    verbose=True
+)
+
+# Get birefringence angle map
+beta_map = cmb_aniso.alpha_map(idx=0)
+```
+
+### 2. Complete Sky Simulation (CMB + Foregrounds + Noise)
+
+```python
+from cobi.simulation import LATsky
+import numpy as np
+
+# LAT observation simulation with systematics
+nside = 2048
+cb_model = "iso"
+beta = 0.35
+alpha = [-0.1, -0.1, 0.2, 0.2, 0.15, 0.15]  # miscalibration per freq
+alpha_err = 0.1  # calibration uncertainty
+
+lat = LATsky(
+    libdir='./sims',
+    nside=nside,
+    cb_model=cb_model,
+    beta=beta,
+    alpha=alpha,
+    alpha_err=alpha_err,
+    bandpass=True,
+    noise_model='NC',  # or 'TOD'
+    verbose=True
+)
+
+# Get observed Q/U maps for specific frequency and split
+QU_27 = lat.obsQU(idx=0, band='27-1')
+```
+
+### 3. Power Spectra Analysis
+
+```python
+from cobi.spectra import Spectra
+
+# Compute all auto- and cross-spectra with NaMaster
+spec = Spectra(lat, libdir='./spectra', cache=True, parallel=1)
+
+# Get full covariance matrix of observed spectra
+obs_spectra = spec.obs_x_obs(idx=0)  # Shape: (nfreqs, nfreqs, 4, nbins)
+```
+
+### 4. Calibration: SAT Calibrating LAT
+
+```python
+from cobi.simulation import LATskyC, SATskyC
+from cobi.spectra import Spectra
+from cobi.calibration import Sat4Lat
+
+# Setup LAT and SAT simulations
+alpha_lat = [0.2, 0.2]
+alpha_lat_err = 0.2
+alpha_sat_err = 0.1
+
+lat = LATskyC(
+    libdir='./sims',
+    nside=2048,
+    cb_model='iso',
+    beta=0.35,
+    alpha=alpha_lat,
+    alpha_err=alpha_lat_err,
+    nsplits=2,
+    noise_model='TOD'
+)
+
+sat = SATskyC(
+    libdir='./sims',
+    nside=2048,
+    cb_model='iso',
+    beta=0.35,
+    alpha_err=alpha_sat_err,
+    nsplits=2,
+    noise_model='TOD'
+)
+
+# Compute spectra with galactic cut
+lat_spec = Spectra(lat, libdir='./spec', galcut=40, binwidth=5)
+sat_spec = Spectra(sat, libdir='./spec', galcut=40, binwidth=5)
+
+# Fit birefringence and calibration angles
+calib = Sat4Lat(
+    libdir='./calib',
+    lmin=100,
+    lmax=3000,
+    latlib=lat_spec,
+    satlib=sat_spec,
+    sat_err=alpha_sat_err,
+    beta=0.35
+)
+
+# Run MCMC and visualize posteriors
+calib.plot_getdist(nwalkers=100, nsamples=2000, beta_only=True)
+```
+
+### 5. Maximum Likelihood Estimation (Minami-Komatsu Method)
+
+```python
+from cobi.mle import MLE
+
+# Fit birefringence and calibration angles simultaneously
+mle = MLE(
+    libdir='./mle',
+    spec=spec,
+    fit="Ad + beta + alpha",  # dust amplitude + β + calibration
+    alpha_per_split=False,
+    rm_same_tube=True,
+    binwidth=10,
+    bmin=50,
+    bmax=2000
+)
+
+# Estimate angles for realization
+results = mle.estimate_angles(idx=1)
+print(f"β = {results['beta']:.4f}°")
+print(f"α_93 = {results['93']:.4f}°")
+```
+
+### 6. Quadratic Estimator Reconstruction (Anisotropic β)
+
+```python
+from cobi.simulation import LATsky
+from cobi.simulation import Mask
+from cobi.quest import FilterEB, QE
 import healpy as hp
 
-# Load mask
-mask = hp.read_map('mask.fits')
-
-# Compute auto-spectrum with NaMaster
-spec = SpectraSingle(
-    libdir='./spectra',
-    sky=cmb_map,
-    mask=mask,
-    lmax=1500,
-    beams=[1.4, 1.4]  # arcmin FWHM for T/P
+# Simulate anisotropic birefringence
+lat = LATsky(
+    libdir='./sims',
+    nside=1024,
+    cb_model='aniso',
+    Acb=4.0e-6,
+    AEcb=-1.0e-3,
+    lensing=False,
+    nsplits=1
 )
 
-# Get EB spectrum (signature of birefringence)
-ell, eb_spectrum = spec.get_spectra('EB', idx=0)
-```
+# Setup mask
+mask = Mask(lat.basedir, lat.nside, 'LAT+GAL', apo_scale=2, gal_cut=0.8)
 
-### 3. Reconstruct Birefringence with Quadratic Estimator
+# Step 1: Component separation (Harmonic ILC)
+EB_alm, noise_cl = lat.HILC_obsEB(idx=0)
 
-```python
-from cobi.quest import FilterEB, QE
+# Step 2: Filtering with C^-1 (pixel-domain)
+filt = FilterEB(lat, mask, lmax=3000, sht_backend='ducc')
+filt.plot_cinv(idx=0, lmax=2000)
 
-# Set up EB filtering
-filter_eb = FilterEB(
-    sky=cmb_map,
-    mask=mask,
-    lmax=1500,
-    libdir='./filter'
-)
+# Step 3: Quadratic estimator reconstruction
+qe = QE(filt, lmin=100, lmax=3000, recon_lmax=2048)
 
-# Initialize quadratic estimator
-qe = QE(
-    filter_eb=filter_eb,
-    lmin=30,
-    lmax=300,
-    recon_lmax=100
-)
+# Reconstruct birefringence power spectrum
+qcl_list = []
+for i in range(50):
+    qcl_list.append(qe.qcl(i))
+qcl_mean = np.mean(qcl_list, axis=0)
 
 # Reconstruct birefringence map
-beta_lm = qe.qlm(idx=0)
-beta_map = hp.alm2map(beta_lm, nside=512)
-```
-
-### 4. Calibration Analysis (LAT-SAT Cross-correlation)
-
-```python
-from cobi.calibration import Sat4LatCross
-from cobi.spectra import SpectraCross
-
-# Cross-correlate LAT and SAT
-spec_cross = SpectraCross(
-    libdir='./cross_spec',
-    lat_sky=lat_map,
-    sat_sky=sat_map,
-    lat_mask=lat_mask,
-    sat_mask=sat_mask
-)
-
-# Fit for miscalibration angle
-calib = Sat4LatCross(
-    spec_cross=spec_cross,
-    sat_err=0.1,  # SAT calibration uncertainty (degrees)
-    beta_fid=0.0,
-    lat_lrange=(30, 300)
-)
-
-# Run MCMC
-samples = calib.run_mcmc(nwalkers=32, nsamples=2000)
+beta_lm_recon = qe.qlm(idx=0) - qe.mean_field()
+beta_map_recon = hp.alm2map(beta_lm_recon, nside=32, lmax=10)
 ```
 
 ## Documentation
