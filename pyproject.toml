@@ -3,7 +3,7 @@ requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-name = "solat_cb"
+name = "cobi"
 authors = [{name = "Anto I. Lonappan", email = "antolonappan@icloud.com"},
            {name = "Patricia Diego-Palazuelos", email = "diegop@ifca.unican.es"}]
 dynamic = ["version", "description"]
