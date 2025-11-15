@@ -84,9 +84,9 @@ Quadratic Estimator::
     qe = QE(filter_eb, lmin=30, lmax=300, recon_lmax=100)
     qlm = qe.qlm(idx=0)
 
-Authors
--------
-Anto Idicherian Lonappan, P. Diego-Palazuelos
+Author
+------
+Anto Idicherian Lonappan
 
 License
 -------

@@ -183,7 +183,7 @@ If you use COBI in your research, please cite:
 
 ```bibtex
 @software{cobi2024,
-  author = {Lonappan, Anto I. and Diego-Palazuelos, Patricia},
+  author = {Lonappan, Anto I.},
   title = {COBI: Cosmic Birefringence Analysis Pipeline},
   year = {2024},
   url = {https://github.com/antolonappan/cobi}
@@ -208,10 +208,9 @@ Contributions are welcome! Please:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Authors
+## Author
 
 - **Anto I. Lonappan** - [antolonappan](https://github.com/antolonappan)
-- **Patricia Diego-Palazuelos** - Universidad de Cantabria
 
 ## Acknowledgments
 
