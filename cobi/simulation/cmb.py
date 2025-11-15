@@ -15,8 +15,6 @@ from cobi import mpi
 from cobi.utils import Logger, inrad
 from cobi.data import CAMB_INI, SPECTRA, ISO_TD_SPECTRA
 
-
-
 def synfast_pol(nside, spectra):
     """
     Generate polarized CMB maps (Q, U) with optional auxiliary field A.
@@ -121,7 +119,6 @@ class CMB:
         beta: Optional[float]=None,
         mass: Optional[float]=None,
         Acb: Optional[float]=None,
-        AEcb: Optional[float]=None,
         lensing: Optional[bool] = False,
         verbose: Optional[bool] = True,
     ):
@@ -136,7 +133,6 @@ class CMB:
         self.beta   = beta
         self.mass   = mass
         self.Acb    = Acb
-        self.AEcb   = AEcb
         assert model in ["iso", "iso_td","aniso"], "model should be 'iso' or 'aniso'"
         self.model  = model
         if self.model == "aniso":
@@ -166,7 +162,7 @@ class CMB:
         """
         Sets the seeds for the simulation.
         """
-        nos = 500
+        nos = 700
         self.__cseeds__ = np.arange(11111,11111+nos, dtype=int)
         self.__aseeds__ = np.arange(22222,22222+nos, dtype=int)
         self.__pseeds__ = np.arange(33333,33333+nos, dtype=int)
@@ -277,40 +273,8 @@ class CMB:
                 self.logger.log("CMB power spectra computed doesn't guarantee the lmax", level="critical")
             else:
                 self.logger.log("CMB power spectra file is up-to-date", level="info")
-       
-    def get_lensed_spectra(
-        self, dl: bool = True, dtype: str = "d"
-    ) -> Union[Dict[str, Any], np.ndarray]:
-        """
-        Retrieve the lensed scalar spectra from the power spectrum data.
-
-        Parameters:
-        dl (bool, optional): If True, returns Dl (C_l * l * (l + 1) / 2π). Defaults to True.
-        dtype (str, optional): Specifies the format of the returned spectra.
-                               - 'd' returns a dictionary with keys 'tt', 'ee', 'bb', 'te'.
-                               - 'a' returns the full array of power spectra.
-                               Defaults to 'd'.
-
-        Returns:
-        Union[Dict[str, Any], np.ndarray]:
-            - A dictionary containing individual power spectra for 'tt', 'ee', 'bb', 'te' if dtype is 'd'.
-            - The full array of lensed scalar power spectra if dtype is 'a'.
-
-        Raises:
-        ValueError: If `dtype` is not 'd' or 'a'.
-        """
-        powers = self.get_power(dl)["lensed_scalar"]
-        if dtype == "d":
-            pow = {}
-            pow["tt"] = powers[:, 0]
-            pow["ee"] = powers[:, 1]
-            pow["bb"] = powers[:, 2]
-            pow["te"] = powers[:, 3]
-            return pow
-        elif dtype == "a":
-            return powers
-        else:
-            raise ValueError("dtype should be 'd' or 'a'")
+    
+    ################ Power spectra retrieval methods ###############
 
     def get_unlensed_spectra(
         self, dl: bool = True, dtype: str = "d"
@@ -345,7 +309,41 @@ class CMB:
             return powers
         else:
             raise ValueError("dtype should be 'd' or 'a'")
-        
+     
+    def get_lensed_spectra(
+        self, dl: bool = True, dtype: str = "d"
+    ) -> Union[Dict[str, Any], np.ndarray]:
+        """
+        Retrieve the lensed scalar spectra from the power spectrum data.
+
+        Parameters:
+        dl (bool, optional): If True, returns Dl (C_l * l * (l + 1) / 2π). Defaults to True.
+        dtype (str, optional): Specifies the format of the returned spectra.
+                               - 'd' returns a dictionary with keys 'tt', 'ee', 'bb', 'te'.
+                               - 'a' returns the full array of power spectra.
+                               Defaults to 'd'.
+
+        Returns:
+        Union[Dict[str, Any], np.ndarray]:
+            - A dictionary containing individual power spectra for 'tt', 'ee', 'bb', 'te' if dtype is 'd'.
+            - The full array of lensed scalar power spectra if dtype is 'a'.
+
+        Raises:
+        ValueError: If `dtype` is not 'd' or 'a'.
+        """
+        powers = self.get_power(dl)["lensed_scalar"]
+        if dtype == "d":
+            pow = {}
+            pow["tt"] = powers[:, 0]
+            pow["ee"] = powers[:, 1]
+            pow["bb"] = powers[:, 2]
+            pow["te"] = powers[:, 3]
+            return pow
+        elif dtype == "a":
+            return powers
+        else:
+            raise ValueError("dtype should be 'd' or 'a'")
+     
     def get_cb_unlensed_spectra(
         self, beta: float = 0.0, dl: bool = True, dtype: str = "d", new: bool = False
     ) -> Union[Dict[str, np.ndarray], np.ndarray]:
@@ -527,119 +525,21 @@ class CMB:
                 )
         else:
             raise ValueError("dtype should be 'd' or 'a'")
-
-    def get_cb_gaussian_lensed_QU(self,idx: int) -> List[np.ndarray]:
-        if self.model == "iso":
-            return self.get_iso_const_cb_gaussian_lensed_QU(idx)
-        elif self.model == "iso_td":
-            return self.get_iso_td_cb_gaussian_lensed_QU(idx)
-        elif self.model == "aniso":
-            return self.get_aniso_cb_gaussian_lensed_QU(idx)
-        else:
-            raise NotImplementedError("Model not implemented yet, only 'iso' and 'aniso' are supported")
-    
-    def get_iso_const_cb_gaussian_lensed_QU(self, idx: int) -> List[np.ndarray]:
-        """
-        Generate or retrieve the Q and U Stokes parameters after applying cosmic birefringence.
-
-        Parameters:
-        idx (int): Index for the realization of the CMB map.
-
-        Returns:
-        List[np.ndarray]: A list containing the Q and U Stokes parameter maps as NumPy arrays.
-
-        Notes:
-        The method applies a rotation to the E and B mode spherical harmonics to simulate the effect of cosmic birefringence.
-        If the map for the given `idx` exists in the specified directory, it reads the map from the file.
-        Otherwise, it generates the Q and U maps, applies the birefringence, and saves the resulting map to a FITS file.
-        """
-        fname = os.path.join(
-            self.cmbdir,
-            f"sims_nside{self.nside}_{idx:03d}.fits",
-        )
-        if os.path.isfile(fname):
-            return hp.read_map(fname, field=[0, 1])   # type: ignore
-        else:
-            spectra = self.get_cb_lensed_spectra(
-                beta=self.beta if self.beta is not None else 0.0,
-                dl=False,
-            )
-            # PDP: spectra start at ell=0, we are fine
-            np.random.seed(self.__cseeds__[idx])
-            T, E, B = hp.synalm(
-                [spectra["tt"], spectra["ee"], spectra["bb"], spectra["te"], spectra["eb"], spectra["tb"]],
-                lmax=self.lmax,
-                new=True,
-            )
-            del T
-            QU = hp.alm2map_spin([E, B], self.nside, 2, lmax=self.lmax)
-            hp.write_map(fname, QU, dtype=np.float32)
-            return QU
-    
-    def get_iso_td_cb_gaussian_lensed_QU(self, idx: int) -> List[np.ndarray]:
-        raise NotImplementedError("Model not implemented yet")
     
     def cl_aa(self):
         """
         Compute the Cl_AA power spectrum for the anisotropic model.
         """
-        L = np.arange(self.lmax + 1)
         assert self.Acb is not None, "Acb should be provided for anisotropic model"
-        return self.Acb * 2 * np.pi / ( L**2 + L + 1e-30)
-     
-    def get_aniso_cb_gaussian_lensed_QU(self, idx: int) -> List[np.ndarray]:
-        """
-        Generate the Q and U Stokes maps after applying cosmic birefringence for the anisotropic model.
-
-        Parameters:
-        idx (int): Index for the realization of the CMB map.
-
-        Returns:
-        List[np.ndarray]: A list containing the Q and U Stokes parameter maps as NumPy arrays.
-
-        Notes:
-        The method applies a rotation to the E and B mode spherical harmonics to simulate the effect of cosmic birefringence.
-        If the map for the given `idx` exists in the specified directory, it reads the map from the file.
-        Otherwise, it generates the Q and U maps, applies the birefringence, and saves the resulting map to a FITS file.
-        """
-        fname = os.path.join(
-            self.cmbdir,
-            f"sims_nside{self.nside}_{idx:03d}.fits",
-        )
-        if os.path.isfile(fname):
-            return hp.read_map(fname, field=[0, 1])
-        else:
-            spectra = self.get_lensed_spectra(dl=False)
-            spec = {}
-            spec["EE"] = spectra["ee"]
-            spec["BB"] = spectra["bb"]
-            spec["AA"] = self.scale_invariant(self.Acb)
-            spec["AE"] = self.scale_invariant(self.AEcb)
-
-            np.random.seed(self.__cseeds__[idx])
-            Q,U,A = synfast_pol(self.nside,spec)
-            hp.write_map(fname, [Q,U,A], dtype=np.float64)
-            return [Q, U]
+        return self.scale_invariant(self.Acb)
     
     def cl_pp(self):
         powers = self.get_power(dl=False)['lens_potential']
         return powers[:, 0]
-
-    def phi_alm(self, idx: int) -> np.ndarray:
-        fname = os.path.join(self.phidir, f"phi_Lmax{self.lmax}_{idx:03d}.fits")
-        if os.path.isfile(fname):
-            return hp.read_alm(fname)
-        else:
-            cl_pp = self.cl_pp()
-            np.random.seed(self.__pseeds__[idx])
-            alm = hp.synalm(cl_pp, lmax=self.lmax, new=True)
-            hp.write_alm(fname, alm)
-            return alm
-        
-    def grad_phi_alm(self, idx: int) -> np.ndarray:
-        phi_alm = self.phi_alm(idx)
-        return hp.almxfl(phi_alm, np.sqrt(np.arange(self.lmax + 1, dtype=float) * np.arange(1, self.lmax + 2)), None, False)
-
+    
+    ################ CMB map generation methods ###############
+              ###### Isotropic models ######
+              ###### Real space lensed ######
     def get_iso_const_cb_real_lensed_QU(self, idx: int) -> List[np.ndarray]:
         fname = os.path.join(
             self.cmbdir,
@@ -685,34 +585,217 @@ class CMB:
             hp.write_map(fname, [Qlen, Ulen], dtype=np.float64)
             return [Qlen, Ulen]
     
-    def get_aniso_cb_real_lensed_QU(self, idx: int) -> List[np.ndarray]:
-        fname = os.path.join(
-            self.cmbdir,
-            f"sims_nside{self.nside}_{idx:03d}.fits",
-        )
-        raise NotImplementedError("No real lensed used")
+    def get_iso_model_cb_real_lensed_QU(self,idx: int) -> List[np.ndarray]:
+        if self.model == "iso":
+            return self.get_iso_const_cb_real_lensed_QU(idx)
+        elif self.model == "iso_td":
+            return self.get_iso_td_cb_real_lensed_QU(idx)
+        else:
+            raise NotImplementedError("Model not implemented yet")
     
-    def alpha_map(self, idx: int) -> np.ndarray:
+    ################ CMB map generation methods ###############
+              ###### Isotropic models ######
+              ###### Gaussian lensed ######
+    def get_iso_const_cb_gaussian_lensed_QU(self, idx: int) -> List[np.ndarray]:
+        """
+        Generate or retrieve the Q and U Stokes parameters after applying cosmic birefringence.
+
+        Parameters:
+        idx (int): Index for the realization of the CMB map.
+
+        Returns:
+        List[np.ndarray]: A list containing the Q and U Stokes parameter maps as NumPy arrays.
+
+        Notes:
+        The method applies a rotation to the E and B mode spherical harmonics to simulate the effect of cosmic birefringence.
+        If the map for the given `idx` exists in the specified directory, it reads the map from the file.
+        Otherwise, it generates the Q and U maps, applies the birefringence, and saves the resulting map to a FITS file.
+        """
         fname = os.path.join(
             self.cmbdir,
             f"sims_nside{self.nside}_{idx:03d}.fits",
         )
         if os.path.isfile(fname):
-            return hp.read_map(fname, field=2)
+            return hp.read_map(fname, field=[0, 1])   # type: ignore
         else:
-            raise FileNotFoundError("Alpha map not found, you should simulate the QU maps, this will generate the alpha map")
-    def get_cb_real_lensed_QU(self, idx: int) -> List[np.ndarray]:
+            spectra = self.get_cb_lensed_spectra(
+                beta=self.beta if self.beta is not None else 0.0,
+                dl=False,
+            )
+            # PDP: spectra start at ell=0, we are fine
+            np.random.seed(self.__cseeds__[idx])
+            T, E, B = hp.synalm(
+                [spectra["tt"], spectra["ee"], spectra["bb"], spectra["te"], spectra["eb"], spectra["tb"]],
+                lmax=self.lmax,
+                new=True,
+            )
+            del T
+            QU = hp.alm2map_spin([E, B], self.nside, 2, lmax=self.lmax)
+            hp.write_map(fname, QU, dtype=np.float32)
+            return QU
+    
+    def get_iso_td_cb_gaussian_lensed_QU(self, idx: int) -> List[np.ndarray]:
+        raise NotImplementedError("Model not implemented yet")
+
+    def get_iso_model_cb_gaussian_lensed_QU(self,idx: int) -> List[np.ndarray]:
         if self.model == "iso":
-            return self.get_iso_const_cb_real_lensed_QU(idx)
+            return self.get_iso_const_cb_gaussian_lensed_QU(idx)
         elif self.model == "iso_td":
-            return self.get_iso_td_cb_real_lensed_QU(idx)
-        elif self.model == "aniso":
-            return self.get_aniso_cb_real_lensed_QU(idx)
+            return self.get_iso_td_cb_gaussian_lensed_QU(idx)
         else:
-            raise NotImplementedError("Model not implemented yet, only 'iso', 'iso_td', and 'aniso' are supported")
-        
-    def get_cb_lensed_QU(self, idx: int) -> List[np.ndarray]:
+            raise NotImplementedError("Model not implemented yet")
+    
+    ################ CMB map generation methods ###############
+              ###### Isotropic models ######
+    def get_iso_model_cb_lensed_QU(self,idx: int) -> List[np.ndarray]:
         if self.lensing:
-            return self.get_cb_real_lensed_QU(idx)
+            return self.get_iso_model_cb_real_lensed_QU(idx)
         else:
-            return self.get_cb_gaussian_lensed_QU(idx)
+            return self.get_iso_model_cb_gaussian_lensed_QU(idx)
+        
+    ################ CMB map generation methods ###############
+         ###### Secondary Source Fields(alms) ######
+    
+    def alpha_alm(self, idx: int) -> np.ndarray:
+        """
+        Generate the alpha alm for the anisotropic model.
+
+        Parameters:
+        idx (int): Index for the realization of the CMB map.
+
+        Returns:
+        np.ndarray: The alpha alm as a NumPy array.
+
+        Notes:
+        The method generates the alpha alm for the anisotropic model.
+        The alpha alm is generated as a random realization of the Cl_AA power spectrum.
+        """
+        cl_aa = self.cl_aa()
+        cl_aa[0] = 0
+        np.random.seed(self.__aseeds__[idx])
+        alm = hp.synalm(cl_aa, lmax=self.lmax, new=True)
+        return alm
+    
+    def phi_alm(self, idx: int) -> np.ndarray:
+        fname = os.path.join(self.phidir, f"phi_Lmax{self.lmax}_{idx:03d}.fits")
+        if os.path.isfile(fname):
+            return hp.read_alm(fname)
+        else:
+            cl_pp = self.cl_pp()
+            np.random.seed(self.__pseeds__[idx])
+            alm = hp.synalm(cl_pp, lmax=self.lmax, new=True)
+            hp.write_alm(fname, alm)
+            return alm
+        
+    def grad_phi_alm(self, idx: int) -> np.ndarray:
+        phi_alm = self.phi_alm(idx)
+        return hp.almxfl(phi_alm, np.sqrt(np.arange(self.lmax + 1, dtype=float) * np.arange(1, self.lmax + 2)), None, False)
+    
+    ################ CMB map generation methods ###############
+                ###### Anisotropic models ######
+                ###### Source Fields(map) ######
+    def alpha_map(self, idx: int) -> np.ndarray:
+        """
+        Generate a map of the rotation angle alpha for the anisotropic model.
+
+        Parameters:
+        idx (int): Index for the realization of the CMB map.
+
+        Returns:
+        np.ndarray: A map of the rotation angle alpha as a NumPy array.
+
+        Notes:
+        The method generates a map of the rotation angle alpha for the anisotropic model.
+        The map is generated as a random realization of the Cl_AA power spectrum.
+        """
+        fname = os.path.join(
+            self.alphadir,
+            f"alpha_nside{self.nside}_{idx:03d}.fits",
+        )
+        if os.path.isfile(fname):
+            return hp.read_map(fname)
+        else:
+            alm = self.alpha_alm(idx)
+            alpha = hp.alm2map(alm, self.nside)
+            hp.write_map(fname, alpha, dtype=np.float64)
+            return alpha # type: ignore
+   
+    ################ CMB map generation methods ###############
+                ###### Anisotropic models ######
+                ###### Real space lensed ######
+    def get_aniso_real_lensed_QU(self, idx: int) -> List[np.ndarray]:
+        fname = os.path.join(
+            self.cmbdir,
+            f"sims_nside{self.nside}_{idx:03d}.fits",
+        )
+        if os.path.isfile(fname):
+            return hp.read_map(fname, field=[0, 1])
+        else:
+            spectra = self.get_unlensed_spectra(dl=False)
+            np.random.seed(self.__cseeds__[idx])
+            Q,U = hp.synfast(
+                [spectra["tt"], spectra["ee"], spectra["bb"], spectra["te"]],
+                nside=self.nside,
+                new=True,
+            )[1:]
+            if self.Acb != 0:
+                alpha = self.alpha_map(idx)
+                rQ = Q * np.cos(2 * alpha) - U * np.sin(2 * alpha)
+                rU = Q * np.sin(2 * alpha) + U * np.cos(2 * alpha)
+                del (Q, U, alpha)
+                elm, blm = hp.map2alm_spin([rQ, rU], 2)
+            else:
+                elm, blm = hp.map2alm_spin([Q, U], 2)
+            defl = self.grad_phi_alm(idx)
+            geom_info = ('healpix', {'nside':self.nside})
+            Q, U = lenspyx.alm2lenmap_spin([elm,blm], defl, 2, geometry=geom_info, verbose=int(self.verbose))
+            del (elm, blm, defl)
+            hp.write_map(fname, [Q, U], dtype=np.float64)
+            return [Q, U]
+   
+    ################ CMB map generation methods ###############
+                ###### Anisotropic models ######
+                ###### Gaussian lensed ######
+    def get_aniso_gauss_lensed_QU(self, idx: int) -> List[np.ndarray]:
+        fname = os.path.join(
+            self.cmbdir,
+            f"sims_g_nside{self.nside}_{idx:03d}.fits",
+        )
+        if os.path.isfile(fname):
+            return hp.read_map(fname, field=[0, 1])
+        else:
+            spectra = self.get_lensed_spectra(dl=False)
+            np.random.seed(self.__cseeds__[idx])
+            Q, U = hp.synfast(
+                [spectra["tt"], spectra["ee"], spectra["bb"], spectra["te"]],
+                nside=self.nside,
+                new=True,
+            )[1:]
+            if self.Acb != 0:
+                alpha = self.alpha_map(idx)
+                rQ = Q * np.cos(2 * alpha) - U * np.sin(2 * alpha)
+                rU = Q * np.sin(2 * alpha) + U * np.cos(2 * alpha)
+                del (Q, U, alpha)
+            else:
+                self.logger.log("Acb is zero, no rotation applied", level="info")
+                rQ, rU = Q, U
+            hp.write_map(fname, [rQ, rU], dtype=np.float64)
+            return [rQ, rU]
+    
+    ################ CMB map generation methods ###############
+                ###### Anisotropic models ######
+    def get_aniso_model_cb_lensed_QU(self,idx: int) -> List[np.ndarray]:
+        if self.lensing:
+            return self.get_aniso_real_lensed_QU(idx)
+        else:
+            return self.get_aniso_gauss_lensed_QU(idx)
+        
+    ################ CMB map generation methods ###############
+                ###### General models ######
+    def get_cb_lensed_QU(self, idx: int) -> List[np.ndarray]:
+        if self.model == "iso" or self.model == "iso_td":
+            return self.get_iso_model_cb_lensed_QU(idx)
+        elif self.model == "aniso":
+            return self.get_aniso_model_cb_lensed_QU(idx)
+        else:
+            raise NotImplementedError("Model not implemented yet")

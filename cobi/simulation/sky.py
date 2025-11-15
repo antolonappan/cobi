@@ -35,6 +35,7 @@ class SkySimulation:
         bandpass: bool = True,
         alpha: Union[float,List[float]] = 0.0,
         alpha_err: float = 0.0,
+        alpha_samples: int = 300,
         noise_model: str = "NC",
         atm_noise: bool = True,
         nsplits: int = 2,
@@ -132,6 +133,7 @@ class SkySimulation:
 
         self.alpha = alpha
         self.alpha_err = alpha_err
+        self.alpha_samples = alpha_samples
         self.atm_noise = atm_noise
         self.bandpass = bandpass
         self.hilc_bins = hilc_bins
@@ -166,7 +168,7 @@ class SkySimulation:
     #             self.alpha_dict[band] = np.random.normal(alpha, self.alpha_err, 300) # given value is assumed 3 sigma
     #         if mpi.rank == 0:
     #             pl.dump(self.alpha_dict, open(fname, 'wb'))
-    def __gen_alpha_dict__(self):
+    def __gen_alpha_dict__(self, samples: int = 300):
         fname = os.path.join(self.libdir, 'alpha_dict.pkl')
         if os.path.isfile(fname):
             self.alpha_dict = pl.load(open(fname, 'rb'))
@@ -178,7 +180,7 @@ class SkySimulation:
                 # Create one random sample per base_band
                 band_1 = f"{base_band}-1"
                 alpha = self.config[band_1]["alpha"]
-                sample = np.random.normal(alpha, self.alpha_err, 300)
+                sample = np.random.normal(alpha, self.alpha_err, samples)
                 # Assign same sample to both '-1' and '-2'
                 for split in range(1, self.nsplits + 1):
                     band_key = f"{base_band}-{split}"
@@ -191,7 +193,7 @@ class SkySimulation:
 
     def __set_alpha__(self):
         if self.alpha_err > 0:
-            self.__gen_alpha_dict__()
+            self.__gen_alpha_dict__(samples=self.alpha_samples)
         else:
             self.alpha_dict = None
     
@@ -395,6 +397,7 @@ class LATsky(SkySimulation):
         bandpass: bool = True,
         alpha: float = 0.0,
         alpha_err: float = 0.0,
+        alpha_samples: int = 300,
         noise_model: str = "NC",
         atm_noise: bool = True,
         nsplits: int = 2,
@@ -422,6 +425,7 @@ class LATsky(SkySimulation):
             bandpass = bandpass,
             alpha = alpha,
             alpha_err = alpha_err,
+            alpha_samples = alpha_samples,
             noise_model = noise_model,
             atm_noise = atm_noise,
             nsplits = nsplits,
@@ -454,6 +458,7 @@ class SATsky(SkySimulation):
         bandpass: bool = True,
         alpha: float = 0.0,
         alpha_err: float = 0.0,
+        alpha_samples: int = 300,
         noise_model: str = "NC",
         atm_noise: bool = True,
         nsplits: int = 2,
@@ -481,6 +486,7 @@ class SATsky(SkySimulation):
             bandpass = bandpass,
             alpha = alpha,
             alpha_err = alpha_err,
+            alpha_samples = alpha_samples,
             noise_model = noise_model,
             atm_noise = atm_noise,
             nsplits = nsplits,
@@ -512,6 +518,7 @@ class LATskyC(SkySimulation):
         bandpass: bool = True,
         alpha: float = 0.0,
         alpha_err: float = 0.0,
+        alpha_samples: int = 300,
         noise_model: str = "NC",
         atm_noise: bool = True,
         nsplits: int = 2,
@@ -537,6 +544,7 @@ class LATskyC(SkySimulation):
             bandpass = bandpass,
             alpha = alpha,
             alpha_err = alpha_err,
+            alpha_samples = alpha_samples,
             noise_model = noise_model,
             atm_noise = atm_noise,
             nsplits = nsplits,
@@ -567,6 +575,7 @@ class SATskyC(SkySimulation):
         bandpass: bool = True,
         alpha: float = 0.0,
         alpha_err: float = 0.0,
+        alpha_samples: int = 300,
         noise_model: str = "NC",
         atm_noise: bool = True,
         nsplits: int = 2,
@@ -592,6 +601,7 @@ class SATskyC(SkySimulation):
             bandpass = bandpass,
             alpha = alpha,
             alpha_err = alpha_err,
+            alpha_samples = alpha_samples,
             noise_model = noise_model,
             atm_noise = atm_noise,
             nsplits = nsplits,
