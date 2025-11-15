@@ -49,7 +49,11 @@ autodoc_mock_imports = [
     "tqdm",
     "pandas",
     "h5py",
-    "requests"
+    "requests",
+    "lenspyx",
+    "pixell",
+    "so_models_v3",
+    "numpy",
 ]
 
 # Autosummary configuration
