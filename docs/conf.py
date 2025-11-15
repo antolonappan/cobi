@@ -33,7 +33,24 @@ autodoc_default_options = {
     'exclude-members': '__weakref__'
 }
 autodoc_typehints = "description"
-autodoc_mock_imports = ["mpi4py", "curvedsky", "ducc0", "emcee", "getdist"]
+autodoc_mock_imports = [
+    "mpi4py",
+    "curvedsky", 
+    "ducc0",
+    "emcee",
+    "getdist",
+    "healpy",
+    "pymaster",
+    "pysm3",
+    "camb",
+    "scipy",
+    "matplotlib",
+    "astropy",
+    "tqdm",
+    "pandas",
+    "h5py",
+    "requests"
+]
 
 # Autosummary configuration
 autosummary_generate = True

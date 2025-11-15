@@ -3,26 +3,22 @@
 sphinx>=5.0.0
 sphinx-rtd-theme>=1.0.0
 nbsphinx>=0.9.0
-
-# Sphinx extensions
 sphinx-autodoc-typehints>=1.19.0
 
-# Required packages for documentation build
+# Minimal dependencies for documentation build
+# Heavy packages are mocked via autodoc_mock_imports in conf.py
 numpy>=1.22.0
-healpy>=1.16.0
-camb>=1.3.0
-tqdm>=4.64.0
 
-# Optional packages (mocked during doc build if not available)
-# mpi4py  # Mocked via autodoc_mock_imports
-# curvedsky  # Mocked via autodoc_mock_imports
-# ducc0  # Mocked via autodoc_mock_imports
-# emcee  # Mocked via autodoc_mock_imports
-# getdist  # Mocked via autodoc_mock_imports
-
-# Additional dependencies for complete builds
-pymaster>=1.5.0
-pysm3>=3.3.0
-scipy>=1.9.0
-matplotlib>=3.5.0
-astropy>=5.0.0
+# All heavy dependencies are mocked during doc build:
+# - healpy (mocked)
+# - pymaster (mocked) 
+# - pysm3 (mocked)
+# - camb (mocked)
+# - mpi4py (mocked)
+# - curvedsky (mocked)
+# - ducc0 (mocked)
+# - emcee (mocked)
+# - getdist (mocked)
+# - scipy (mocked)
+# - matplotlib (mocked)
+# - astropy (mocked)
