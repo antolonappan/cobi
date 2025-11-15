@@ -120,6 +120,7 @@ class CMB:
         mass: Optional[float]=None,
         Acb: Optional[float]=None,
         lensing: Optional[bool] = False,
+        Acb_sim_config: Optional[Dict[str, List[int]]] = None,
         verbose: Optional[bool] = True,
     ):
         self.logger = Logger(self.__class__.__name__, verbose=verbose if verbose is not None else False)
@@ -147,6 +148,8 @@ class CMB:
 
         
         self.lensing = lensing
+        self.Acb_sim_config = Acb_sim_config
+        self.__validate_Acb_sim_config__()
 
         self.__set_workspace__()
         self.__set_seeds__()
@@ -158,6 +161,54 @@ class CMB:
         cl[0], cl[1] = 0, 0
         return cl
    
+    def __validate_Acb_sim_config__(self) -> None:
+        """
+        Validate the Acb_sim_config dictionary structure.
+        """
+        if self.Acb_sim_config is None:
+            return
+        
+        if self.model != "aniso":
+            self.logger.log("Acb_sim_config is only applicable for anisotropic model. Ignoring.", level="warning")
+            self.Acb_sim_config = None
+            return
+        
+        valid_keys = ['alpha_vary_index', 'alpha_cons_index', 'null_alpha_index']
+        for key in self.Acb_sim_config.keys():
+            if key not in valid_keys:
+                raise ValueError(f"Invalid key '{key}' in Acb_sim_config. Valid keys are: {valid_keys}")
+            if not isinstance(self.Acb_sim_config[key], (list, tuple)) or len(self.Acb_sim_config[key]) != 2:
+                raise ValueError(f"Value for '{key}' must be a list/tuple of two integers [start, end]")
+            if self.Acb_sim_config[key][0] >= self.Acb_sim_config[key][1]:
+                raise ValueError(f"Invalid range for '{key}': start must be less than end")
+        
+        self.logger.log(f"Acb simulation configuration validated: {self.Acb_sim_config}", level="info")
+    
+    def __get_alpha_mode__(self, idx: int) -> str:
+        """
+        Determine which alpha mode to use for a given index.
+        
+        Parameters:
+        idx (int): The realization index.
+        
+        Returns:
+        str: One of 'vary', 'constant', or 'null'
+        """
+        if self.Acb_sim_config is None:
+            return 'vary'  # Default behavior
+        
+        for key, (start, end) in self.Acb_sim_config.items():
+            if start <= idx < end:
+                if key == 'alpha_vary_index':
+                    return 'vary'
+                elif key == 'alpha_cons_index':
+                    return 'constant'
+                elif key == 'null_alpha_index':
+                    return 'null'
+        
+        # If idx is not in any configured range, use default
+        return 'vary'
+
     def __set_seeds__(self) -> None:
         """
         Sets the seeds for the simulation.
@@ -669,10 +720,28 @@ class CMB:
         Notes:
         The method generates the alpha alm for the anisotropic model.
         The alpha alm is generated as a random realization of the Cl_AA power spectrum.
+        The behavior depends on Acb_sim_config:
+        - 'vary': Each idx gets a unique seed (default)
+        - 'constant': All indices in this range use the same fixed seed
+        - 'null': Returns zeros (no rotation)
         """
+        mode = self.__get_alpha_mode__(idx)
+        
+        if mode == 'null':
+            # Return zero alm (no rotation)
+            return np.zeros(hp.Alm.getsize(self.lmax), dtype=complex)
+        
         cl_aa = self.cl_aa()
         cl_aa[0] = 0
-        np.random.seed(self.__aseeds__[idx])
+        
+        if mode == 'constant':
+            # Use a fixed seed for constant alpha across this range
+            # Use the first seed as the constant seed
+            np.random.seed(44444)
+        else:  # mode == 'vary'
+            # Use index-specific seed (default behavior)
+            np.random.seed(self.__aseeds__[idx])
+        
         alm = hp.synalm(cl_aa, lmax=self.lmax, new=True)
         return alm
     
@@ -738,7 +807,10 @@ class CMB:
                 nside=self.nside,
                 new=True,
             )[1:]
-            if self.Acb != 0:
+            
+            # Check if rotation should be applied based on configuration
+            mode = self.__get_alpha_mode__(idx)
+            if self.Acb != 0 and mode != 'null':
                 alpha = self.alpha_map(idx)
                 rQ = Q * np.cos(2 * alpha) - U * np.sin(2 * alpha)
                 rU = Q * np.sin(2 * alpha) + U * np.cos(2 * alpha)
@@ -771,13 +843,19 @@ class CMB:
                 nside=self.nside,
                 new=True,
             )[1:]
-            if self.Acb != 0:
+            
+            # Check if rotation should be applied based on configuration
+            mode = self.__get_alpha_mode__(idx)
+            if self.Acb != 0 and mode != 'null':
                 alpha = self.alpha_map(idx)
                 rQ = Q * np.cos(2 * alpha) - U * np.sin(2 * alpha)
                 rU = Q * np.sin(2 * alpha) + U * np.cos(2 * alpha)
                 del (Q, U, alpha)
             else:
-                self.logger.log("Acb is zero, no rotation applied", level="info")
+                if mode == 'null':
+                    self.logger.log(f"Index {idx} in null_alpha range, no rotation applied", level="info")
+                else:
+                    self.logger.log("Acb is zero, no rotation applied", level="info")
                 rQ, rU = Q, U
             hp.write_map(fname, [rQ, rU], dtype=np.float64)
             return [rQ, rU]

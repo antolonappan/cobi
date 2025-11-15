@@ -1,3 +1,67 @@
+"""
+Power Spectra Computation Module
+=================================
+
+This module provides classes for computing polarization power spectra from
+CMB observations using the pseudo-Cℓ method with NaMaster (pymaster).
+
+The module implements:
+- Cross-correlation power spectra between different frequency channels
+- Foreground x CMB cross-spectra for component separation
+- Foreground x foreground auto-spectra
+- Mode coupling correction using pre-computed coupling matrices
+- LAT x SAT cross-spectrum analysis
+- Parallel computation support
+
+Classes
+-------
+Spectra
+    Main class for computing power spectra from LAT or SAT observations.
+    Handles observed x observed, dust x observed, sync x observed, and
+    foreground auto-spectra calculations.
+
+SpectraCross
+    Class for computing cross-spectra between LAT and SAT observations,
+    used for calibration analysis and cosmic birefringence studies.
+
+Features
+--------
+- Automatic mask apodization
+- Pure B-mode estimation support
+- Template bandpass integration
+- CO and point source masking
+- Parallel computation options
+- Efficient caching of intermediate results
+- Memory-efficient streaming computation
+
+Example
+-------
+    from cobi.spectra import Spectra
+    from cobi.simulation import LATsky, Mask
+    
+    # Initialize LAT sky simulation
+    lat_sky = LATsky(libdir, nside=512)
+    
+    # Create spectra computation object
+    spec = Spectra(
+        lat_lib=lat_sky,
+        common_dir=common_libdir,
+        aposcale=2.0,
+        pureB=True,
+        lmax=2000
+    )
+    
+    # Compute all spectra for simulation index 0
+    spec.compute(idx=0, sync=True)
+    
+    # Retrieve computed spectra
+    spectra_dict = spec.get_spectra(idx=0, sync=True)
+
+Notes
+-----
+This implementation is optimized for the COBI cosmic birefringence analysis pipeline.
+"""
+
 # object oriented version of Patricia's code
 import numpy as np
 import healpy as hp

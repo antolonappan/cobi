@@ -141,7 +141,6 @@ dependencies:
   - tqdm=4.66.5
   - traitlets=5.14.3
   - typing_extensions=4.12.2
-  - tzdata=2024a
   - ucx=1.18.0
   - unicodedata2=15.1.0
   - urllib3=2.2.3
@@ -161,12 +160,17 @@ dependencies:
       - ducc0==0.39.1
       - emcee==3.1.6
       - getdist==1.7.4
+      - ipywidgets==8.1.8
+      - jupyterlab-widgets==3.0.16
       - lenspyx==2.0.52
       - mpmath==1.3.0
       - numpy==1.23.0
       - packaging==25.0
+      - pandas==2.3.3
       - pillow==12.0.0
       - pixell==0.30.2
-      - so-noise-models==3.1.1
+      - pytz==2025.2
+      - git+https://github.com/simonsobs/so_noise_models.git@v3.1.1
       - sympy==1.14.0
-prefix: /pscratch/sd/l/lonappan/software_pkgs/cb
+      - tzdata==2025.2
+      - widgetsnbextension==4.0.15

@@ -1,3 +1,45 @@
+"""
+Spherical Harmonic Transforms Module
+=====================================
+
+This module provides fast spherical harmonic transforms using the DUCC0 library
+for HEALPix maps. It offers significant performance improvements over healpy's
+default implementation, especially for high-resolution maps.
+
+The module supports:
+- Forward transforms (map2alm) for spin-0 and spin-2 fields
+- Adjoint/inverse transforms (alm2map)
+- Automatic pixel weighting for accurate transforms
+- Beam smoothing operations
+- Multi-threaded execution
+
+Classes
+-------
+HealpixDUCC
+    Main class for performing spherical harmonic transforms on HEALPix maps
+    using the DUCC0 library.
+
+Example
+-------
+    from cobi.sht import HealpixDUCC
+    import numpy as np
+    
+    # Initialize for nside=512
+    hp_ducc = HealpixDUCC(nside=512)
+    
+    # Transform Q/U polarization maps to E/B alms
+    qu_maps = np.array([q_map, u_map])
+    eb_alms = hp_ducc.map2alm(qu_maps, lmax=1500, nthreads=4)
+    
+    # Smooth and transform back
+    smoothed_maps = hp_ducc.smoothing(qu_maps, lmax=1500, fwhm=5.0, nthreads=4)
+
+Notes
+-----
+This module is imported from https://github.com/antolonappan/PyNILC/blob/main/pynilc/sht.py
+and provides a high-performance alternative to healpy for spherical harmonic transforms.
+"""
+
 # imported from https://github.com/antolonappan/PyNILC/blob/main/pynilc/sht.py
 from ducc0.sht.experimental import synthesis, adjoint_synthesis
 import ducc0

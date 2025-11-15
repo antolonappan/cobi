@@ -34,7 +34,8 @@ class SkySimulation:
         bandpass: bool = True,
         alpha: Union[float,List[float]] = 0.0,
         alpha_err: float = 0.0,
-        alpha_samples: int = 300,
+        miscal_samples: Optional[int] = None,
+        Acb_sim_config: Optional[dict] = None,
         noise_model: str = "NC",
         atm_noise: bool = True,
         nsplits: int = 2,
@@ -60,9 +61,39 @@ class SkySimulation:
             The full width at half maximum (FWHM) for each frequency band.
         tube: np.ndarray
             The tube identifier for each frequency band.
+        alpha: Union[float, List[float]]
+            Miscalibration rotation angle(s) for polarization (in degrees).
+        alpha_err: float
+            Uncertainty in the miscalibration angle (in degrees). If > 0, samples 
+            are drawn from a Gaussian distribution.
+        miscal_samples: Optional[int]
+            Number of miscalibration angle samples to generate. If None, automatically
+            determined based on Acb_sim_config: uses the maximum index across all ranges,
+            or defaults to 300 if no Acb_sim_config is provided.
+        Acb_sim_config: Optional[dict]
+            Configuration for alpha field behavior in anisotropic model. Should contain
+            keys like 'alpha_vary_index', 'alpha_cons_index', 'null_alpha_index',
+            each with [start, end] index ranges. Example:
+            {'alpha_vary_index': [0, 400],
+             'alpha_cons_index': [400, 500],
+             'null_alpha_index': [500, 600]}
         """
         self.logger = Logger(self.__class__.__name__, verbose)
         self.verbose = verbose
+
+        # Determine miscal_samples default based on Acb_sim_config
+        if miscal_samples is None:
+            if Acb_sim_config is not None:
+                # Find the maximum index across all configured ranges
+                max_idx = 0
+                for key, (start, end) in Acb_sim_config.items():
+                    max_idx = max(max_idx, end)
+                miscal_samples = max_idx
+            else:
+                # Default value when no Acb_sim_config is provided
+                miscal_samples = 300
+        
+        self.miscal_samples = miscal_samples
 
         fldname = "_an" if atm_noise else "_wn"
         fldname += "_bp" if bandpass else ""
@@ -100,7 +131,7 @@ class SkySimulation:
         self.Acb = Acb
         self.cb_method = cb_model
         self.beta = beta
-        self.cmb = CMB(libdir, nside, cb_model,beta, mass, Acb, lensing, verbose=self.verbose)
+        self.cmb = CMB(libdir, nside, cb_model, beta, mass, Acb, lensing, Acb_sim_config, verbose=self.verbose)
         self.foreground = Foreground(libdir, nside, dust_model, sync_model, bandpass, verbose=False)
         self.dust_model = dust_model
         self.sync_model = sync_model
@@ -132,7 +163,6 @@ class SkySimulation:
 
         self.alpha = alpha
         self.alpha_err = alpha_err
-        self.alpha_samples = alpha_samples
         self.atm_noise = atm_noise
         self.bandpass = bandpass
         self.hilc_bins = hilc_bins
@@ -176,7 +206,7 @@ class SkySimulation:
 
     def __set_alpha__(self):
         if self.alpha_err > 0:
-            self.__gen_alpha_dict__(samples=self.alpha_samples)
+            self.__gen_alpha_dict__(samples=self.miscal_samples)
         else:
             self.alpha_dict = None
     
@@ -379,7 +409,8 @@ class LATsky(SkySimulation):
         bandpass: bool = True,
         alpha: float = 0.0,
         alpha_err: float = 0.0,
-        alpha_samples: int = 300,
+        miscal_samples: Optional[int] = None,
+        Acb_sim_config: Optional[dict] = None,
         noise_model: str = "NC",
         atm_noise: bool = True,
         nsplits: int = 2,
@@ -406,7 +437,8 @@ class LATsky(SkySimulation):
             bandpass = bandpass,
             alpha = alpha,
             alpha_err = alpha_err,
-            alpha_samples = alpha_samples,
+            miscal_samples = miscal_samples,
+            Acb_sim_config = Acb_sim_config,
             noise_model = noise_model,
             atm_noise = atm_noise,
             nsplits = nsplits,
@@ -438,7 +470,7 @@ class SATsky(SkySimulation):
         bandpass: bool = True,
         alpha: float = 0.0,
         alpha_err: float = 0.0,
-        alpha_samples: int = 300,
+        miscal_samples: Optional[int] = None,
         noise_model: str = "NC",
         atm_noise: bool = True,
         nsplits: int = 2,
@@ -465,7 +497,7 @@ class SATsky(SkySimulation):
             bandpass = bandpass,
             alpha = alpha,
             alpha_err = alpha_err,
-            alpha_samples = alpha_samples,
+            miscal_samples = miscal_samples,
             noise_model = noise_model,
             atm_noise = atm_noise,
             nsplits = nsplits,
@@ -497,7 +529,7 @@ class LATskyC(SkySimulation):
         bandpass: bool = True,
         alpha: float = 0.0,
         alpha_err: float = 0.0,
-        alpha_samples: int = 300,
+        miscal_samples: Optional[int] = None,
         noise_model: str = "NC",
         atm_noise: bool = True,
         nsplits: int = 2,
@@ -523,7 +555,7 @@ class LATskyC(SkySimulation):
             bandpass = bandpass,
             alpha = alpha,
             alpha_err = alpha_err,
-            alpha_samples = alpha_samples,
+            miscal_samples = miscal_samples,
             noise_model = noise_model,
             atm_noise = atm_noise,
             nsplits = nsplits,
@@ -554,7 +586,7 @@ class SATskyC(SkySimulation):
         bandpass: bool = True,
         alpha: float = 0.0,
         alpha_err: float = 0.0,
-        alpha_samples: int = 300,
+        miscal_samples: Optional[int] = None,
         noise_model: str = "NC",
         atm_noise: bool = True,
         nsplits: int = 2,
@@ -580,7 +612,7 @@ class SATskyC(SkySimulation):
             bandpass = bandpass,
             alpha = alpha,
             alpha_err = alpha_err,
-            alpha_samples = alpha_samples,
+            miscal_samples = miscal_samples,
             noise_model = noise_model,
             atm_noise = atm_noise,
             nsplits = nsplits,
