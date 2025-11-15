@@ -3,8 +3,22 @@ Test utility functions in cobi.utils module.
 """
 import pytest
 import numpy as np
-import healpy as hp
-from cobi.utils import inrad, change_coord
+
+try:
+    import healpy as hp
+    HAS_HEALPY = True
+except ImportError:
+    HAS_HEALPY = False
+
+try:
+    from cobi.utils import inrad, change_coord
+    HAS_COBI_UTILS = True
+except ImportError:
+    HAS_COBI_UTILS = False
+
+
+pytestmark = pytest.mark.skipif(not HAS_HEALPY or not HAS_COBI_UTILS, 
+                                 reason="requires healpy and cobi.utils")
 
 
 class TestAngularConversion:

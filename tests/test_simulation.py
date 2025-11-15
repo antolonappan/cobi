@@ -3,8 +3,15 @@ Test simulation modules in cobi.simulation.
 """
 import pytest
 import numpy as np
-import healpy as hp
 from unittest.mock import Mock, patch
+
+try:
+    import healpy as hp
+    HAS_HEALPY = True
+except ImportError:
+    HAS_HEALPY = False
+
+pytestmark = pytest.mark.skipif(not HAS_HEALPY, reason="requires healpy")
 
 
 class TestCMBSimulation:
