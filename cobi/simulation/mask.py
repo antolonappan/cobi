@@ -1,4 +1,55 @@
-# This file contains the Mask class for handling and generating sky masks.
+"""
+Mask Generation Module
+======================
+
+This module provides tools for creating and managing sky masks used in CMB
+analysis, including galactic masks, point source masks, and survey footprints.
+
+Features:
+
+- Multiple mask types (LAT, SAT, CO, point sources, galactic)
+- Apodization with multiple methods (C1, C2, Gaussian)
+- Galactic cut options
+- Combination of multiple mask types
+- Automatic mask caching for efficiency
+
+Classes
+-------
+Mask
+    Main class for creating and managing sky masks with apodization.
+
+Example
+-------
+Create a LAT survey mask with galactic cut::
+
+    from cobi.simulation import Mask
+    
+    mask = Mask(
+        libdir='./masks',
+        nside=512,
+        select='lat',
+        apo_scale=1.0,  # degrees
+        apo_method='C2',
+        gal_cut=20  # degrees from galactic plane
+    )
+    
+    # Get the mask
+    mask_map = mask.mask
+
+Combine multiple masks::
+
+    mask = Mask(
+        libdir='./masks',
+        nside=512,
+        select='lat+gal+ps',  # LAT + galactic + point sources
+        apo_scale=1.0
+    )
+
+Notes
+-----
+Masks are cached to disk for reuse. The module supports NaMaster apodization
+methods for optimal mode-coupling correction in power spectrum estimation.
+"""
 
 # General imports
 import os
@@ -10,6 +61,100 @@ from cobi import mpi
 from cobi.data import SAT_MASK, LAT_MASK, CO_MASK, PS_MASK, GAL_MASK
 from cobi.utils import Logger
 class Mask:
+    """
+    Sky mask generator and manager for CMB analysis.
+    
+    This class creates and handles various types of sky masks including survey
+    footprints (LAT/SAT), galactic plane cuts, point source masks, and CO line
+    emission masks. Supports apodization for optimal power spectrum estimation.
+    
+    Parameters
+    ----------
+    libdir : str
+        Directory for caching mask files.
+    nside : int
+        HEALPix resolution parameter.
+    select : str
+        Mask type selector. Can combine multiple masks with '+':
+        - 'lat': LAT survey footprint
+        - 'sat': SAT survey footprint  
+        - 'co': CO line emission mask
+        - 'ps': Point source mask
+        - 'gal': Galactic plane mask
+        Example: 'lat+gal+ps' combines LAT, galactic, and point source masks.
+    apo_scale : float, default=0.0
+        Apodization scale in degrees. If 0, no apodization applied.
+    apo_method : {'C1', 'C2', 'Gaussian'}, default='C2'
+        Apodization method compatible with NaMaster.
+    gal_cut : float, int, or str, default=0
+        Galactic cut specification:
+        - float < 1: f_sky fraction (e.g., 0.4 for 40% sky)
+        - int > 1: percentage (e.g., 40 for 40% sky)
+        - str: direct percentage '40', '60', '70', '80', '90'
+        Only used when 'gal' or 'GAL' in select.
+    verbose : bool, default=True
+        Enable logging output.
+    
+    Attributes
+    ----------
+    nside : int
+        HEALPix resolution.
+    mask : ndarray
+        The combined mask array (values 0-1).
+    select : str
+        Mask type identifier.
+    apo_scale : float
+        Apodization scale in degrees.
+    fsky : float
+        Sky fraction (computed from mask).
+    
+    Methods
+    -------
+    get_mask()
+        Returns the mask array.
+    
+    Examples
+    --------
+    Create LAT mask with galactic cut::
+    
+        mask = Mask(
+            libdir='./masks',
+            nside=512,
+            select='lat+gal',
+            gal_cut=20,  # 20% sky
+            apo_scale=1.0,
+            apo_method='C2'
+        )
+        
+        mask_array = mask.mask
+        print(f"Sky fraction: {mask.fsky:.3f}")
+    
+    Simple point source mask::
+    
+        ps_mask = Mask(
+            libdir='./masks',
+            nside=512,
+            select='ps',
+            apo_scale=0.5
+        )
+    
+    Combined mask for full analysis::
+    
+        full_mask = Mask(
+            libdir='./masks',
+            nside=512,
+            select='lat+gal+ps+co',
+            gal_cut=40,
+            apo_scale=1.0
+        )
+    
+    Notes
+    -----
+    - Masks are cached to disk for efficient reuse
+    - Apodization reduces mode-coupling in power spectra
+    - Multiple masks are combined via multiplication
+    - Compatible with NaMaster (pymaster) workflows
+    """
     def __init__(self, 
                  libdir: str, 
                  nside: int, 

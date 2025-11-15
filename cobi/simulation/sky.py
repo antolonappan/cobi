@@ -1,3 +1,75 @@
+"""
+Sky Simulation Module
+=====================
+
+This module provides a unified interface for generating complete multi-frequency
+sky simulations combining CMB, foregrounds, and noise with realistic instrumental
+effects and data processing.
+
+The SkySimulation class orchestrates:
+
+- CMB signal with cosmic birefringence
+- Galactic foregrounds (dust, synchrotron)
+- Instrumental noise (LAT/SAT models)
+- Beam convolution
+- Component separation (ILC)
+- Survey masks
+- Coordinate transformations
+
+Classes
+-------
+SkySimulation
+    Main class for end-to-end sky simulation and processing.
+
+HILC
+    Harmonic-space Internal Linear Combination for component separation.
+
+Example
+-------
+Generate a complete LAT simulation::
+
+    from cobi.simulation import SkySimulation
+    import numpy as np
+    
+    sky = SkySimulation(
+        libdir='./sky_sims',
+        nside=512,
+        freqs=np.array([27, 39, 93, 145, 225, 280]),
+        fwhm=np.array([7.4, 5.1, 2.2, 1.4, 1.0, 0.9]),
+        tube=np.array([0, 0, 1, 1, 2, 2]),  # tube assignments
+        cb_model='iso',
+        beta=0.35,
+        lensing=True,
+        sensitivity_mode='baseline',
+        telescope='LAT',
+        fsky=0.4
+    )
+    
+    # Get full simulation (all components)
+    full_sky = sky.get_sim(idx=0, component='all')
+    
+    # Get CMB-only
+    cmb_only = sky.get_sim(idx=0, component='cmb')
+    
+    # Get ILC-cleaned map
+    cleaned = sky.get_ilc(idx=0)
+
+Multi-component analysis::
+
+    # Individual components
+    cmb = sky.get_sim(idx=0, component='cmb')
+    fg = sky.get_sim(idx=0, component='fg')
+    noise = sky.get_sim(idx=0, component='noise')
+    
+    # Verify: all = cmb + fg + noise
+    all_sky = sky.get_sim(idx=0, component='all')
+
+Notes
+-----
+This module provides the highest-level interface for simulation generation.
+It handles caching, parallelization, and ensures consistency across components.
+Supports both isotropic and anisotropic cosmic birefringence models.
+"""
 import numpy as np
 import healpy as hp
 import os
@@ -17,6 +89,154 @@ from concurrent.futures import ThreadPoolExecutor
 NCPUS = os.cpu_count()
 
 class SkySimulation:
+    """
+    Unified multi-frequency sky simulation framework.
+    
+    This is the highest-level class that orchestrates complete end-to-end simulations
+    combining CMB, foregrounds, noise, and instrumental effects for SO LAT/SAT observations.
+    Includes component separation via harmonic ILC.
+    
+    Parameters
+    ----------
+    libdir : str
+        Base directory for all simulation products and caching.
+    nside : int
+        HEALPix resolution parameter.
+    freqs : ndarray
+        Array of observation frequencies in GHz (e.g., [27, 39, 93, 145, 225, 280]).
+    fwhm : ndarray
+        Beam FWHM in arcminutes for each frequency.
+    tube : ndarray
+        Optical tube assignment for each frequency (for correlated noise).
+    cb_model : {'iso', 'iso_td', 'aniso'}, default='iso'
+        Cosmic birefringence model type.
+    beta : float, default=0.35
+        Isotropic birefringence angle in degrees (for cb_model='iso').
+    mass : float, default=1.5
+        Axion mass in 10^-22 eV units (for cb_model='iso_td').
+        Must be 1, 1.5, or 6.4.
+    Acb : float, default=1e-6
+        Anisotropic birefringence amplitude (for cb_model='aniso').
+    lensing : bool, default=True
+        Include CMB lensing effects.
+    dust_model : int, default=10
+        PySM3 dust model number.
+    sync_model : int, default=5
+        PySM3 synchrotron model number.
+    bandpass : bool, default=True
+        Apply bandpass integration for foregrounds.
+    alpha : float or array, default=0.0
+        Miscalibration polarization angle(s) in degrees.
+        - float: same angle for all frequencies
+        - array: per-frequency angles (must match len(freqs))
+    alpha_err : float, default=0.0
+        Gaussian uncertainty on miscalibration angle (degrees).
+    miscal_samples : int, optional
+        Number of miscalibration angle realizations.
+        Default: max index from Acb_sim_config or 300.
+    Acb_sim_config : dict, optional
+        Anisotropic birefringence simulation batch configuration.
+        Keys: 'alpha_vary_index', 'alpha_cons_index', 'null_alpha_index'
+        Values: [start, end] index ranges.
+    noise_model : {'NC', 'TOD'}, default='NC'
+        Noise simulation type (curves vs. time-ordered data).
+    atm_noise : bool, default=True
+        Include atmospheric/1f noise.
+    nsplits : int, default=2
+        Number of data splits for null tests.
+    gal_cut : int, default=0
+        Galactic mask cut (0, 40, 60, 70, 80, 90).
+    hilc_bins : int, default=10
+        Number of multipole bins for harmonic ILC.
+    deconv_maps : bool, default=False
+        Deconvolve beam from output maps.
+    fldname_suffix : str, default=''
+        Additional suffix for output directory naming.
+    sht_backend : {'healpy', 'ducc0'}, default='healpy'
+        Spherical harmonic transform backend.
+    verbose : bool, default=True
+        Enable logging output.
+    
+    Attributes
+    ----------
+    nside : int
+        HEALPix resolution.
+    freqs : ndarray
+        Observation frequencies.
+    cmb : CMB
+        CMB simulation object.
+    foreground : Foreground
+        Foreground simulation object.
+    noise : Noise
+        Noise simulation object.
+    mask : ndarray
+        Combined survey mask.
+    fsky : float
+        Sky fraction.
+    config : dict
+        Per-frequency configuration dictionary.
+    
+    Methods
+    -------
+    get_sim(idx, component='all')
+        Get simulation realization (cmb/fg/noise/all).
+    get_ilc(idx, return_noise=False)
+        Get ILC-cleaned CMB map.
+    get_obs(idx, freqs_idx=None)
+        Get observed maps at specific frequencies.
+    
+    Examples
+    --------
+    Complete LAT simulation pipeline::
+    
+        from cobi.simulation import SkySimulation
+        import numpy as np
+        
+        sky = SkySimulation(
+            libdir='./sims',
+            nside=512,
+            freqs=np.array([27, 39, 93, 145, 225, 280]),
+            fwhm=np.array([7.4, 5.1, 2.2, 1.4, 1.0, 0.9]),
+            tube=np.array([0, 0, 1, 1, 2, 2]),
+            cb_model='iso',
+            beta=0.35,
+            lensing=True,
+            dust_model=10,
+            sync_model=5,
+            alpha=0.0,  # no miscalibration
+            atm_noise=True,
+            gal_cut=40
+        )
+        
+        # Get full simulation
+        full_map = sky.get_sim(idx=0, component='all')
+        
+        # Get CMB-only
+        cmb_map = sky.get_sim(idx=0, component='cmb')
+        
+        # Get ILC-cleaned map
+        cleaned_map = sky.get_ilc(idx=0)
+    
+    Multi-frequency miscalibration::
+    
+        sky = SkySimulation(
+            libdir='./sims',
+            nside=512,
+            freqs=np.array([93, 145, 225]),
+            fwhm=np.array([2.2, 1.4, 1.0]),
+            tube=np.array([1, 1, 2]),
+            alpha=[0.2, -0.1, 0.15],  # per-frequency
+            alpha_err=0.05  # with uncertainty
+        )
+    
+    Notes
+    -----
+    - Automatically manages caching and directory structure
+    - MPI-aware for parallel processing
+    - Supports batch processing with Acb_sim_config
+    - ILC uses harmonic-space cleaning
+    - All outputs in μK_CMB units
+    """
     def __init__(
         self,
         libdir: str,
@@ -47,36 +267,9 @@ class SkySimulation:
         verbose: bool = True,
     ):
         """
-        Initializes the SkySimulation class for generating and handling sky simulations.
-
-        Parameters:
-        -----------
-        libdir: str
-            The directory where the simulation data will be stored.
-        nside: int
-            The HEALPix nside parameter for the simulation.
-        freqs: np.ndarray
-            The frequency bands for the simulation.
-        fwhm: np.ndarray
-            The full width at half maximum (FWHM) for each frequency band.
-        tube: np.ndarray
-            The tube identifier for each frequency band.
-        alpha: Union[float, List[float]]
-            Miscalibration rotation angle(s) for polarization (in degrees).
-        alpha_err: float
-            Uncertainty in the miscalibration angle (in degrees). If > 0, samples 
-            are drawn from a Gaussian distribution.
-        miscal_samples: Optional[int]
-            Number of miscalibration angle samples to generate. If None, automatically
-            determined based on Acb_sim_config: uses the maximum index across all ranges,
-            or defaults to 300 if no Acb_sim_config is provided.
-        Acb_sim_config: Optional[dict]
-            Configuration for alpha field behavior in anisotropic model. Should contain
-            keys like 'alpha_vary_index', 'alpha_cons_index', 'null_alpha_index',
-            each with [start, end] index ranges. Example:
-            {'alpha_vary_index': [0, 400],
-             'alpha_cons_index': [400, 500],
-             'null_alpha_index': [500, 600]}
+        Initialize the SkySimulation.
+        
+        See class docstring for detailed parameter descriptions.
         """
         self.logger = Logger(self.__class__.__name__, verbose)
         self.verbose = verbose

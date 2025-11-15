@@ -1,5 +1,49 @@
 """
-This file contains the implementation of the Foreground class for generating and handling dust and synchrotron foreground maps.
+Foreground Simulation Module
+=============================
+
+This module handles Galactic foreground emission modeling for CMB analysis,
+including dust and synchrotron radiation with frequency-dependent properties.
+
+The module provides:
+
+- Multi-frequency foreground map generation
+- Bandpass integration for realistic instrument response
+- PySM3 sky model integration (d1, s1 models)
+- Spatial templates for dust and synchrotron
+- Coordinate transformation support
+
+Classes
+-------
+BandpassInt
+    Handles bandpass profile integration for multi-frequency observations.
+
+Foreground
+    Main class for generating dust and synchrotron foreground maps.
+
+Example
+-------
+Generate foreground maps for multiple frequencies::
+
+    from cobi.simulation import Foreground
+    import numpy as np
+    
+    fg = Foreground(
+        libdir='./fg_sims',
+        nside=512,
+        freqs=np.array([27, 39, 93, 145, 225, 280]),  # GHz
+        models=['d1', 's1'],  # dust and synchrotron
+        coord='C'  # Celestial coordinates
+    )
+    
+    # Get foreground realization
+    fg_maps = fg.get_map(idx=0)  # Shape: (nfreqs, 3, npix)
+
+Notes
+-----
+Uses PySM3 for generating foreground templates with realistic spectral
+energy distributions. Supports bandpass integration for accurate modeling
+of detector response.
 """
 # General imports
 import os
@@ -63,6 +107,86 @@ class BandpassInt:
         plt.show()
 
 class Foreground:
+    """
+    Galactic foreground generator for CMB analysis.
+    
+    This class generates multi-frequency Galactic foreground emission maps
+    using PySM3 models for dust and synchrotron radiation. Supports bandpass
+    integration for realistic detector response.
+    
+    Parameters
+    ----------
+    libdir : str
+        Directory for caching foreground maps.
+    nside : int
+        HEALPix resolution parameter.
+    dust_model : int
+        PySM3 dust model number (e.g., 1 for d1, 6 for d6).
+    sync_model : int
+        PySM3 synchrotron model number (e.g., 1 for s1, 3 for s3).
+    bandpass : bool, default=False
+        Whether to apply bandpass integration using detector profiles.
+    verbose : bool, default=True
+        Enable logging output.
+    
+    Attributes
+    ----------
+    nside : int
+        HEALPix resolution.
+    dust_model : int
+        Dust emission model identifier.
+    sync_model : int
+        Synchrotron emission model identifier.
+    bandpass : bool
+        Whether bandpass integration is enabled.
+    bp_profile : BandpassInt or None
+        Bandpass profile handler (if enabled).
+    
+    Methods
+    -------
+    dustQU(band)
+        Generate dust Q/U polarization maps at given frequency.
+    syncQU(band)
+        Generate synchrotron Q/U polarization maps at given frequency.
+    get_map(freqs, idx)
+        Get combined foreground map for multiple frequencies.
+    
+    Examples
+    --------
+    Generate foreground maps without bandpass::
+    
+        fg = Foreground(
+            libdir='./fg_sims',
+            nside=512,
+            dust_model=1,
+            sync_model=1,
+            bandpass=False
+        )
+        
+        # Get dust emission at 145 GHz
+        dust_map = fg.dustQU('145')
+    
+    With bandpass integration::
+    
+        fg = Foreground(
+            libdir='./fg_sims',
+            nside=512,
+            dust_model=1,
+            sync_model=1,
+            bandpass=True
+        )
+        
+        # Generate multi-frequency maps
+        freqs = ['027', '039', '093', '145', '225', '280']
+        fg_maps = fg.get_map(freqs, idx=0)
+    
+    Notes
+    -----
+    - Uses PySM3 for physically-motivated foreground models
+    - Caches maps to disk for efficient reuse
+    - Supports MPI parallelization
+    - Output in μK_CMB units
+    """
     def __init__(
         self,
         libdir: str,

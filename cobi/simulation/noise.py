@@ -1,3 +1,67 @@
+"""
+Noise Simulation Module
+=======================
+
+This module simulates realistic instrumental noise for Simons Observatory
+observations, including white noise, atmospheric noise, and correlated noise
+between detector pairs.
+
+Features:
+
+- SO LAT and SAT noise models (v3.1.1)
+- Sensitivity modes (baseline, goal)
+- Atmospheric and 1/f noise components
+- Cross-frequency correlations
+- Map-based and harmonic-space realizations
+- Anisotropic noise from hit maps
+
+Classes
+-------
+Noise
+    Main class for generating noise realizations and spectra.
+
+Functions
+---------
+NoiseSpectra
+    Compute noise power spectra for SO telescopes.
+
+Example
+-------
+Generate noise maps for LAT baseline sensitivity::
+
+    from cobi.simulation import Noise
+    import numpy as np
+    
+    noise = Noise(
+        libdir='./noise_sims',
+        nside=512,
+        lmax=3000,
+        freqs=np.array([27, 39, 93, 145, 225, 280]),
+        fwhm=np.array([7.4, 5.1, 2.2, 1.4, 1.0, 0.9]),
+        telescope='LAT',
+        sensitivity_mode='baseline',
+        fsky=0.4,
+        atm_noise=True
+    )
+    
+    # Get noise realization
+    noise_maps = noise.get_map(idx=0)  # Shape: (nfreqs, 3, npix)
+
+Anisotropic noise from hit maps::
+
+    noise_aniso = Noise(
+        libdir='./noise_sims',
+        nside=512,
+        nside_aniso=4096,  # high-res for hit maps
+        isotropic=False,
+        hitmap_file='hitmaps.h5'
+    )
+
+Notes
+-----
+Uses SO noise models v3.1.1 for realistic noise properties. Supports both
+isotropic and anisotropic noise based on actual survey hit maps.
+"""
 import numpy as np
 import healpy as hp
 from pixell import enmap
@@ -46,6 +110,95 @@ def NoiseSpectra(sensitivity_mode, fsky, lmax, atm_noise, telescope):
 
 
 class Noise:
+    """
+    Instrumental noise simulator for Simons Observatory telescopes.
+    
+    This class generates realistic noise realizations for SO LAT and SAT observations
+    based on the v3.1.1 noise models. Supports white noise, atmospheric/1f noise,
+    and correlated noise between detector pairs within the same optical tube.
+    
+    Parameters
+    ----------
+    nside : int
+        HEALPix resolution parameter.
+    fsky : float
+        Sky fraction for noise power calculation (0 < fsky ≤ 1).
+    telescope : {'LAT', 'SAT'}
+        Telescope identifier (Large Aperture or Small Aperture).
+    sim : {'NC', 'TOD'}, default='NC'
+        Simulation type:
+        - 'NC': Noise curves from SO models (analytic)
+        - 'TOD': Time-ordered data based simulations (uses SO products)
+    atm_noise : bool, default=False
+        Include atmospheric and 1/f noise components.
+    nsplits : int, default=2
+        Number of data splits (for split-based null tests).
+    verbose : bool, default=True
+        Enable logging output.
+    
+    Attributes
+    ----------
+    nside : int
+        HEALPix resolution.
+    lmax : int
+        Maximum multipole (3*nside - 1).
+    sensitivity_mode : int
+        SO sensitivity mode (2 = baseline).
+    atm_noise : bool
+        Whether atmospheric noise is included.
+    Nell : dict
+        Noise power spectra for each frequency and cross-frequency.
+    telescope : str
+        Telescope identifier.
+    
+    Methods
+    -------
+    get_map(idx, freqs, fwhm, tube)
+        Generate noise map realization for given configuration.
+    get_spectra(idx, freqs, fwhm, tube)
+        Get noise power spectra for given configuration.
+    
+    Examples
+    --------
+    LAT baseline noise with atmosphere::
+    
+        noise = Noise(
+            nside=512,
+            fsky=0.4,
+            telescope='LAT',
+            sim='NC',
+            atm_noise=True,
+            nsplits=2
+        )
+        
+        # Generate noise for 6 LAT frequencies
+        freqs = np.array([27, 39, 93, 145, 225, 280])
+        fwhm = np.array([7.4, 5.1, 2.2, 1.4, 1.0, 0.9])
+        tube = np.array([0, 0, 1, 1, 2, 2])
+        
+        noise_maps = noise.get_map(idx=0, freqs=freqs, fwhm=fwhm, tube=tube)
+    
+    SAT white noise only::
+    
+        noise_sat = Noise(
+            nside=512,
+            fsky=0.1,
+            telescope='SAT',
+            sim='NC',
+            atm_noise=False
+        )
+        
+        freqs = np.array([27, 39, 93, 145, 225, 280])
+        noise_maps = noise_sat.get_map(idx=0, freqs=freqs, fwhm=None, tube=None)
+    
+    Notes
+    -----
+    - Uses SO v3.1.1 noise models (baseline sensitivity)
+    - Correlated noise between frequency pairs in same tube
+    - Supports independent realizations via idx parameter
+    - MPI-aware for parallel generation
+    - Output in μK_CMB units
+    """
 
     def __init__(self, 
                  nside: int, 

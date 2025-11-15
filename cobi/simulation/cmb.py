@@ -1,5 +1,51 @@
 """
-This file contains the class to handle the Cosmic Microwave Background (CMB) data and simulations.
+CMB Simulation Module
+=====================
+
+This module provides comprehensive functionality for simulating Cosmic Microwave 
+Background (CMB) temperature and polarization maps with support for:
+
+- Lensed and unlensed CMB realizations
+- Cosmic birefringence effects (isotropic and anisotropic)
+- Custom power spectra from CAMB
+- Auxiliary scalar fields (for patchy τ models)
+- Beam convolution and coordinate transformations
+
+Classes
+-------
+CMB
+    Main class for generating CMB maps with optional birefringence rotation.
+
+Functions
+---------
+synfast_pol
+    Generate polarized CMB maps with optional auxiliary fields.
+hp_alm2map_spin
+    Fast spin-weighted spherical harmonic transforms.
+get_camb_cls
+    Compute CMB power spectra using CAMB.
+
+Example
+-------
+Generate a CMB realization with isotropic birefringence::
+
+    from cobi.simulation import CMB
+    
+    cmb = CMB(
+        nside=512,
+        lmax=1500,
+        beta=0.35,  # isotropic rotation angle in degrees
+        lensing=True,
+        libdir='./cmb_sims'
+    )
+    
+    # Get rotated CMB map
+    cmb_map = cmb.get_map(idx=0, apply_beta=True)
+
+Notes
+-----
+The module uses lenspyx for efficient lensing and supports MPI parallelization
+for generating large simulation sets.
 """
 
 # General imports
@@ -110,6 +156,92 @@ def synfast_pol(nside, spectra):
     return Q_map, U_map, A_map
 
 class CMB:
+    """
+    CMB map generator with cosmic birefringence support.
+    
+    This class handles the generation of CMB temperature and polarization maps
+    with optional cosmic birefringence rotation. Supports three birefringence models:
+    
+    - **iso**: Isotropic (constant) rotation angle β
+    - **iso_td**: Time-dependent isotropic model with axion mass parameter
+    - **aniso**: Anisotropic (spatially-varying) rotation from patchy reionization
+    
+    Parameters
+    ----------
+    libdir : str
+        Directory for caching simulation products and power spectra.
+    nside : int
+        HEALPix resolution parameter (nside = 2^n).
+    model : {'iso', 'iso_td', 'aniso'}, default='iso'
+        Birefringence model type.
+    beta : float, optional
+        Isotropic rotation angle in degrees (required for model='iso').
+    mass : float, optional
+        Axion mass parameter in units of 10^-22 eV. 
+        Must be 1, 1.5, or 6.4 (required for model='iso_td').
+    Acb : float, optional
+        Amplitude of anisotropic birefringence power spectrum
+        (required for model='aniso').
+    lensing : bool, default=False
+        Whether to include CMB lensing effects.
+    Acb_sim_config : dict, optional
+        Configuration for anisotropic simulation batches with keys:
+        - 'alpha_vary_index': [start, end] indices for varying α
+        - 'alpha_cons_index': [start, end] indices for constant α  
+        - 'null_alpha_index': [start, end] indices for null test (α=0)
+    verbose : bool, default=True
+        Enable logging output.
+    
+    Attributes
+    ----------
+    nside : int
+        HEALPix resolution.
+    lmax : int
+        Maximum multipole (3*nside - 1).
+    model : str
+        Birefringence model type.
+    beta : float or None
+        Isotropic rotation angle in degrees.
+    lensing : bool
+        Whether lensing is enabled.
+    cls : dict
+        CMB power spectra (TT, EE, BB, TE).
+    
+    Examples
+    --------
+    Generate isotropic birefringence simulation::
+    
+        cmb = CMB(
+            libdir='./cmb_sims',
+            nside=512,
+            model='iso',
+            beta=0.35,
+            lensing=True
+        )
+        
+        # Get rotated CMB map
+        cmb_map = cmb.get_map(idx=0, apply_beta=True)
+    
+    Generate anisotropic birefringence::
+    
+        cmb = CMB(
+            libdir='./cmb_sims',
+            nside=512,
+            model='aniso',
+            Acb=1e-6,
+            lensing=True
+        )
+        
+        # Get map with spatially-varying rotation
+        cmb_map = cmb.get_map(idx=0, apply_beta=True)
+    
+    Notes
+    -----
+    - Uses CAMB for power spectrum generation
+    - Supports efficient caching of realizations
+    - MPI-aware for parallel simulation generation
+    - Lensing implemented via lenspyx
+    """
 
     def __init__(
         self,
