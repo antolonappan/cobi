@@ -320,6 +320,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Anto I. Lonappan** - [antolonappan](https://github.com/antolonappan)
 
+## Contributors
+
+- **Patricia Diego-Palazuelos** - Universidad de Cantabria
+- **Carlos Hervías-Caimapo** - Universidad de Cantabria
+
 ## Acknowledgments
 
 - Simons Observatory Collaboration
