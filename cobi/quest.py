@@ -1,3 +1,91 @@
+"""
+Quadratic Estimator for Cosmic Birefringence Module
+====================================================
+
+This module implements quadratic estimator (QE) methods for reconstructing
+cosmic birefringence rotation angle fields from CMB polarization observations.
+
+The module provides:
+- Wiener filtering of E and B modes using C⁻¹ filters
+- Quadratic estimator reconstruction of rotation angle alms
+- N0 and RDN0 bias estimation
+- Mean field subtraction
+- Likelihood analysis for cosmic birefringence amplitude
+
+Classes
+-------
+FilterEB
+    Implements C⁻¹ Wiener filtering for E and B mode polarization using
+    the curvedsky library. Handles component-separated maps with noise
+    and beam deconvolution.
+
+QE
+    Quadratic estimator class for cosmic birefringence reconstruction.
+    Computes rotation angle power spectra with various bias correction
+    methods (analytical N0, realization-dependent N0, mean field).
+
+AcbLikelihood
+    Likelihood analysis class for constraining the cosmic birefringence
+    amplitude A_CB from reconstructed rotation angle power spectra.
+
+Algorithm
+---------
+The quadratic estimator exploits EB correlations induced by cosmic birefringence:
+
+1. Apply C⁻¹ Wiener filter to observed E and B maps
+2. Compute quadratic combination: qlm ∝ Ẽlm B̃*lm
+3. Apply normalization from Fisher information
+4. Estimate and subtract biases (N0, mean field)
+5. Compare to theoretical prediction for A_CB
+
+Requirements
+------------
+Requires the curvedsky library for efficient curved-sky operations.
+Install from: https://github.com/toshiyan/cmblensplus
+
+Example
+-------
+    from cobi.quest import FilterEB, QE
+    from cobi.simulation import LATsky, Mask
+    
+    # Set up sky and mask
+    sky = LATsky(libdir, nside=512)
+    mask = Mask(libdir, nside=512, mask_str='LAT')
+    
+    # Initialize Wiener filter
+    filter_eb = FilterEB(
+        sky=sky,
+        mask=mask,
+        lmax=3000,
+        fwhm=2.0,  # arcmin
+        sht_backend='ducc0'
+    )
+    
+    # Create quadratic estimator
+    qe = QE(
+        filter=filter_eb,
+        lmin=30,
+        lmax=300,
+        recon_lmax=100,
+        norm_nsim=100
+    )
+    
+    # Reconstruct rotation angle for simulation 0
+    qlm = qe.qlm(idx=0)
+    
+    # Get bias-corrected power spectrum
+    cl_aa = qe.qcl(idx=0, rm_bias=True, rdn0=True)
+    
+    # Run likelihood analysis
+    likelihood = AcbLikelihood(qe, lmin=2, lmax=50)
+    samples = likelihood.samples(nwalkers=100, nsamples=2000)
+
+Notes
+-----
+The curvedsky library must be installed to use this module.
+MPI parallelization is supported for RDN0 computation.
+"""
+
 import os
 try:
     import curvedsky as cs

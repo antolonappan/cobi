@@ -1,3 +1,37 @@
+"""
+Utility Functions Module
+=========================
+
+This module contains utility functions for various operations used throughout
+the COBI package, including logging, coordinate transformations, map operations,
+and numerical utilities.
+
+Functions
+---------
+Logger
+    Configurable logging class for debugging and information messages
+inrad
+    Convert angles from degrees to radians
+cli
+    Compute inverse of array elements (safe for zeros)
+download_file
+    Download files with progress bar
+deconvolveQU
+    Deconvolve beam from polarization maps
+change_coord
+    Transform HEALPix maps between coordinate systems
+slice_alms
+    Slice spherical harmonic coefficients to new lmax
+
+The module provides essential functionality for:
+- Logging with configurable verbosity levels
+- Angular unit conversions
+- Safe numerical operations (division, inversion)
+- File downloading with progress tracking
+- HEALPix map manipulations (coordinate transforms, beam operations)
+- Spherical harmonic coefficient operations
+"""
+
 # This file contains utility functions that are used in the main script.
 
 import requests

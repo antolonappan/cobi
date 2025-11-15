@@ -1,4 +1,57 @@
-# This file contains the data classes and functions to download the data files from the repository.
+"""
+Data Loading and Management Module
+===================================
+
+This module provides data classes and functions to download and manage
+data files for the COBI package.
+
+The module handles loading of:
+- Binary masks (SAT, LAT, CO, GAL, PS)
+- Bandpass profiles
+- CAMB initialization files
+- Pre-computed power spectra
+- Time-dependent isotropic spectra
+
+All data files are automatically downloaded from the GitHub release
+repository if not present locally.
+
+Classes
+-------
+Data
+    Main data class that handles file downloading, caching, and loading
+    for various file formats (FITS, pickle, INI).
+
+Data Objects
+------------
+SAT_MASK : Data
+    Binary mask for SAT observations
+LAT_MASK : Data
+    Binary mask for LAT observations
+CO_MASK : Data
+    Binary mask for CO emission regions
+GAL_MASK : Data
+    Binary mask for Galactic plane (parameterized by galcut)
+PS_MASK : Data
+    Binary mask for polarized point sources
+BP_PROFILE : Data
+    Bandpass profile data
+CAMB_INI : Data
+    CAMB initialization file for CMB spectrum calculation
+SPECTRA : Data
+    Pre-computed CMB power spectra
+ISO_TD_SPECTRA : Data
+    Time-dependent isotropic birefringence spectra
+
+Example
+-------
+    from cobi.data import LAT_MASK
+    
+    # Set directory where data will be cached
+    LAT_MASK.directory = '/path/to/cache'
+    
+    # Load the mask (downloads if not present)
+    mask = LAT_MASK.data
+"""
 
 # General imports
 import os
