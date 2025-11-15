@@ -3,4 +3,4 @@
 *./__pycache__
 *.err
 *.out
-examples/run/*.ipynb
+examples/*/run/

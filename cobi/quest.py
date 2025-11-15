@@ -1,5 +1,9 @@
 import os
-import curvedsky as cs
+try:
+    import curvedsky as cs
+except ImportError:
+    cs = None
+    print("Install curvedsky to use the QE module.")
 import numpy as np
 import healpy as hp
 import pickle as pl
