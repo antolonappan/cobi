@@ -28,7 +28,6 @@ class SkySimulation:
         beta: float = 0.35,
         mass: float = 1.5,
         Acb: float = 1e-6,
-        AEcb: float = -1.0e-3,
         lensing: bool = True,
         dust_model: int = 10,
         sync_model: int = 5,
@@ -101,7 +100,7 @@ class SkySimulation:
         self.Acb = Acb
         self.cb_method = cb_model
         self.beta = beta
-        self.cmb = CMB(libdir, nside, cb_model,beta, mass, Acb, np.radians(AEcb), lensing, verbose=self.verbose)
+        self.cmb = CMB(libdir, nside, cb_model,beta, mass, Acb, lensing, verbose=self.verbose)
         self.foreground = Foreground(libdir, nside, dust_model, sync_model, bandpass, verbose=False)
         self.dust_model = dust_model
         self.sync_model = sync_model
@@ -157,36 +156,20 @@ class SkySimulation:
         syncQU = self.foreground.syncQU(band)
         return cmbQU + dustQU + syncQU
     
-    # def __gen_alpha_dict__(self):
-    #     fname = os.path.join(self.libdir, 'alpha_dict.pkl')
-    #     if os.path.isfile(fname):
-    #         self.alpha_dict = pl.load(open(fname, 'rb'))
-    #     else:
-    #         self.alpha_dict = {}
-    #         for band in self.config.keys():
-    #             alpha = self.config[band]["alpha"]
-    #             self.alpha_dict[band] = np.random.normal(alpha, self.alpha_err, 300) # given value is assumed 3 sigma
-    #         if mpi.rank == 0:
-    #             pl.dump(self.alpha_dict, open(fname, 'wb'))
     def __gen_alpha_dict__(self, samples: int = 300):
         fname = os.path.join(self.libdir, 'alpha_dict.pkl')
         if os.path.isfile(fname):
             self.alpha_dict = pl.load(open(fname, 'rb'))
         else:
             self.alpha_dict = {}
-            # Extract base bands like '27', '39', etc.
             base_bands = set([band.split('-')[0] for band in self.config.keys()])
             for base_band in base_bands:
-                # Create one random sample per base_band
                 band_1 = f"{base_band}-1"
                 alpha = self.config[band_1]["alpha"]
                 sample = np.random.normal(alpha, self.alpha_err, samples)
-                # Assign same sample to both '-1' and '-2'
                 for split in range(1, self.nsplits + 1):
                     band_key = f"{base_band}-{split}"
                     self.alpha_dict[band_key] = sample
-                # self.alpha_dict[f"{base_band}-1"] = sample
-                # self.alpha_dict[f"{base_band}-2"] = sample
             if mpi.rank == 0:
                 pl.dump(self.alpha_dict, open(fname, 'wb'))
         
@@ -390,7 +373,6 @@ class LATsky(SkySimulation):
         beta: float = 0.35,
         mass: float = 1.5,
         Acb: float = 1e-6,
-        AEcb: float = -1.0e-3,
         lensing: bool = True,
         dust_model: int = 10,
         sync_model: int = 5,
@@ -418,7 +400,6 @@ class LATsky(SkySimulation):
             beta = beta,
             mass = mass,
             Acb = Acb,
-            AEcb = AEcb,
             lensing = lensing,
             dust_model = dust_model,
             sync_model = sync_model,
@@ -451,7 +432,6 @@ class SATsky(SkySimulation):
         beta: float = 0.35,
         mass: float = 1.5,
         Acb: float = 1e-6,
-        AEcb: float = -1.0e-3,
         lensing: bool = True,
         dust_model: int = 10,
         sync_model: int = 5,
@@ -479,7 +459,6 @@ class SATsky(SkySimulation):
             beta = beta,
             mass = mass,
             Acb = Acb,
-            AEcb=AEcb,
             lensing = lensing,
             dust_model = dust_model,
             sync_model = sync_model,
