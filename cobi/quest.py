@@ -211,7 +211,7 @@ class FilterEB:
     def check_file_exist(self):
         missing = []
         file_err = []
-        for idx in tqdm(range(300),desc='Checking cinv files'):
+        for idx in tqdm(range(600),desc='Checking cinv files'):
             fsky = f"{self.fsky:.2f}".replace('.','p')
             fname = os.path.join(self.lib_dir,f"cinv_EB_{idx:04d}_fsky_{fsky}.pkl")
             if not os.path.isfile(fname):
@@ -244,13 +244,8 @@ class FilterEB:
         plt.legend()
 
 
-
-
-        
-    
-
 class QE:
-    def __init__(self, filter: FilterEB, lmin: int, lmax: int, recon_lmax: int, norm_nsim=100, nlb=2, lmax_bin=100):
+    def __init__(self, filter: FilterEB, lmin: int, lmax: int, recon_lmax: int, nsims_mf=100, nlb=2, lmax_bin=100):
         self.basedir = os.path.join(filter.sky.libdir, 'qe')
         self.recdir = os.path.join(self.basedir, f'reco_min{lmin}_max{lmax}_rmax{recon_lmax}')
         self.rdn0dir = os.path.join(self.basedir, f'rdn0_min{lmin}_max{lmax}_rmax{recon_lmax}')
@@ -260,11 +255,27 @@ class QE:
             os.makedirs(self.rdn0dir, exist_ok=True)
 
         self.filter = filter
+        self.alpha_config = filter.sky.cmb.Acb_sim_config
         self.lmin = lmin
         self.lmax = lmax
         self.recon_lmax = recon_lmax
         self.cl_len = filter.cl_len
-        self.norm_nsim = norm_nsim
+        self.nsims_mf = nsims_mf
+        
+        # Extract index ranges from alpha_config
+        self.alpha_vary_index = np.arange(self.alpha_config['alpha_vary_index'][0], 
+                                          self.alpha_config['alpha_vary_index'][1])
+        self.alpha_cons_index = np.arange(self.alpha_config['alpha_cons_index'][0], 
+                                          self.alpha_config['alpha_cons_index'][1])
+        self.null_alpha_index = np.arange(self.alpha_config['null_alpha_index'][0], 
+                                          self.alpha_config['null_alpha_index'][1])
+        
+        # Mean field simulations: last nsims_mf from alpha_vary_index
+        self.mf_index = self.alpha_vary_index[-self.nsims_mf:]
+        
+        # N0 simulations: remaining alpha_vary_index (excluding mean field sims)
+        self.n0_index = self.alpha_vary_index[:-self.nsims_mf]
+        
         self.norm = self.__norm__
         self.lmax_bin = lmax_bin
         self.binner = nmt.NmtBin.from_lmax_linear(lmax_bin,nlb)
@@ -291,7 +302,8 @@ class QE:
         else:
             ocl_len = self.cl_len.copy()
             ne,nb = [],[]
-            for i in tqdm(range(self.norm_nsim), desc='Computing OCL'):
+            # Use N0 indexes for computing OCL
+            for i in tqdm(self.n0_index, desc='Computing OCL'):
                 e,b = self.filter.sky.HILC_obsEB(i, ret='nl')
                 ne.append(e[:self.lmax+1]/Tcmb**2)
                 nb.append(b[:self.lmax+1]/Tcmb**2)
@@ -344,14 +356,14 @@ class QE:
             return self.__qcl__(idx,rm_bias=rm_bias)
 
     def mean_field(self):
-        fname = os.path.join(self.basedir, f'mf100_fsky{self.filter.fsky:.2f}.pkl')
+        fname = os.path.join(self.basedir, f'mf{self.nsims_mf}_fsky{self.filter.fsky:.2f}.pkl')
         if os.path.isfile(fname):
             return pl.load(open(fname, 'rb'))
         else:
-            mf = np.zeros_like(self.qlm(0))
-            for i in tqdm(range(200,300), desc='Computing mean field'):
+            mf = np.zeros_like(self.qlm(self.mf_index[0]))
+            for i in tqdm(self.mf_index, desc='Computing mean field'):
                 mf += self.qlm(i)
-            mf /= 100
+            mf /= self.nsims_mf
             pl.dump(mf, open(fname, 'wb'))
             return mf
     
@@ -363,17 +375,20 @@ class QE:
         if os.path.isfile(fname):
             return pl.load(open(fname,'rb'))
         else:
-            myidx = np.append(np.arange(200),np.arange(2))
-            sel = np.where(myidx == idx)[0]
-            myidx = np.delete(myidx,sel)
+            # Use N0 indexes for cycling
+            myidx = self.n0_index.copy()
 
             E0,B0 = self.filter.cinv_EB(idx)
 
             mean_rdn0 = []
 
             for i in tqdm(range(100),desc=f'RDN0 for simulation {idx}', unit='sim'):
-                E1,B1 = self.filter.cinv_EB(myidx[i])
-                E2,B2 = self.filter.cinv_EB(myidx[i+1])
+                # Cycle through n0_index
+                i1 = myidx[i % len(myidx)]
+                i2 = myidx[(i + 1) % len(myidx)]
+                
+                E1,B1 = self.filter.cinv_EB(i1)
+                E2,B2 = self.filter.cinv_EB(i2)
                 # E_0,B_1
                 glm1 = cs.rec_rot.qeb(self.recon_lmax,self.lmin,self.lmax,self.filter.cl_len[1,:self.lmax+1], E0[:self.lmax+1,:self.lmax+1], B1[:self.lmax+1,:self.lmax+1])
 
@@ -432,9 +447,7 @@ class QE:
             return rdn0
 
         # 2) Build the index cycling array on all ranks (cheap & deterministic).
-        myidx = np.append(np.arange(200), np.arange(2))
-        sel = np.where(myidx == idx)[0]
-        myidx = np.delete(myidx, sel)
+        myidx = self.n0_index.copy()
 
         # 3) Compute (or broadcast) the fixed E0, B0 for this idx.
         if rank == 0:
@@ -456,9 +469,9 @@ class QE:
 
         # Helper to compute one contribution (vector length L)
         def _one_contrib(i):
-            # Pull the paired indices needed for this Monte-Carlo draw
-            i1 = int(myidx[i])
-            i2 = int(myidx[i+1])
+            # Cycle through n0_index
+            i1 = int(myidx[i % len(myidx)])
+            i2 = int(myidx[(i + 1) % len(myidx)])
 
             E1, B1 = self.filter.cinv_EB(i1)
             E2, B2 = self.filter.cinv_EB(i2)
@@ -521,16 +534,26 @@ class QE:
         rdn0 = comm.bcast(rdn0, root=0)
         return rdn0
     
-    def N0_sim(self,idx):
+    def N0_sim(self,idx,which='vary'):
         """
         Calculate the N0 bias from the Reconstructed potential using filtered Fields
         with different CMB fields. If E modes is from ith simulation then B modes is 
         from (i+1)th simulation
 
         idx: int : index of the N0
+        which: str : 'vary' or 'cons' to select which alpha_config index to use
         """
-        myidx = np.pad(np.arange(300),(0,1),'constant',constant_values=(0,0))
-        fname = os.path.join(self.rdn0dir,f"N0_{self.filter.fsky:.2f}_{idx:04d}.pkl")
+        if which == 'vary':
+            index_range = self.alpha_vary_index
+            label = 'vary'
+        elif which == 'cons':
+            index_range = self.alpha_cons_index
+            label = 'cons'
+        else:
+            raise ValueError("which must be 'vary' or 'cons'")
+            
+        myidx = np.pad(index_range,(0,1),'wrap')
+        fname = os.path.join(self.rdn0dir,f"N0_{label}_{self.filter.fsky:.2f}_{idx:04d}.pkl")
         if os.path.isfile(fname):
             return pl.load(open(fname,'rb'))
         else:
@@ -551,6 +574,57 @@ class QE:
             n0cl = cs.utils.alm2cl(self.recon_lmax,glm)/(2*self.filter.fsky) # type: ignore
             pl.dump(n0cl,open(fname,'wb'))
             return n0cl
+    
+    def MCN0(self, which='vary'):
+        """
+        Monte Carlo average of N0_sim over N0 indexes
+        
+        which: str : 'vary' or 'cons' to select which alpha_config index to use
+        """
+        fname = os.path.join(self.basedir, f'MCN0_{which}_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            return pl.load(open(fname,'rb'))
+        else:
+            n0_list = []
+            for idx in tqdm(self.n0_index, desc=f'Computing MCN0 ({which})'):
+                n0_list.append(self.N0_sim(idx, which=which))
+            mcn0 = np.array(n0_list).mean(axis=0)
+            pl.dump(mcn0, open(fname,'wb'))
+            return mcn0
+    
+    def N1(self):
+        """
+        N1 bias: difference between MCN0 for constant and varying alpha
+        N1 = MCN0('cons') - MCN0('vary')
+        """
+        fname = os.path.join(self.basedir, f'N1_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            return pl.load(open(fname,'rb'))
+        else:
+            n1 = self.MCN0('cons') - self.MCN0('vary')
+            pl.dump(n1, open(fname,'wb'))
+            return n1
+    
+    def Nlens(self,MCN0=False):
+        """
+        Lensing bias: average qcl on null_alpha_index minus MCN0('vary')
+        Nlens = <qcl(null_alpha)> - MCN0('vary')
+        """
+        fname = os.path.join(self.basedir, f'Nlens_fsky{self.filter.fsky:.2f}_mcn0{MCN0}.pkl')
+        if os.path.isfile(fname):
+            return pl.load(open(fname,'rb'))
+        else:
+            qcl_list = []
+            for idx in tqdm(self.null_alpha_index, desc='Computing Nlens'):
+                # Get qcl without any bias subtraction
+                qcl_list.append(cs.utils.alm2cl(self.recon_lmax, self.qlm(idx))/self.filter.fsky)
+            avg_qcl = np.array(qcl_list).mean(axis=0)
+            if MCN0:
+                nlens = avg_qcl - self.MCN0('vary')
+            else:
+                nlens = avg_qcl - self.norm
+            pl.dump(nlens, open(fname,'wb'))
+            return nlens
     
     def qcl_stat(self,rm_bias=True,rdn0=False,binned=True):
         st = ''

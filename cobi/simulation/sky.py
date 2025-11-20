@@ -257,6 +257,7 @@ class SkySimulation:
         miscal_samples: Optional[int] = None,
         Acb_sim_config: Optional[dict] = None,
         noise_model: str = "NC",
+        aso: bool = False,
         atm_noise: bool = True,
         nsplits: int = 2,
         gal_cut: int = 0,
@@ -293,6 +294,7 @@ class SkySimulation:
         fldname += f"_{nsplits}ns" 
         fldname += "_lens" if lensing else "_gauss"
         fldname += f"_{noise_model.lower()}nm"
+        fldname += "_aso" if aso else ""
         if cb_model == 'iso':
             fldname += f"_b{str(beta).replace('.','p')}"
         elif cb_model == 'iso_td':
@@ -335,7 +337,7 @@ class SkySimulation:
         self.gal_cut = gal_cut
         self.mask, self.fsky = self.__set_mask_fsky__(libdir)
         self.noise_model = noise_model
-        self.noise = Noise(nside, self.fsky, self.__class__.__name__[:3], noise_model, atm_noise, nsplits, verbose=self.verbose)
+        self.noise = Noise(nside, self.fsky, self.__class__.__name__[:3], noise_model, atm_noise, nsplits, aso, verbose=self.verbose)
         self.config = {}
         for split in range(nsplits):
             for band in range(len(self.freqs)):
@@ -605,6 +607,7 @@ class LATsky(SkySimulation):
         miscal_samples: Optional[int] = None,
         Acb_sim_config: Optional[dict] = None,
         noise_model: str = "NC",
+        aso: bool = False,
         atm_noise: bool = True,
         nsplits: int = 2,
         gal_cut: int = 0,
@@ -633,6 +636,7 @@ class LATsky(SkySimulation):
             miscal_samples = miscal_samples,
             Acb_sim_config = Acb_sim_config,
             noise_model = noise_model,
+            aso = aso,
             atm_noise = atm_noise,
             nsplits = nsplits,
             gal_cut = gal_cut,
@@ -724,6 +728,7 @@ class LATskyC(SkySimulation):
         alpha_err: float = 0.0,
         miscal_samples: Optional[int] = None,
         noise_model: str = "NC",
+        aso: bool = False,
         atm_noise: bool = True,
         nsplits: int = 2,
         gal_cut: int = 0,
@@ -750,6 +755,7 @@ class LATskyC(SkySimulation):
             alpha_err = alpha_err,
             miscal_samples = miscal_samples,
             noise_model = noise_model,
+            aso = aso,
             atm_noise = atm_noise,
             nsplits = nsplits,
             gal_cut = gal_cut,

@@ -74,13 +74,17 @@ from cobi.utils import Logger, change_coord
 
 #atm_noise or atm_corr, same for the noise map as well
 
-def NoiseSpectra(sensitivity_mode, fsky, lmax, atm_noise, telescope):
+def NoiseSpectra(sensitivity_mode, fsky, lmax, atm_noise, telescope, aso=False):
+    if aso:
+        assert telescope == "LAT", "ASO noise model is only available for LAT telescope."
     match telescope:
         case "LAT":
-            teles = so_models.SOLatV3point1(sensitivity_mode, el=50)
+            if aso:
+                teles = so_models.ASOLatV3point1(sensitivity_mode,N_tubes=[1, 8, 4],survey_years=9, el=50)
+            else:
+                teles = so_models.SOLatV3point1(sensitivity_mode, el=50)
         case "SAT":
             teles = so_models.SOSatV3point1(sensitivity_mode)
-    
     
     corr_pairs = [(0,1),(2,3),(4,5)]
     
@@ -207,6 +211,7 @@ class Noise:
                  sim = 'NC',
                  atm_noise: bool = False, 
                  nsplits: int = 2,
+                 aso: bool = False,
                  verbose: bool = True,
                  ) -> None:
         """
@@ -224,7 +229,7 @@ class Noise:
         self.atm_noise        = atm_noise
         self.nsplits          = nsplits
         self.telescope = telescope
-        self.Nell             = NoiseSpectra(self.sensitivity_mode, fsky, self.lmax, self.atm_noise, telescope)
+        self.Nell             = NoiseSpectra(self.sensitivity_mode, fsky, self.lmax, self.atm_noise, telescope, aso)
         self.sim = sim
         assert sim in ['NC', 'TOD'], "Invalid simulation type. Choose from 'NC' or 'TOD'."
 
