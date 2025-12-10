@@ -42,8 +42,9 @@ beta = 0.35
 # nm = 'NC'
 
 #setting 4
-alpha = [-0.1,-0.1,0.2,0.2,.15,.15]
-alpha_err = 0.1
+#alpha = [-0.1,-0.1,0.2,0.2,.15,.15]
+alpha = 0
+alpha_err = 0.05
 bp = True
 nm = 'NC'
 

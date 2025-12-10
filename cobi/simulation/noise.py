@@ -80,7 +80,7 @@ def NoiseSpectra(sensitivity_mode, fsky, lmax, atm_noise, telescope, aso=False):
     match telescope:
         case "LAT":
             if aso:
-                teles = so_models.ASOLatV3point1(sensitivity_mode,N_tubes=[1, 8, 4],survey_years=9, el=50)
+                teles = so_models.SOLatV3point1(sensitivity_mode,N_tubes=[1, 8, 4],survey_years=9, el=50)
             else:
                 teles = so_models.SOLatV3point1(sensitivity_mode, el=50)
         case "SAT":
@@ -212,6 +212,7 @@ class Noise:
                  atm_noise: bool = False, 
                  nsplits: int = 2,
                  aso: bool = False,
+                 ext_sims: bool = False,
                  verbose: bool = True,
                  ) -> None:
         """
@@ -222,6 +223,7 @@ class Noise:
         atm_noise (bool, optional): If True, includes atmospheric noise. Defaults to False.
         nhits (bool, optional): If True, includes hit count map. Defaults to False.
         nsplits (int, optional): Number of data splits to consider. Defaults to 2.
+        ext_sims (bool, optional): If True, extends simulations by treating each split as independent (only for TOD LAT). Defaults to False.
         """
         self.nside            = nside
         self.lmax             = 3 * nside - 1
@@ -229,9 +231,14 @@ class Noise:
         self.atm_noise        = atm_noise
         self.nsplits          = nsplits
         self.telescope = telescope
+        self.ext_sims         = ext_sims
         self.Nell             = NoiseSpectra(self.sensitivity_mode, fsky, self.lmax, self.atm_noise, telescope, aso)
         self.sim = sim
         assert sim in ['NC', 'TOD'], "Invalid simulation type. Choose from 'NC' or 'TOD'."
+        
+        if ext_sims:
+            assert sim == 'TOD', "ext_sims can only be True when sim='TOD'."
+            assert telescope == 'LAT', "ext_sims is only available for LAT telescope."
 
         self.logger           = Logger(self.__class__.__name__, verbose)
         if self.sim == 'NC':
@@ -493,22 +500,49 @@ class Noise:
 
     def noiseQU_TOD_lat(self,idx: int) -> np.ndarray:
         sim_nsplits = 4
-        fac = np.sqrt(self.nsplits) / np.sqrt(sim_nsplits)
         fdir = '/global/cfs/cdirs/sobs/v4_sims/mbs/mbs_s0015_20240504/sims'
         fbase_template = 'so_lat_mbs_mss0002_{model}_{band}_lmax5400_4way_set{split_num}_noise_sim_map{sim_num:04}.fits'
 
         models = ['fdw_lf', 'fdw_mf', 'fdw_uhf']
         bands = ['lf_f030_lf_f040', 'mf_f090_mf_f150', 'uhf_f230_uhf_f290']
-        N = []
-        for split in range(self.nsplits):
-            for i in range(len(bands)):
-                fbase = fbase_template.format(model=models[i], band=bands[i], split_num=split+1, sim_num=idx)
-                fpath = f'{fdir}/{fbase}'
-                for j in range(2):
-                    n = enmap.read_map(fpath,sel=np.s_[j, 0, 1:]) # the 1: will select the QU fields
-                    mm = map2healpix(n, nside=2048, rot='equ,gal', spin=2)
-                    del n
-                    N.append([mm[0],mm[1]])
+        
+        if self.ext_sims:
+            # For extended sims: treat each available split as independent
+            # nsplits=1: idx=0 -> sim=0,split=1; idx=1 -> sim=0,split=2; etc. (1200 total sims)
+            # nsplits=2: idx=0 -> sim=0,splits=1,2; idx=1 -> sim=0,splits=3,4; idx=2 -> sim=1,splits=1,2; etc. (600 total sims)
+            # nsplits=3: idx=0 -> sim=0,splits=1,2,3; idx=1 -> sim=0,splits=4,1,2 (wraps); etc. (400 total sims)
+            # nsplits=4: idx=0 -> sim=0,splits=1,2,3,4; idx=1 -> sim=1,splits=1,2,3,4; etc. (300 total sims)
+            
+            sims_per_original = sim_nsplits // self.nsplits  # how many extended sims per original sim
+            sim_num = idx // sims_per_original
+            split_group = idx % sims_per_original
+            
+            fac = np.sqrt(self.nsplits) / np.sqrt(sim_nsplits)
+            
+            N = []
+            for split in range(self.nsplits):
+                actual_split = split_group * self.nsplits + split + 1  # 1-indexed
+                for i in range(len(bands)):
+                    fbase = fbase_template.format(model=models[i], band=bands[i], split_num=actual_split, sim_num=sim_num)
+                    fpath = f'{fdir}/{fbase}'
+                    for j in range(2):
+                        n = enmap.read_map(fpath,sel=np.s_[j, 0, 1:]) # the 1: will select the QU fields
+                        mm = map2healpix(n, nside=2048, rot='equ,gal', spin=2)
+                        del n
+                        N.append([mm[0],mm[1]])
+        else:
+            # Original behavior
+            fac = np.sqrt(self.nsplits) / np.sqrt(sim_nsplits)
+            N = []
+            for split in range(self.nsplits):
+                for i in range(len(bands)):
+                    fbase = fbase_template.format(model=models[i], band=bands[i], split_num=split+1, sim_num=idx)
+                    fpath = f'{fdir}/{fbase}'
+                    for j in range(2):
+                        n = enmap.read_map(fpath,sel=np.s_[j, 0, 1:]) # the 1: will select the QU fields
+                        mm = map2healpix(n, nside=2048, rot='equ,gal', spin=2)
+                        del n
+                        N.append([mm[0],mm[1]])
         
         return np.array(N)*fac
 

@@ -3,7 +3,7 @@
 #SBATCH --constraint=cpu
 #SBATCH --account=mp107b
 #SBATCH --nodes=2
-#SBATCH --ntasks=100
+#SBATCH --ntasks=50
 ##SBATCH --cpus-per-task=4
 #SBATCH -J SOLAT
 #SBATCH -o socal.out
@@ -17,4 +17,5 @@ conda activate cb
 cd /global/homes/l/lonappan/workspace/cobi/jobs/iso
 export OMP_NUM_THREADS=4
 
-mpirun -np $SLURM_NTASKS python cal.py
+#mpirun -np $SLURM_NTASKS python cal.py
+mpirun -np $SLURM_NTASKS python latonly.py

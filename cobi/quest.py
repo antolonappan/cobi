@@ -245,7 +245,7 @@ class FilterEB:
 
 
 class QE:
-    def __init__(self, filter: FilterEB, lmin: int, lmax: int, recon_lmax: int, nsims_mf=100, nlb=2, lmax_bin=100):
+    def __init__(self, filter: FilterEB, lmin: int, lmax: int, recon_lmax: int, nsims_mf=100, nlb=10, lmax_bin=1024):
         self.basedir = os.path.join(filter.sky.libdir, 'qe')
         self.recdir = os.path.join(self.basedir, f'reco_min{lmin}_max{lmax}_rmax{recon_lmax}')
         self.rdn0dir = os.path.join(self.basedir, f'rdn0_min{lmin}_max{lmax}_rmax{recon_lmax}')
@@ -280,6 +280,7 @@ class QE:
         self.lmax_bin = lmax_bin
         self.binner = nmt.NmtBin.from_lmax_linear(lmax_bin,nlb)
         self.b = self.binner.get_effective_ells()
+        self.nlb = nlb
        
 
 
@@ -337,23 +338,34 @@ class QE:
                 missing.append(idx)
         return missing
 
-    def __qcl__(self,idx, rm_bias=False, rdn0=False):
-        if rdn0:
+    def __qcl__(self,idx,n0=None, mf=False, nlens=False, n1=False):
+        qcl = cs.utils.alm2cl(self.recon_lmax,self.qlm(idx))/self.filter.fsky
+        if n0 is None:
+            N0 = np.zeros_like(qcl)
+        elif n0 == 'norm':
+            N0 = self.norm
+        elif n0 == 'mcn0':
+            N0 = self.MCN0('vary')
+        elif n0 == 'rdn0':
             N0 = self.RDN0(idx)
         else:
-            N0 = self.norm
-        if rm_bias:
-            return (cs.utils.alm2cl(self.recon_lmax,self.qlm(idx))/self.filter.fsky) - self.mean_field_cl() - N0
-        else:
-            return (cs.utils.alm2cl(self.recon_lmax,self.qlm(idx))/self.filter.fsky)
+            raise ValueError("n0 must be 'norm', 'rdn0', or 'mcn0'")
+        qcl = qcl - N0
+        if mf:
+            qcl = qcl - self.mean_field_cl()
+        if nlens:
+            qcl = qcl - self.Nlens()
+        if n1:
+            qcl = qcl - self.N1()
+        return qcl
         
-    def qcl(self,idx,rm_bias=False,rdn0=False,binned=False):
+    def qcl(self,idx, n0=None, mf=False, nlens=False, n1=False, binned=False):
+        cl = self.__qcl__(idx,n0=n0,mf=mf,nlens=nlens,n1=n1)
         if binned:
-            cl = self.__qcl__(idx,rm_bias=rm_bias,rdn0=rdn0)
             bcl = self.binner.bin_cell(cl[:self.lmax_bin+1])
             return bcl
         else:
-            return self.__qcl__(idx,rm_bias=rm_bias)
+            return cl
 
     def mean_field(self):
         fname = os.path.join(self.basedir, f'mf{self.nsims_mf}_fsky{self.filter.fsky:.2f}.pkl')
@@ -551,12 +563,15 @@ class QE:
             label = 'cons'
         else:
             raise ValueError("which must be 'vary' or 'cons'")
+        
+        assert idx in index_range, f"The requested idx {idx} is not in the {which} alpha_config index range"
             
         myidx = np.pad(index_range,(0,1),'wrap')
         fname = os.path.join(self.rdn0dir,f"N0_{label}_{self.filter.fsky:.2f}_{idx:04d}.pkl")
         if os.path.isfile(fname):
             return pl.load(open(fname,'rb'))
         else:
+            idx = idx - min(index_range)
             E1,B1 = self.filter.cinv_EB(myidx[idx])
             E2,B2 = self.filter.cinv_EB(myidx[idx+1])
             glm1 = cs.rec_rot.qeb(self.recon_lmax,self.lmin,self.lmax,
@@ -582,37 +597,42 @@ class QE:
         which: str : 'vary' or 'cons' to select which alpha_config index to use
         """
         fname = os.path.join(self.basedir, f'MCN0_{which}_fsky{self.filter.fsky:.2f}.pkl')
+        index = self.n0_index if which == 'vary' else self.alpha_cons_index
         if os.path.isfile(fname):
             return pl.load(open(fname,'rb'))
         else:
             n0_list = []
-            for idx in tqdm(self.n0_index, desc=f'Computing MCN0 ({which})'):
+            for idx in tqdm(index, desc=f'Computing MCN0 ({which})'):
                 n0_list.append(self.N0_sim(idx, which=which))
             mcn0 = np.array(n0_list).mean(axis=0)
             pl.dump(mcn0, open(fname,'wb'))
             return mcn0
     
-    def N1(self):
+    def N1(self,binned=False):
         """
         N1 bias: difference between MCN0 for constant and varying alpha
         N1 = MCN0('cons') - MCN0('vary')
         """
         fname = os.path.join(self.basedir, f'N1_fsky{self.filter.fsky:.2f}.pkl')
         if os.path.isfile(fname):
-            return pl.load(open(fname,'rb'))
+            n1 = pl.load(open(fname,'rb'))
         else:
             n1 = self.MCN0('cons') - self.MCN0('vary')
             pl.dump(n1, open(fname,'wb'))
+        if binned:
+            bn1 = self.binner.bin_cell(n1[:self.lmax_bin+1])
+            return bn1
+        else:
             return n1
     
-    def Nlens(self,MCN0=False):
+    def Nlens(self,MCN0=True,binned=False):
         """
         Lensing bias: average qcl on null_alpha_index minus MCN0('vary')
         Nlens = <qcl(null_alpha)> - MCN0('vary')
         """
         fname = os.path.join(self.basedir, f'Nlens_fsky{self.filter.fsky:.2f}_mcn0{MCN0}.pkl')
         if os.path.isfile(fname):
-            return pl.load(open(fname,'rb'))
+            nlens = pl.load(open(fname,'rb'))
         else:
             qcl_list = []
             for idx in tqdm(self.null_alpha_index, desc='Computing Nlens'):
@@ -624,23 +644,38 @@ class QE:
             else:
                 nlens = avg_qcl - self.norm
             pl.dump(nlens, open(fname,'wb'))
-            return nlens
-    
-    def qcl_stat(self,rm_bias=True,rdn0=False,binned=True):
-        st = ''
-        if rm_bias:
-            st += '_rb'
-        if rdn0:
-            st += '_rdn0'
         if binned:
-            st += '_b'
-        fname = os.path.join(self.basedir, f'qcl_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}{st}.pkl')
+            bnlen = self.binner.bin_cell(nlens[:self.lmax_bin+1])
+            return bnlen
+        else:
+            return nlens
+        
+    
+    def qcl_stat(self, n0=None, mf=False, nlens=False, n1=False,binned=True):
+        st = ''
+        if n0 is None:
+            st += '_noN0'
+        elif n0 == 'norm':
+            st += '_n0anal'
+        elif n0 == 'rdn0':
+            st += '_n0rdn0'
+        elif n0 == 'mcn0':
+            st += '_n0mcn0'
+        else:
+            raise ValueError("n0 must be 'norm', 'rdn0', or 'mcn0'")
+        if mf:
+            st += '_mf'
+        if nlens:
+            st += '_nlens'
+        if n1:
+            st += '_n1'
+        fname = os.path.join(self.basedir, f'qcl_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_nlb{self.nlb}_{st}.pkl')
         if os.path.isfile(fname):
             return pl.load(open(fname,'rb'))
         else:
             cl = []
-            for i in tqdm(range(200),desc='Computing cl statistics',unit='sim'):
-                cl.append(self.qcl(i,rm_bias=rm_bias,rdn0=rdn0,binned=binned))
+            for i in tqdm(self.n0_index,desc='Computing cl statistics',unit='sim'):
+                cl.append(self.qcl(i,n0=n0,mf=mf,nlens=nlens,n1=n1,binned=binned))
             cl = np.array(cl)
             pl.dump(cl,open(fname,'wb'))
             return cl

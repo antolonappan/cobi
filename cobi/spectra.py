@@ -1329,43 +1329,56 @@ class Spectra:
                 out[k] = self._filter_bands_and_freq_axes(v, keep_idx_bands, keep_idx_freq)
             return out
 
-
 class SpectraCross:
-    def __init__(self, libdir:str, lat:LATskyC, sat:SATskyC, binwidth:int=1, galcut:int=40, aposcale:int=2,lmax:int=3000):
+    def __init__(self, libdir:str, lat:LATskyC, sat:SATskyC|None=None, binwidth:int=1, galcut:int=40, aposcale:int=2,lmax:int=3000):
         self.lat = lat
         self.sat = sat
-        if lat.nside != sat.nside:
-            raise ValueError("LAT and SAT nside must be the same")
+        self.lat_only = (sat is None)
+        
+        if not self.lat_only:
+            if lat.nside != sat.nside:
+                raise ValueError("LAT and SAT nside must be the same")
+            if lat.cmb.beta != sat.cmb.beta:
+                raise ValueError("LAT and SAT cmb beta must be the same")
+        
         self.nside = lat.nside
         self.binwidth = binwidth
         self.galcut = galcut
         self.aposcale = aposcale
         self.lmax = lmax
         self.binInfo = nmt.NmtBin.from_lmax_linear(self.lmax, binwidth)
-        if list(lat.freqs) != list(sat.freqs):
-            assert lat.nsplits == sat.nsplits, "Number of splits must be the same for LAT and SAT"
-            raise ValueError("LAT and SAT frequencies must be the same for cross spectra")
+        
+        if not self.lat_only:
+            if list(lat.freqs) != list(sat.freqs):
+                assert lat.nsplits == sat.nsplits, "Number of splits must be the same for LAT and SAT"
+                raise ValueError("LAT and SAT frequencies must be the same for cross spectra")
+        
         self.freqs = lat.freqs
         self.nsplits = lat.nsplits
         self.__create_maptags__()
         laerr = lat.alpha_err
-        saerr = sat.alpha_err
+        saerr = sat.alpha_err if not self.lat_only else 0.0
 
-        self.libdir = os.path.join(libdir,f"SpectraCross_n{self.nside}_b{self.binwidth}_g{self.galcut}_a{str(self.aposcale).replace('.','p')}_l{self.lmax}_laerr{str(laerr).replace('.','p')}_saerr{str(saerr).replace('.','p')}")
+        suffix = f"LatOnly_laerr{str(laerr).replace('.','p')}" if self.lat_only else f"laerr{str(laerr).replace('.','p')}_saerr{str(saerr).replace('.','p')}"
+        self.libdir = os.path.join(libdir,f"SpectraCross_s{str(lat.cmb.beta).replace('.','p')}_n{self.nside}_b{self.binwidth}_g{self.galcut}_a{str(self.aposcale).replace('.','p')}_l{self.lmax}_{suffix}")
         self.specdir = os.path.join(self.libdir,'spectra')
         os.makedirs(self.libdir, exist_ok=True)
         os.makedirs(self.specdir, exist_ok=True)
 
-        self.__sat_workspace__ = self.__get_coupling_matrix__('SAT')
+        if not self.lat_only:
+            self.__sat_workspace__ = self.__get_coupling_matrix__('SAT')
+            self.__satlat_workspace__ = self.__get_coupling_matrix__('SATxLAT')
         self.__lat_workspace__ = self.__get_coupling_matrix__('LAT')
-        self.__satlat_workspace__ = self.__get_coupling_matrix__('SATxLAT')
 
     def __create_maptags__(self)-> None:
         latmaptags = [f'LAT_{f}' for f in self.freqs]
         latmaptags = [f'{tag}-{i+1}' for tag in latmaptags for i in range(self.nsplits)]
-        satmaptags = [f'SAT_{f}' for f in self.freqs]
-        satmaptags = [f'{tag}-{i+1}' for tag in satmaptags for i in range(self.nsplits)]
-        self.maptags = latmaptags + satmaptags
+        if self.lat_only:
+            self.maptags = latmaptags
+        else:
+            satmaptags = [f'SAT_{f}' for f in self.freqs]
+            satmaptags = [f'{tag}-{i+1}' for tag in satmaptags for i in range(self.nsplits)]
+            self.maptags = latmaptags + satmaptags
 
 
     def __get_mask__(self,tel:str)-> Mask:
@@ -1374,10 +1387,14 @@ class SpectraCross:
             mask_str += 'xGAL'
             maskobj = Mask(self.lat.basedir, self.nside, mask_str, self.aposcale,gal_cut=self.galcut)
         elif tel=='SAT':
+            if self.lat_only:
+                raise ValueError("SAT mask requested but in LAT-only mode")
             mask_str = self.sat.__class__.__name__[:3]
             mask_str += 'xGAL'
             maskobj = Mask(self.sat.basedir, self.nside, mask_str, self.aposcale,gal_cut=self.galcut)
         elif tel=='SATxLAT':
+            if self.lat_only:
+                raise ValueError("SATxLAT mask requested but in LAT-only mode")
             mask_str = 'SATxLATxGAL'
             maskobj = Mask(self.sat.basedir, self.nside, mask_str, self.aposcale,gal_cut=self.galcut)
         else:
@@ -1396,6 +1413,8 @@ class SpectraCross:
     
     @property
     def satmask(self) -> np.ndarray:
+        if self.lat_only:
+            raise ValueError("SAT mask not available in LAT-only mode")
         return self.get_mask('SAT')
 
     @property
@@ -1404,6 +1423,8 @@ class SpectraCross:
     
     @property
     def satlatmask(self) -> np.ndarray:
+        if self.lat_only:
+            raise ValueError("SATxLAT mask not available in LAT-only mode")
         return self.get_mask('SATxLAT')
     
     def __get_coupling_matrix__(self,tel) -> None:
@@ -1431,8 +1452,12 @@ class SpectraCross:
         if tel=='LAT':
             workspace = self.__lat_workspace__
         elif tel=='SAT':
+            if self.lat_only:
+                raise ValueError("SAT workspace not available in LAT-only mode")
             workspace = self.__sat_workspace__
         elif tel=='SATxLAT':
+            if self.lat_only:
+                raise ValueError("SATxLAT workspace not available in LAT-only mode")
             workspace = self.__satlat_workspace__
         else:
             raise ValueError(f"Unknown telescope: {tel}")
@@ -1445,6 +1470,8 @@ class SpectraCross:
             qmap, umap = self.lat.obsQU(idx,freq)
             mask = self.latmask
         elif tel=='SAT':
+            if self.lat_only:
+                raise ValueError(f"SAT maps requested but in LAT-only mode")
             qmap, umap = self.sat.obsQU(idx,freq)
             mask = self.satmask
         else:
@@ -1465,10 +1492,19 @@ class SpectraCross:
             raise ValueError(f"Unknown spectra type: {which}")
         return ij, ji
     
-    def __spectra_matrix__fname__(self, idx:int, which='EB', check=False)-> str | bool:
+    def __spectra_matrix__fname__(self, idx:int, which='EB', check=False,checker='e')-> str | bool:
         if check:
             fname = os.path.join(self.specdir,f'spectra_matrix_{which}_{idx:03d}.pkl')
-            return os.path.isfile(fname)
+            if checker=='e':
+                return os.path.isfile(fname)
+            elif checker=='r':
+                try:
+                    pl.load(open(fname,'rb'))
+                    return True
+                except:
+                    return False
+            else:
+                raise ValueError("checker must be 'e' or 'r'")
         return os.path.join(self.specdir,f'spectra_matrix_{which}_{idx:03d}.pkl')
 
     def __spectra_matrix_core__(self, idx:int, which='EB')->np.ndarray:
@@ -1495,8 +1531,12 @@ class SpectraCross:
                     if maptag_i.startswith('LAT') and maptag_j.startswith('LAT'):
                         tel = 'LAT'
                     elif maptag_i.startswith('SAT') and maptag_j.startswith('SAT'):
+                        if self.lat_only:
+                            raise ValueError("SAT-SAT correlation not available in LAT-only mode")
                         tel = 'SAT'
                     else:
+                        if self.lat_only:
+                            raise ValueError("LAT-SAT correlation not available in LAT-only mode")
                         tel = 'SATxLAT'
                     cl_decoupled = self.compute_master(tel, f_i, f_j)
                     ij, ji = self.__get_nmt_index__(which)

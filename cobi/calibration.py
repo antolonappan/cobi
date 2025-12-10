@@ -193,6 +193,24 @@ class BaseSat4LatCross(ABC):
                     mask[i, j] = ell_mask
 
         return mask
+    
+    def __all_spectra__(self, num_sims: int = 100) -> np.ndarray:
+        """
+        Get all spectra data matrix for current ell ranges.
+        
+        Returns:
+            Data matrix array with shape (n_tags, n_tags, n_bins)
+        """
+        all_specs = [
+            self.spec_cross.data_matrix(i, which='EB',
+                                        sat_lrange=self.sat_lrange,
+                                        lat_lrange=self.lat_lrange,
+                                        avg_splits=False)
+            for i in tqdm(range(num_sims))
+        ]
+        all_specs = np.array(all_specs)
+        return all_specs
+        
 
     def _calc_mean_std(self, num_sims: int = 100) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -210,14 +228,7 @@ class BaseSat4LatCross(ABC):
             with open(fname, 'rb') as f:
                 return pl.load(f)
         self.logger.log(f"Computing mean/std over {num_sims} simulations...", level="info")
-        all_specs = [
-            self.spec_cross.data_matrix(i, which='EB',
-                                        sat_lrange=self.sat_lrange,
-                                        lat_lrange=self.lat_lrange,
-                                        avg_splits=False)
-            for i in tqdm(range(num_sims))
-        ]
-        all_specs = np.array(all_specs)
+        all_specs = self.__all_spectra__(num_sims=num_sims)
         mean_spec, std_spec = np.mean(all_specs, axis=0), np.std(all_specs, axis=0)
         with open(fname, 'wb') as f:
             pl.dump((mean_spec, std_spec), f)
@@ -233,7 +244,11 @@ class BaseSat4LatCross(ABC):
         n_tags, n_bins = len(self.maptags), self.binner.get_n_bands()
         beam = np.ones((n_tags, n_tags, n_bins))
         fwhm_dict = {f'LAT_{f}': fw for f, fw in zip(self.spec_cross.lat.freqs, self.spec_cross.lat.fwhm)}
-        fwhm_dict.update({f'SAT_{f}': fw for f, fw in zip(self.spec_cross.sat.freqs, self.spec_cross.sat.fwhm)})
+        
+        # Only add SAT beams if not in LAT-only mode
+        if hasattr(self.spec_cross, 'lat_only') and not self.spec_cross.lat_only:
+            fwhm_dict.update({f'SAT_{f}': fw for f, fw in zip(self.spec_cross.sat.freqs, self.spec_cross.sat.fwhm)})
+        
         for i, ti in enumerate(self.maptags):
             for j, tj in enumerate(self.maptags):
                 bi, bj = ti.rsplit('-', 1)[0], tj.rsplit('-', 1)[0]
@@ -464,7 +479,8 @@ class BaseSat4LatCross(ABC):
             self.logger.log(f"Figure saved to {save_path}", level="info")
             plt.close()
         else:
-            plt.show()
+            #plt.show()
+            return None
     
     def mle(self,nwalkers,nsamples,op=np.median):
         s = self.run_mcmc(nwalkers=nwalkers, nsamples=nsamples)
@@ -562,7 +578,7 @@ class Sat4LatCross(BaseSat4LatCross):
 
     def lnprior(self, theta: np.ndarray) -> float:
         alphas, beta = theta[:-1], theta[-1]
-        if np.any(np.abs(alphas) > 0.5) or not (0 < beta < 0.5):
+        if np.any(np.abs(alphas) > 0.5) or not (-0.5 < beta < 0.5):
             return -np.inf
         sat_idx = [i for i, t in enumerate(self.maptags if self.fit_per_split else self.freq_bases) if t.startswith('SAT')]
         return float(-0.5 * np.sum(np.array(alphas)[sat_idx] ** 2 / self.sat_err**2 - np.log(self.sat_err * np.sqrt(2 * np.pi))))
@@ -811,6 +827,135 @@ class Sat4LatCross_AmplitudeFit(BaseSat4LatCross):
                                     np.log(self.lat_alpha_err * np.sqrt(2 * np.pi)))
 
             return float(sat_prior + lat_prior)
+
+
+# ============================================================
+# =============== SUBCLASS 3: LAT-ONLY BETA FIT ==============
+# ============================================================
+
+class LatCross(BaseSat4LatCross):
+    """
+    Calibration model fitting for birefringence angle β using LAT-only data.
+    
+    This class implements a calibration analysis that fits calibration angles (alphas)
+    and the cosmic birefringence angle β using EB cross-spectra from LAT only.
+    
+    Attributes:
+        cl_len: Lensed CMB power spectra dictionary
+        lat_err: LAT calibration error
+    """
+    
+    def __init__(self, 
+                 spec_cross: 'SpectraCross', 
+                 lat_err: float, 
+                 beta_fid: float,
+                 lat_lrange: Tuple[Optional[int], Optional[int]] = (None, None),
+                 fit_per_split: bool = True, 
+                 spectra_selection: str = 'all',
+                 num_sims: int = 100,
+                 verbose: bool = False) -> None:
+        """
+        Initialize LAT-only calibration analysis for birefringence angle fitting.
+        
+        Args:
+            spec_cross: Cross-spectrum calculation object (must be in LAT-only mode)
+            lat_err: LAT calibration error
+            beta_fid: Fiducial birefringence angle for theory calculation
+            lat_lrange: LAT ell range for fitting (lmin, lmax)
+            fit_per_split: Whether to fit per split or per frequency
+            spectra_selection: Which spectra to include ('all', 'auto_only', 'cross_only')
+            num_sims: Number of simulations for mean/std calculation
+            verbose: Whether to enable verbose output
+        """
+        # Verify spec_cross is in LAT-only mode
+        assert hasattr(spec_cross, 'lat_only') and spec_cross.lat_only, \
+            "LatCross requires spec_cross to be initialized with sat=None (LAT-only mode)"
+        
+        # For LAT-only, we use the same sat_err parameter as lat_err and ignore SAT ranges
+        super().__init__(spec_cross, lat_err, 
+                         sat_lrange=lat_lrange,  # Use LAT range for both
+                         lat_lrange=lat_lrange,
+                         fit_per_split=fit_per_split, 
+                         spectra_selection=spectra_selection, 
+                         libdir_suffix='LatCalibrationAnalysis',
+                         num_sims=num_sims,
+                         verbose=verbose)
+        
+        self.lat_err = lat_err
+        self.cl_len = CMB(spec_cross.libdir, spec_cross.nside, beta=beta_fid).get_lensed_spectra(dl=False)
+        
+        # Verify all maps are LAT maps (redundant check after lat_only assertion, but kept for clarity)
+        if not all(tag.startswith('LAT') for tag in self.maptags):
+            raise ValueError("LatCross requires all maps to be LAT maps. Found non-LAT maps in spec_cross.")
+        
+        if fit_per_split:
+            self.__pnames__  = [f"a_{t}" for t in self.maptags] + ['beta']
+            self.__plabels__ = [_format_alpha_label(t) for t in self.maptags] + [r"\beta"]
+        else:
+            self.__pnames__  = [f"a_{f}" for f in self.freq_bases] + ['beta']
+            self.__plabels__ = [_format_alpha_label(f) for f in self.freq_bases] + [r"\beta"]
+
+    def theory(self, theta: np.ndarray) -> np.ndarray:
+        """
+        Compute theoretical EB spectra between all LAT map pairs
+        using the exact birefringence + miscalibration formula:
+            C_ell^{E_iB_j} = cos(2α_i+2β)sin(2α_j+2β)C_EE
+                            - sin(2α_i+2β)cos(2α_j+2β)C_BB
+        """
+        # Unpack angles
+        if self.fit_per_split:
+            alphas = theta[:-1]
+        else:
+            base_a = {b: theta[i] for i, b in enumerate(self.freq_bases)}
+            alphas = np.array([base_a[t.rsplit('-', 1)[0]] for t in self.maptags])
+        beta = theta[-1]
+
+        # Get Cℓ^EE and Cℓ^BB
+        cl_ee = self.cl_len["ee"][:self.Lmax+1]
+        cl_bb = self.cl_len["bb"][:self.Lmax+1]
+
+        model = np.zeros_like(self.mean_spec)
+
+        for i in range(len(self.maptags)):          # E_i
+            for j in range(len(self.maptags)):      # B_j
+                # angles in radians
+                ai = np.deg2rad(alphas[i])
+                aj = np.deg2rad(alphas[j])
+                b  = np.deg2rad(beta)
+
+                term = (
+                    np.cos(2*ai + 2*b) * np.sin(2*aj + 2*b) * cl_ee
+                    - np.sin(2*ai + 2*b) * np.cos(2*aj + 2*b) * cl_bb
+                )
+
+                model[i, j] = self.binner.bin_cell(term)
+
+        return model
+
+    def lnprior(self, theta: np.ndarray) -> float:
+        """
+        Calculate log prior for LAT-only analysis.
+        Uses Gaussian prior on all alphas with LAT calibration error.
+        """
+        alphas, beta = theta[:-1], theta[-1]
+        if np.any(np.abs(alphas) > 0.5) or not (-0.5 < beta < 0.5):
+            return -np.inf
+        
+        # Gaussian prior on all LAT alphas
+        return float(-0.5 * np.sum(alphas ** 2 / self.lat_err**2 - 
+                                   np.log(self.lat_err * np.sqrt(2 * np.pi))))
+    
+    @property
+    def dof(self) -> int:
+        """
+        Calculate degrees of freedom for chi-squared analysis.
+        
+        Returns:
+            Number of data points minus number of fitted parameters
+        """
+        n_data_points = np.sum(self.__likelihood_mask__)
+        n_parameters = len(self.__pnames__)
+        return n_data_points - n_parameters
 
     
 

@@ -724,7 +724,7 @@ class LATskyC(SkySimulation):
         dust_model: int = 10,
         sync_model: int = 5,
         bandpass: bool = True,
-        alpha: float = 0.0,
+        alpha: Optional[float|List[float]] = 0.0,
         alpha_err: float = 0.0,
         miscal_samples: Optional[int] = None,
         noise_model: str = "NC",
