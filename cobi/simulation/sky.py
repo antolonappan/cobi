@@ -344,7 +344,6 @@ class SkySimulation:
         self.bandpass = bandpass
         self.hilc_bins = hilc_bins
         self.deconv_maps = deconv_maps
-        self.__set_alpha__()
         if sht_backend in ["ducc0", "ducc", "d"]:
             self.hp = sht.HealpixDUCC(nside=self.nside)
             self.healpy = False
@@ -363,46 +362,12 @@ class SkySimulation:
         syncQU = self.foreground.syncQU(band)
         return cmbQU + dustQU + syncQU
     
-    def __init_alpha_cache__(self):
-        """Initialize alpha cache directory for storing individual alpha files."""
-        self.alpha_cache_dir = os.path.join(self.libdir, '.alpha_cache')
-        os.makedirs(self.alpha_cache_dir, exist_ok=True)
-        mpi.barrier()
-
-    def __set_alpha__(self):
-        """Initialize alpha caching system if alpha_err > 0."""
-        if self.alpha_err > 0:
-            self.__init_alpha_cache__()
-        else:
-            self.alpha_cache_dir = None
-    
-    def __get_alpha_file__(self, band: str, idx: int) -> str:
-        """Get the filename for a specific (band, idx) alpha value."""
-        return os.path.join(self.alpha_cache_dir, f".alpha_{band}_{idx}.txt")
-    
-    def __read_alpha_from_file__(self, band: str, idx: int) -> Optional[float]:
-        """Read alpha value from file if it exists."""
-        fname = self.__get_alpha_file__(band, idx)
-        if os.path.isfile(fname):
-            with open(fname, 'r') as f:
-                return float(f.read().strip())
-        return None
-    
-    def __write_alpha_to_file__(self, band: str, idx: int, alpha_value: float):
-        """Write alpha value to file (MPI-safe)."""
-        if mpi.rank == 0:
-            fname = self.__get_alpha_file__(band, idx)
-            with open(fname, 'w') as f:
-                f.write(f"{alpha_value:.10f}\n")
-        mpi.barrier()
-    
     def get_alpha(self, idx: int, band: str):
         """
         Get alpha value for a given index and band.
         
-        If alpha_err > 0, generates and caches random alpha values on-demand.
-        Uses modulo wrapping with period 1000 to reuse alpha values.
-        Each alpha value is stored in a separate hidden file: .alpha_{band}_{idx}.txt
+        If alpha_err > 0, generates alpha values deterministically on-demand.
+        Same (band, idx) always returns the same alpha value due to deterministic seeding.
         
         Parameters
         ----------
@@ -417,25 +382,14 @@ class SkySimulation:
             Alpha value in degrees
         """
         if self.alpha_err > 0:
-            # Wrap index to reuse alpha samples (period = 1000)
-            wrapped_idx = idx % 1000
-            
-            # Check if alpha file already exists
-            cached_alpha = self.__read_alpha_from_file__(band, wrapped_idx)
-            if cached_alpha is not None:
-                return cached_alpha
-            
-            # Generate new value (MPI-safe: all ranks generate same value with same seed)
+            # Generate value deterministically (MPI-safe: all ranks generate same value)
             base_band = band.split('-')[0]
             band_1 = f"{base_band}-1"
             alpha_mean = self.config[band_1]["alpha"]
             
-            # Use deterministic seed based on band and wrapped_idx for reproducibility
-            np.random.seed(hash((base_band, wrapped_idx)) % (2**32))
+            # Use deterministic seed based on band and idx for reproducibility
+            np.random.seed(hash((base_band, idx)) % (2**32))
             alpha_value = np.random.normal(alpha_mean, self.alpha_err)
-            
-            # Save to file
-            self.__write_alpha_to_file__(band, wrapped_idx, alpha_value)
             
             return alpha_value
         else:

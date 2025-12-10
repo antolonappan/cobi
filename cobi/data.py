@@ -82,7 +82,11 @@ class Data:
     @directory.setter
     def directory(self, value: str) -> None:
         if not os.path.isdir(value):
-            raise ValueError(f"The directory {value} does not exist.")
+            print(f"The directory {value} does not exist. I will try to create it.")
+            try:
+                os.makedirs(value, exist_ok=True)
+            except Exception as e:
+                raise ValueError(f"Failed to create the directory {value}: {e}")
         self._directory = value
 
     @galcut.setter
