@@ -1,0 +1,43 @@
+﻿cobi.simulation.Noise
+=====================
+
+.. currentmodule:: cobi.simulation
+
+.. autoclass:: Noise
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Noise.__init__
+      ~Noise.atm_noise_maps
+      ~Noise.atm_noise_maps_freq
+      ~Noise.noiseQU
+      ~Noise.noiseQU_NC
+      ~Noise.noiseQU_NC_freq
+      ~Noise.noiseQU_TOD
+      ~Noise.noiseQU_TOD_freq
+      ~Noise.noiseQU_TOD_lat
+      ~Noise.noiseQU_TOD_lat_band
+      ~Noise.noiseQU_TOD_sat
+      ~Noise.noiseQU_TOD_sat_band
+      ~Noise.noiseQU_freq
+      ~Noise.white_noise_maps
+      ~Noise.white_noise_maps_freq
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Noise.cholesky_matrix_elements
+      ~Noise.rand_alm
+   
+   
