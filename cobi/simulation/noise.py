@@ -213,6 +213,7 @@ class Noise:
                  nsplits: int = 2,
                  aso: bool = False,
                  ext_sims: bool = False,
+                 sim_config: Optional[Dict[str, Any]] = None,
                  verbose: bool = True,
                  ) -> None:
         """
@@ -241,6 +242,7 @@ class Noise:
             assert telescope == 'LAT', "ext_sims is only available for LAT telescope."
 
         self.logger           = Logger(self.__class__.__name__, verbose)
+        self.sim_config = sim_config
         if self.sim == 'NC':
             if self.atm_noise:
                 self.logger.log(f"Noise Model:[{telescope}] White + 1/f noise v3.1.1")
@@ -255,6 +257,32 @@ class Noise:
             1: np.arange(7777, 7777 + 1000),
             2: np.arange(9999, 9999 + 1000),
         }
+    
+    def __get_noise_seed_idx__(self, idx: int) -> int:
+        """
+        Map simulation index to the actual noise seed index.
+        
+        For indices < set1: use idx directly
+        For indices >= set1: map to last reuse_last indices of set1
+        
+        Parameters:
+        idx (int): The simulation realization index.
+        
+        Returns:
+        int: The seed index to use for noise generation.
+        """
+        if self.sim_config is None:
+            return idx
+        
+        set1 = self.sim_config['set1']
+        if idx < set1:
+            return idx
+        
+        # Map to last reuse_last simulations from set1
+        reuse_last = self.sim_config['reuse_last']
+        offset = idx - set1
+        base_idx = (set1 - reuse_last) + (offset % reuse_last)
+        return base_idx
         
 
 
@@ -359,6 +387,8 @@ class Noise:
         f = freq.split('-')[0]
         split = int(freq.split('-')[-1])
 
+        seed_idx = self.__get_noise_seed_idx__(idx)
+
         def noise_map(Alm,L):
             nlm = hp.almxfl(Alm, L)
             n = hp.alm2map(nlm, self.nside, pixwin=False)
@@ -369,33 +399,33 @@ class Noise:
             return n
         
         if f == '27':
-            np.random.seed(self.__nseeds__[split][idx])
+            np.random.seed(self.__nseeds__[split][seed_idx])
             alm = self.rand_alm
             return noise_map(alm, L11)*np.sqrt(self.nsplits)
         elif f == '39':
-            np.random.seed(self.__nseeds__[split][idx])
+            np.random.seed(self.__nseeds__[split][seed_idx])
             alm = self.rand_alm
-            np.random.seed(self.__nseeds__[split][idx]+1)
+            np.random.seed(self.__nseeds__[split][seed_idx]+1)
             blm = self.rand_alm
             return noise_map_cross(alm,blm,L21,L22)*np.sqrt(self.nsplits)
         elif f == '93':
-            np.random.seed(self.__nseeds__[split][idx]+2)
+            np.random.seed(self.__nseeds__[split][seed_idx]+2)
             clm = self.rand_alm
             return noise_map(clm,L33)*np.sqrt(self.nsplits)
         elif f == '145':
-            np.random.seed(self.__nseeds__[split][idx]+2)
+            np.random.seed(self.__nseeds__[split][seed_idx]+2)
             clm = self.rand_alm
-            np.random.seed(self.__nseeds__[split][idx]+3)
+            np.random.seed(self.__nseeds__[split][seed_idx]+3)
             dlm = self.rand_alm
             return noise_map_cross(clm,dlm,L43,L44)*np.sqrt(self.nsplits)
         elif f == '225':
-            np.random.seed(self.__nseeds__[split][idx]+4)
+            np.random.seed(self.__nseeds__[split][seed_idx]+4)
             elm = self.rand_alm
             return noise_map(elm,L55)*np.sqrt(self.nsplits)
         elif f == '280':
-            np.random.seed(self.__nseeds__[split][idx]+4)
+            np.random.seed(self.__nseeds__[split][seed_idx]+4)
             elm = self.rand_alm
-            np.random.seed(self.__nseeds__[split][idx]+5)
+            np.random.seed(self.__nseeds__[split][seed_idx]+5)
             flm = self.rand_alm
             return noise_map_cross(elm,flm,L65,L66)*np.sqrt(self.nsplits)
         else:
@@ -412,27 +442,29 @@ class Noise:
         """
         L11, L21, L22, L33, L43, L44, L55, L65, L66 = self.cholesky_matrix_elements
         
-        np.random.seed(self.__nseeds__[split][idx])
+        seed_idx = self.__get_noise_seed_idx__(idx)
+        
+        np.random.seed(self.__nseeds__[split][seed_idx])
         alm    = self.rand_alm
-        np.random.seed(self.__nseeds__[split][idx]+1)
+        np.random.seed(self.__nseeds__[split][seed_idx]+1)
         blm    = self.rand_alm
         nlm_27 = hp.almxfl(alm, L11)
         nlm_39 = hp.almxfl(alm, L21) + hp.almxfl(blm, L22)
         n_27   = hp.alm2map(nlm_27, self.nside, pixwin=False)
         n_39   = hp.alm2map(nlm_39, self.nside, pixwin=False)
         
-        np.random.seed(self.__nseeds__[split][idx]+2)
+        np.random.seed(self.__nseeds__[split][seed_idx]+2)
         clm     = self.rand_alm
-        np.random.seed(self.__nseeds__[split][idx]+3)
+        np.random.seed(self.__nseeds__[split][seed_idx]+3)
         dlm     = self.rand_alm
         nlm_93  = hp.almxfl(clm, L33)
         nlm_145 = hp.almxfl(clm, L43) + hp.almxfl(dlm, L44)
         n_93    = hp.alm2map(nlm_93, self.nside, pixwin=False)
         n_145   = hp.alm2map(nlm_145, self.nside, pixwin=False)
         
-        np.random.seed(self.__nseeds__[split][idx]+4)
+        np.random.seed(self.__nseeds__[split][seed_idx]+4)
         elm     = self.rand_alm
-        np.random.seed(self.__nseeds__[split][idx]+5)
+        np.random.seed(self.__nseeds__[split][seed_idx]+5)
         flm     = self.rand_alm
         nlm_225 = hp.almxfl(elm, L55)
         nlm_280 = hp.almxfl(elm, L65) + hp.almxfl(flm, L66)
