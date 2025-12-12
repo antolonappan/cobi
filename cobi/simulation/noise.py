@@ -250,6 +250,8 @@ class Noise:
                 self.logger.log(f"Noise Model:[{telescope}] White noise v3.1.1")
         elif self.sim == 'TOD':
             self.logger.log(f"Noise Model: [{telescope}] Based on TOD and Map based simulations, directly using SO products.")
+            if self.ext_sims:
+                self.logger.log("Extending simulations by treating each split as independent (only for LAT).")
         else:
             raise ValueError(f"Invalid simulation type: {self.sim}", "Choose from 'NC' or 'TOD'.")
         
@@ -553,7 +555,7 @@ class Noise:
             
             N = []
             for split in range(self.nsplits):
-                actual_split = split_group * self.nsplits + split + 1  # 1-indexed
+                actual_split = split_group * self.nsplits + split  # 0-indexed (set0, set1, set2, set3)
                 for i in range(len(bands)):
                     fbase = fbase_template.format(model=models[i], band=bands[i], split_num=actual_split, sim_num=sim_num)
                     fpath = f'{fdir}/{fbase}'
@@ -568,7 +570,7 @@ class Noise:
             N = []
             for split in range(self.nsplits):
                 for i in range(len(bands)):
-                    fbase = fbase_template.format(model=models[i], band=bands[i], split_num=split+1, sim_num=idx)
+                    fbase = fbase_template.format(model=models[i], band=bands[i], split_num=split, sim_num=idx)
                     fpath = f'{fdir}/{fbase}'
                     for j in range(2):
                         n = enmap.read_map(fpath,sel=np.s_[j, 0, 1:]) # the 1: will select the QU fields
@@ -592,23 +594,53 @@ class Noise:
         N = np.array([mm[0],mm[1]])
         return N*fac
     
-    def noiseQU_TOD_lat_band(self, idx: int, freq: str) -> np.ndarray:
+    def noiseQU_TOD_lat_band(self, idx: int, freq: str, debug: bool = False) -> np.ndarray:
         band = freq.split('-')[0]
-        split = int(freq.split('-')[-1])
+        split = int(freq.split('-')[-1])  # 1-indexed from user input
         sim_nsplits = 4
-        fac = np.sqrt(self.nsplits) / np.sqrt(sim_nsplits)
         fdir = '/global/cfs/cdirs/sobs/v4_sims/mbs/mbs_s0015_20240504/sims'
+        
+        # Validate split number
+        if split < 1 or split > self.nsplits:
+            raise ValueError(f"Invalid split={split}. Must be between 1 and {self.nsplits} for nsplits={self.nsplits}")
 
-        model, band, j = {"27":['fdw_lf', 'lf_f030_lf_f040',0], 
-                          "39":['fdw_lf', 'lf_f030_lf_f040',1], 
-                          "93":['fdw_mf', 'mf_f090_mf_f150',0], 
-                          "145":['fdw_mf', 'mf_f090_mf_f150',1], 
-                          "225":['fdw_uhf', 'uhf_f230_uhf_f290',0], 
-                          "280":['fdw_uhf', 'uhf_f230_uhf_f290',1]}[band]
-        if self.nsplits > 2: # This is only to preserve previous runs and results, changed on 25th Sep 2025 for checking with 4 splits
-            fbase = f'so_lat_mbs_mss0002_{model}_{band}_lmax5400_4way_set{split-1}_noise_sim_map{idx:04}.fits'
+        model, band_name, j = {"27":['fdw_lf', 'lf_f030_lf_f040',0], 
+                               "39":['fdw_lf', 'lf_f030_lf_f040',1], 
+                               "93":['fdw_mf', 'mf_f090_mf_f150',0], 
+                               "145":['fdw_mf', 'mf_f090_mf_f150',1], 
+                               "225":['fdw_uhf', 'uhf_f230_uhf_f290',0], 
+                               "280":['fdw_uhf', 'uhf_f230_uhf_f290',1]}[band]
+        
+        if self.ext_sims:
+            # Apply ext_sims logic: treat each split as independent
+            # For nsplits=1: each idx gets one split from the 4 available
+            # For nsplits=2: each idx gets two consecutive splits
+            sims_per_original = sim_nsplits // self.nsplits
+            sim_num = idx // sims_per_original
+            split_group = idx % sims_per_original
+            
+            # Map the requested split (1-indexed from freq like '93-1') to the actual file split
+            # The user's split number refers to which of the nsplits they want (1 to nsplits)
+            # We need to map this to the actual file split based on split_group
+            # Files use 0-indexed naming (set0, set1, set2, set3)
+            actual_split = split_group * self.nsplits + (split - 1)  # Convert to 0-indexed
+            
+            fac = np.sqrt(self.nsplits) / np.sqrt(sim_nsplits)
+            fbase = f'so_lat_mbs_mss0002_{model}_{band_name}_lmax5400_4way_set{actual_split}_noise_sim_map{sim_num:04}.fits'
+            
+            if debug:
+                self.logger.log(f"[EXT_SIMS] idx={idx}, freq={freq} -> file_idx={sim_num:04}, file_split={actual_split}")
+                return None
         else:
-            fbase = f'so_lat_mbs_mss0002_{model}_{band}_lmax5400_2way_set{split}_noise_sim_map{idx:04}.fits'
+            # Original behavior with sim_config support
+            seed_idx = self.__get_noise_seed_idx__(idx)
+            fac = np.sqrt(self.nsplits) / np.sqrt(sim_nsplits)
+            
+            if self.nsplits > 2:
+                fbase = f'so_lat_mbs_mss0002_{model}_{band_name}_lmax5400_4way_set{split-1}_noise_sim_map{seed_idx:04}.fits'
+            else:
+                fbase = f'so_lat_mbs_mss0002_{model}_{band_name}_lmax5400_2way_set{split}_noise_sim_map{seed_idx:04}.fits'
+        
         fpath = f'{fdir}/{fbase}'
 
         n = enmap.read_map(fpath,sel=np.s_[j, 0])

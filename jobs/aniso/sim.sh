@@ -3,8 +3,7 @@
 #SBATCH --constraint=cpu
 #SBATCH --account=mp107d
 #SBATCH --nodes=2
-#SBATCH --ntasks=200
-##SBATCH --cpus-per-task=4
+#SBATCH --ntasks=100
 #SBATCH -J SOLAT
 #SBATCH -o so.out
 #SBATCH -e so.err
@@ -16,7 +15,7 @@ module load python
 conda activate cb
 cd /global/homes/l/lonappan/workspace/cobi/jobs/aniso
 
-export OMP_NUM_THREADS=4
+export OMP_NUM_THREADS=8
 #mpirun -np $SLURM_NTASKS python sim.py -sim
 #mpirun -np $SLURM_NTASKS python sim.py -cinv
 #mpirun -np $SLURM_NTASKS python sim.py -qe

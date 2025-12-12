@@ -23,6 +23,24 @@ QE
     Quadratic estimator class for cosmic birefringence reconstruction.
     Computes rotation angle power spectra with various bias correction
     methods (analytical N0, realization-dependent N0, mean field).
+    
+    Simulation Index Structure (sim_config is required):
+    
+    From sim_config={'set1': 400, 'reuse_last': 100} and nsims_mf=100:
+    - stat_index: 0-299 (set1 - nsims_mf) - Statistics and OCL computation
+    - mf_index: 300-399 (last nsims_mf from set1) - Mean field simulations
+    - vary_index: 300-399 (last reuse_last from set1) - Varying alpha (CMB mode='vary')
+    - const_index: 400-499 (reuse_last sims) - Constant alpha (CMB mode='constant')
+    - null_index: 500-599 (reuse_last sims) - Null alpha (CMB mode='null')
+    
+    Note: When nsims_mf equals reuse_last, mf_index and vary_index are identical.
+    
+    Bias Estimation:
+    - MCN0('stat'): Uses stat_index (0-299)
+    - MCN0('vary'): Uses vary_index (300-399)
+    - MCN0('const'): Uses const_index (400-499)
+    - N1 = MCN0('const') - MCN0('vary')
+    - Nlens: Uses null_index (500-599) and MCN0('vary')
 
 AcbLikelihood
     Likelihood analysis class for constraining the cosmic birefringence
@@ -176,6 +194,23 @@ class FilterEB:
         QU = QU*self.mask
         QU[QU == -0] = 0
         return QU
+    
+    def __cinv_eb__(self, idx, fname, test=False):
+        QU = self.QU(idx)
+        QU = np.reshape(QU,(2,1,hp.nside2npix(self.nside)))
+        
+        iterations = [200]
+        stat_file = '' 
+        if test:
+            iterations = [10]
+            stat_file = os.path.join('test_stat.txt')
+
+        E,B = cs.cninv.cnfilter_freq(2,1,self.nside,self.lmax,self.cl_len[1:3,:self.lmax+1],
+                                    self.Bl, self.ninv,QU,chn=1,itns=iterations,filter="",
+                                    eps=[1e-5],ro=10,inl=self.NL(idx),stat=stat_file)
+        if not test:
+            pl.dump((E,B), open(fname,'wb'))
+        return E, B
 
     def cinv_EB(self,idx,test=False):
         """
@@ -184,28 +219,17 @@ class FilterEB:
         Parameters
         ----------
         idx : int : index of the simulation
-        test : bool : if True, run the filter for 10 iterations
+        test : bool : if True, run the filter for 10 iterations (not cached)
         """
         fsky = f"{self.fsky:.2f}".replace('.','p')
         fname = os.path.join(self.lib_dir,f"cinv_EB_{idx:04d}_fsky_{fsky}.pkl")
-        if not os.path.isfile(fname):
-            QU = self.QU(idx)
-            QU = np.reshape(QU,(2,1,hp.nside2npix(self.nside)))
-            
-            iterations = [200]
-            stat_file = '' 
-            if test:
-                iterations = [10]
-                stat_file = os.path.join('test_stat.txt')
-
-            E,B = cs.cninv.cnfilter_freq(2,1,self.nside,self.lmax,self.cl_len[1:3,:self.lmax+1],
-                                        self.Bl, self.ninv,QU,chn=1,itns=iterations,filter="",
-                                        eps=[1e-5],ro=10,inl=self.NL(idx),stat=stat_file)
-            if not test:
-                pl.dump((E,B),open(fname,'wb'))
+        if os.path.isfile(fname):
+            try:
+                E,B = pl.load(open(fname,'rb'))
+            except:
+                E,B = self.__cinv_eb__(idx,fname,test=test)
         else:
-            E,B = pl.load(open(fname,'rb'))
-        
+            E,B = self.__cinv_eb__(idx,fname,test=test)
         return E,B
     
     def check_file_exist(self):
@@ -255,26 +279,36 @@ class QE:
             os.makedirs(self.rdn0dir, exist_ok=True)
 
         self.filter = filter
-        self.alpha_config = filter.sky.cmb.Acb_sim_config
+        self.sim_config = filter.sky.cmb.sim_config
         self.lmin = lmin
         self.lmax = lmax
         self.recon_lmax = recon_lmax
         self.cl_len = filter.cl_len
         self.nsims_mf = nsims_mf
         
-        # Extract index ranges from alpha_config
-        self.alpha_vary_index = np.arange(self.alpha_config['alpha_vary_index'][0], 
-                                          self.alpha_config['alpha_vary_index'][1])
-        self.alpha_cons_index = np.arange(self.alpha_config['alpha_cons_index'][0], 
-                                          self.alpha_config['alpha_cons_index'][1])
-        self.null_alpha_index = np.arange(self.alpha_config['null_alpha_index'][0], 
-                                          self.alpha_config['null_alpha_index'][1])
+        # sim_config is required
+        if self.sim_config is None:
+            raise ValueError("sim_config must be set in CMB initialization. QE requires sim_config to define simulation ranges.")
         
-        # Mean field simulations: last nsims_mf from alpha_vary_index
-        self.mf_index = self.alpha_vary_index[-self.nsims_mf:]
+        # Extract index ranges from sim_config
+        # sim_config = {'set1': 400, 'reuse_last': 100}
+        set1 = self.sim_config['set1']
+        reuse_last = self.sim_config['reuse_last']
         
-        # N0 simulations: remaining alpha_vary_index (excluding mean field sims)
-        self.n0_index = self.alpha_vary_index[:-self.nsims_mf]
+        # Statistics simulations: first (set1 - nsims_mf)
+        self.stat_index = np.arange(0, set1 - nsims_mf)
+        
+        # Mean field simulations: last nsims_mf from set1
+        self.mf_index = np.arange(set1 - nsims_mf, set1)
+        
+        # Varying alpha range: last reuse_last from set1
+        self.vary_index = np.arange(set1 - reuse_last, set1)
+        
+        # Constant alpha range: set1 to set1+reuse_last
+        self.const_index = np.arange(set1, set1 + reuse_last)
+        
+        # Null alpha range: set1+reuse_last to set1+2*reuse_last
+        self.null_index = np.arange(set1 + reuse_last, set1 + 2 * reuse_last)
         
         self.norm = self.__norm__
         self.lmax_bin = lmax_bin
@@ -303,8 +337,8 @@ class QE:
         else:
             ocl_len = self.cl_len.copy()
             ne,nb = [],[]
-            # Use N0 indexes for computing OCL
-            for i in tqdm(self.n0_index, desc='Computing OCL'):
+            # Use stat_index for computing OCL
+            for i in tqdm(self.stat_index, desc='Computing OCL'):
                 e,b = self.filter.sky.HILC_obsEB(i, ret='nl')
                 ne.append(e[:self.lmax+1]/Tcmb**2)
                 nb.append(b[:self.lmax+1]/Tcmb**2)
@@ -345,7 +379,7 @@ class QE:
         elif n0 == 'norm':
             N0 = self.norm
         elif n0 == 'mcn0':
-            N0 = self.MCN0('vary')
+            N0 = self.MCN0('stat')
         elif n0 == 'rdn0':
             N0 = self.RDN0(idx)
         else:
@@ -387,8 +421,8 @@ class QE:
         if os.path.isfile(fname):
             return pl.load(open(fname,'rb'))
         else:
-            # Use N0 indexes for cycling
-            myidx = self.n0_index.copy()
+            # Use stat_index for cycling
+            myidx = self.stat_index.copy()
 
             E0,B0 = self.filter.cinv_EB(idx)
 
@@ -459,7 +493,7 @@ class QE:
             return rdn0
 
         # 2) Build the index cycling array on all ranks (cheap & deterministic).
-        myidx = self.n0_index.copy()
+        myidx = self.stat_index.copy()
 
         # 3) Compute (or broadcast) the fixed E0, B0 for this idx.
         if rank == 0:
@@ -546,34 +580,61 @@ class QE:
         rdn0 = comm.bcast(rdn0, root=0)
         return rdn0
     
-    def N0_sim(self,idx,which='vary'):
+    def N0_sim(self,idx,which='vary',debug=False):
         """
         Calculate the N0 bias from the Reconstructed potential using filtered Fields
         with different CMB fields. If E modes is from ith simulation then B modes is 
         from (i+1)th simulation
 
         idx: int : index of the N0
-        which: str : 'vary' or 'cons' to select which alpha_config index to use
-        """
-        if which == 'vary':
-            index_range = self.alpha_vary_index
-            label = 'vary'
-        elif which == 'cons':
-            index_range = self.alpha_cons_index
-            label = 'cons'
-        else:
-            raise ValueError("which must be 'vary' or 'cons'")
+        which: str : 'stat', 'vary', or 'const' to select which index range to use
+        debug: bool : if True, print the indices used for computation and return None
         
-        assert idx in index_range, f"The requested idx {idx} is not in the {which} alpha_config index range"
+        Index ranges and wrapping:
+        - 'stat': stat_index, wraps within stat range
+        - 'vary': vary_index, wraps within vary range
+        - 'const': const_index, wraps within const range
+        
+        Requires sim_config to be set, or manually set the corresponding index array.
+        """
+        if which == 'stat':
+            index_range = self.stat_index
+            label = 'stat'
+        elif which == 'vary':
+            index_range = self.vary_index
+            label = 'vary'
+        elif which == 'const':
+            index_range = self.const_index
+            label = 'const'
+        else:
+            raise ValueError("which must be 'stat', 'vary', or 'const'")
+        
+        assert idx in index_range, f"The requested idx {idx} is not in the {which} index range"
             
-        myidx = np.pad(index_range,(0,1),'wrap')
+        # Simple increment with wrapping within the index_range bounds
+        idx1 = idx
+        min_idx = min(index_range)
+        max_idx = max(index_range)
+        # If at the end of range, wrap to beginning of range
+        if idx == max_idx:
+            idx2 = min_idx
+        else:
+            idx2 = idx + 1
+        
+        if debug:
+            print(f"N0_sim debug mode:")
+            print(f"  which: {which}")
+            print(f"  index_range: [{min_idx}, {max_idx}]")
+            print(f"  idx1 (E1B1): {idx1}")
+            print(f"  idx2 (E2B2): {idx2}")
+            return None
+            
         fname = os.path.join(self.rdn0dir,f"N0_{label}_{self.filter.fsky:.2f}_{idx:04d}.pkl")
         if os.path.isfile(fname):
             return pl.load(open(fname,'rb'))
         else:
-            idx = idx - min(index_range)
-            E1,B1 = self.filter.cinv_EB(myidx[idx])
-            E2,B2 = self.filter.cinv_EB(myidx[idx+1])
+            E1,B1 = self.filter.cinv_EB(idx1)
+            E2,B2 = self.filter.cinv_EB(idx2)
             glm1 = cs.rec_rot.qeb(self.recon_lmax,self.lmin,self.lmax,
                                        self.cl_len[1,:self.lmax+1],
                                        E1[:self.lmax+1,:self.lmax+1],
@@ -592,18 +653,33 @@ class QE:
     
     def MCN0(self, which='vary'):
         """
-        Monte Carlo average of N0_sim over N0 indexes
+        Monte Carlo average of N0_sim over specified index range
         
-        which: str : 'vary' or 'cons' to select which alpha_config index to use
+        which: str : 'stat', 'vary', or 'const' to select which index range to use
+                     'stat' uses stat_index
+                     'vary' uses vary_index
+                     'const' uses const_index
+        
+        Requires sim_config to be set, or manually set the corresponding index arrays.
+        Note: vary_index overlaps with mf_index only when nsims_mf equals reuse_last.
         """
         fname = os.path.join(self.basedir, f'MCN0_{which}_fsky{self.filter.fsky:.2f}.pkl')
-        index = self.n0_index if which == 'vary' else self.alpha_cons_index
         if os.path.isfile(fname):
             return pl.load(open(fname,'rb'))
         else:
+            if which == 'stat':
+                index = self.stat_index
+            elif which == 'vary':
+                index = self.vary_index
+            elif which == 'const':
+                index = self.const_index
+            else:
+                raise ValueError("which must be 'stat', 'vary', or 'const'")
+            
             n0_list = []
             for idx in tqdm(index, desc=f'Computing MCN0 ({which})'):
                 n0_list.append(self.N0_sim(idx, which=which))
+            
             mcn0 = np.array(n0_list).mean(axis=0)
             pl.dump(mcn0, open(fname,'wb'))
             return mcn0
@@ -611,13 +687,13 @@ class QE:
     def N1(self,binned=False):
         """
         N1 bias: difference between MCN0 for constant and varying alpha
-        N1 = MCN0('cons') - MCN0('vary')
+        N1 = MCN0('const') - MCN0('vary')
         """
         fname = os.path.join(self.basedir, f'N1_fsky{self.filter.fsky:.2f}.pkl')
         if os.path.isfile(fname):
             n1 = pl.load(open(fname,'rb'))
         else:
-            n1 = self.MCN0('cons') - self.MCN0('vary')
+            n1 = self.MCN0('const') - self.MCN0('vary')
             pl.dump(n1, open(fname,'wb'))
         if binned:
             bn1 = self.binner.bin_cell(n1[:self.lmax_bin+1])
@@ -627,7 +703,7 @@ class QE:
     
     def Nlens(self,MCN0=True,binned=False):
         """
-        Lensing bias: average qcl on null_alpha_index minus MCN0('vary')
+        Lensing bias: average qcl on null_index minus MCN0('vary')
         Nlens = <qcl(null_alpha)> - MCN0('vary')
         """
         fname = os.path.join(self.basedir, f'Nlens_fsky{self.filter.fsky:.2f}_mcn0{MCN0}.pkl')
@@ -635,7 +711,7 @@ class QE:
             nlens = pl.load(open(fname,'rb'))
         else:
             qcl_list = []
-            for idx in tqdm(self.null_alpha_index, desc='Computing Nlens'):
+            for idx in tqdm(self.null_index, desc='Computing Nlens'):
                 # Get qcl without any bias subtraction
                 qcl_list.append(cs.utils.alm2cl(self.recon_lmax, self.qlm(idx))/self.filter.fsky)
             avg_qcl = np.array(qcl_list).mean(axis=0)
@@ -674,7 +750,7 @@ class QE:
             return pl.load(open(fname,'rb'))
         else:
             cl = []
-            for i in tqdm(self.n0_index,desc='Computing cl statistics',unit='sim'):
+            for i in tqdm(self.stat_index,desc='Computing cl statistics',unit='sim'):
                 cl.append(self.qcl(i,n0=n0,mf=mf,nlens=nlens,n1=n1,binned=binned))
             cl = np.array(cl)
             pl.dump(cl,open(fname,'wb'))
@@ -686,7 +762,8 @@ class AcbLikelihood:
     def __init__(self, qelib: QE, lmin=2,lmax=50,rdn0=False,simple_chi=False):
         self.qe = qelib
         self.lmax = lmax
-        qcl = self.qe.qcl_stat(rdn0=rdn0)*1e7
+        n0 = 'rdn0' if rdn0 else None
+        qcl = self.qe.qcl_stat(n0=n0)*1e7
         self.binner = self.qe.binner
         self.b = self.qe.b
         self.sel = np.where((self.b >= lmin) & (self.b <= lmax))[0]
