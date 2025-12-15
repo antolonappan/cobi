@@ -506,12 +506,46 @@ class SkySimulation:
             raise ValueError(f"Unknown check {what}. Please use 'filesize' or 'file'.")
 
     
-    def HILC_obsEB(self, idx: int, ret=None) -> np.ndarray:
-        fnameS = os.path.join(
+    def HILC_obsEB(self, idx: int, ret=None, split: int = 0, debug=False) -> np.ndarray:
+        # Validate split parameter
+        if split < 0 or split > self.nsplits:
+            raise ValueError(f"split must be between 0 and {self.nsplits}, got {split}")
+        
+        # For nsplits=1, split=0 and split=1 are equivalent
+        if self.nsplits == 1 and split == 1:
+            split = 0
+        
+        # Construct filename based on split and nsplits
+        if self.nsplits == 1:
+            # For nsplits=1, always use same filename regardless of split value
+            fnameS = os.path.join(
                 self.libdir,
                 f"obs/hilcEB_N{self.nside}_A{str(self.Acb).replace('.','p')}{'_bp' if self.bandpass else ''}_{idx:03d}.fits",
             )
+        elif split == 0:
+            # For nsplits>1 and split=0, use all splits (no split suffix)
+            fnameS = os.path.join(
+                self.libdir,
+                f"obs/hilcEB_N{self.nside}_A{str(self.Acb).replace('.','p')}{'_bp' if self.bandpass else ''}_{idx:03d}.fits",
+            )
+        else:
+            # For nsplits>1 and split>0, add split number to filename
+            fnameS = os.path.join(
+                self.libdir,
+                f"obs/hilcEB_N{self.nside}_A{str(self.Acb).replace('.','p')}{'_bp' if self.bandpass else ''}_s{split}_{idx:03d}.fits",
+            )
         fnameN = fnameS.replace('hilcEB','hilcNoise')
+        
+        # Debug: print bands and filename
+        if split == 0:
+            bands = list(self.config.keys())
+        else:
+            bands = [key for key in self.config.keys() if key.endswith(f'-{split}')]
+        self.logger.log(f"HILC_obsEB: split={split}, nsplits={self.nsplits}, bands={bands}")
+        self.logger.log(f"HILC_obsEB: Output files: {fnameS}")
+        if debug:
+            return
+        
         if os.path.isfile(fnameS) and os.path.isfile(fnameN):
             if ret is None:
                 return hp.read_alm(fnameS, hdu=[1, 2]), hp.read_cl(fnameN)
@@ -524,9 +558,9 @@ class SkySimulation:
         else:
             alms = []
             nalms = []
-            bands = list(self.config.keys())
+            
             i = 0
-            for band in tqdm(bands, desc="Computing HILC Observed QUs", unit="band"):
+            for band in tqdm(bands, desc=f"Computing HILC Observed QUs (split={split})", unit="band"):
                 fwhm = self.config[band]["fwhm"]
                 alpha = self.get_alpha(idx, band)
                 noise = hp.ud_grade(self.noise.noiseQU_freq(idx, band),self.nside)*self.mask
