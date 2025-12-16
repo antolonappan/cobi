@@ -24,7 +24,7 @@ latsky = LATsky(dir, nside=1024, cb_model='aniso',Acb=1e-6,lensing=True,alpha=al
 
 start_i= 0
 end_i = 100
-split = 3
+split = 1
 jobs = np.arange(start_i, end_i)
 
 if args.sim:

@@ -547,9 +547,10 @@ class SkySimulation:
             bands = list(self.config.keys())
         else:
             bands = [key for key in self.config.keys() if key.endswith(f'-{split}')]
-        self.logger.log(f"HILC_obsEB: split={split}, nsplits={self.nsplits}, bands={bands}")
-        self.logger.log(f"HILC_obsEB: Output files: {fnameS}")
+
         if debug:
+            self.logger.log(f"HILC_obsEB: split={split}, nsplits={self.nsplits}, bands={bands}")
+            self.logger.log(f"HILC_obsEB: Output files: {fnameS}")
             return
         
         if os.path.isfile(fnameS) and os.path.isfile(fnameN):

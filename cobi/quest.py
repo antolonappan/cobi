@@ -785,7 +785,11 @@ class CrossQE:
         self.binner = nmt.NmtBin.from_lmax_linear(lmax_bin,nlb)
         self.b = self.binner.get_effective_ells()
         self.nlb = nlb
-       
+
+    @property
+    def cl_aa(self):
+        return self.filter.sky.cmb.cl_aa()[:self.recon_lmax+1]
+    
     def precompute_split_ocl(self, splits=(1,2,3,4)):
         """
         Computes split-level total spectra:
@@ -910,114 +914,37 @@ class CrossQE:
         average over cross-spectra of reconstructions from disjoint split pairs.
         For 4 splits, uses the 3 disjoint pairings.
         """
-        s1, s2, s3, s4 = splits
 
-        # three disjoint pairings
-        pairings = [
-            ((s1, s2), (s3, s4)),
-            ((s1, s3), (s2, s4)),
-            ((s1, s4), (s2, s3)),
-        ]
-
-        cls = []
-        for (i, j), (k, l) in pairings:
-            phi_ij = self.qlm_pair(idx, i, j)
-            phi_kl = self.qlm_pair(idx, k, l)
-
-            # cross-spectrum of the two phi maps
-            cl = cs.utils.alm2cl(self.recon_lmax, phi_ij, phi_kl) / self.filter.fsky
-            cls.append(cl)
-
-        return np.mean(cls, axis=0)
-    
-    def qlm_pair_mixsim(self, simE: int, simB: int, si: int, sj: int):
-        """
-        phi-hat from split pair (si,sj) using E from simE and B from simB:
-        0.5 * [ Q(E_simE^si, B_simB^sj) + Q(E_simE^sj, B_simB^si) ]
-        with pair-direction-specific normalization.
-        """
-        assert si != sj
-
-        # load cached pair norms
-        norms = self.precompute_pair_norms(
-            pairs=((1,2),(3,4),(1,3),(2,4),(1,4),(2,3))
+        fname = os.path.join(
+            self.recdir,
+            f"qcl_crossonly_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_fsky{self.filter.fsky:.2f}_{idx:04d}.pkl"
         )
-
-        # canonical key
-        i, j = (si, sj) if si < sj else (sj, si)
-        # choose which stored direction corresponds to (si,sj)
-        if (si, sj) == (i, j):
-            n_ij = norms[(i, j)]["EiBj"]  # E from i, B from j
-            n_ji = norms[(i, j)]["EjBi"]  # E from j, B from i
-        else:
-            n_ij = norms[(i, j)]["EjBi"]
-            n_ji = norms[(i, j)]["EiBj"]
-
-        # E from simE
-        E_si, _ = self.filter.cinv_EB(simE, split=si)
-        E_sj, _ = self.filter.cinv_EB(simE, split=sj)
-        # B from simB
-        _, B_si = self.filter.cinv_EB(simB, split=si)
-        _, B_sj = self.filter.cinv_EB(simB, split=sj)
-        # Q(E_si, B_sj)
-        alm_ij = cs.rec_rot.qeb(
-            self.recon_lmax, self.lmin, self.lmax,
-            self.cl_len[1, :self.lmax+1],
-            E_si[:self.lmax+1, :self.lmax+1],
-            B_sj[:self.lmax+1, :self.lmax+1]
-        )[0]
-
-        # Q(E_sj, B_si)
-        alm_ji = cs.rec_rot.qeb(
-            self.recon_lmax, self.lmin, self.lmax,
-            self.cl_len[1, :self.lmax+1],
-            E_sj[:self.lmax+1, :self.lmax+1],
-            B_si[:self.lmax+1, :self.lmax+1]
-        )[0]
-
-        # Apply direction-specific norms then symmetrize
-        phi = 0.5 * (alm_ij * n_ij[:, None] + alm_ji * n_ji[:, None])
-        return phi
-    def N0_sim_crossonly(self, idx, splits=(1,2,3,4)):
-        """
-        Cross-only disconnected MC term (N0-like) for the split-pair estimator.
-
-        Uses two independent sims:
-        simA supplies E
-        simB supplies B
-        and forms the cross-only estimator using disjoint split pairs:
-        (12 x 34), (13 x 24), (14 x 23)
-
-        Returns: array [0..Lmax] of Cl(phi,phi) for this MC draw.
-        """
-        myidx = np.pad(np.arange(self.NSIM), (0, 1), mode='constant', constant_values=(0, 0))
-        simA = int(myidx[idx])
-        simB = int(myidx[idx+1])
-
-        fsky_tag = f"{self.filter.fsky:.2f}".replace('.', 'p')
-        fname = os.path.join(self.n0dir, f"N0x_{fsky_tag}_{idx:04d}.pkl")
         if os.path.isfile(fname):
             return pl.load(open(fname, "rb"))
-
-        s1, s2, s3, s4 = splits
-        disjoint = [((s1, s2), (s3, s4)),
+        else:
+            s1, s2, s3, s4 = splits
+            
+            # three disjoint pairings
+            pairings = [
+                ((s1, s2), (s3, s4)),
                 ((s1, s3), (s2, s4)),
-                ((s1, s4), (s2, s3))]
+                ((s1, s4), (s2, s3)),
+            ]
 
-        cls = []
-        for (i, j), (k, l) in disjoint:
-            # phi from pair (i,j) with E from simA and B from simB
-            phi_ij = self.qlm_pair_mixsim(simA, simB, i, j)
+            cls = []
+            for (i, j), (k, l) in pairings:
+                phi_ij = self.qlm_pair(idx, i, j)
+                phi_kl = self.qlm_pair(idx, k, l)
 
-            # phi from pair (k,l) with E from simA and B from simB
-            phi_kl = self.qlm_pair_mixsim(simA, simB, k, l)
+                # cross-spectrum of the two phi maps
+                cl = cs.utils.alm2cl(self.recon_lmax, phi_ij, phi_kl) / self.filter.fsky
+                cls.append(cl)
+            
+            pl.dump(np.mean(cls, axis=0), open(fname, "wb"))
 
-            cl = cs.utils.alm2cl(self.recon_lmax, phi_ij, phi_kl) / self.filter.fsky
-            cls.append(cl)
-
-        n0cl = np.mean(cls, axis=0)
-        pl.dump(n0cl, open(fname, "wb"))
-        return n0cl
+            return np.mean(cls, axis=0)
+    
+    
         
 class AcbLikelihood:
 

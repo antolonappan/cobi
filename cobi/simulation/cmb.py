@@ -252,6 +252,7 @@ class CMB:
         Acb: Optional[float]=None,
         lensing: Optional[bool] = False,
         sim_config: Optional[Dict[str, Any]] = None,
+        cross_spectra: Optional[Dict[str, int]] = None,
         verbose: Optional[bool] = True,
     ):
         self.logger = Logger(self.__class__.__name__, verbose=verbose if verbose is not None else False)
@@ -284,6 +285,14 @@ class CMB:
 
         self.__set_workspace__()
         self.__set_seeds__()
+        self.cross_spectra = cross_spectra
+        if cross_spectra is not None:
+            self.logger.log("Cross-spectra provided for CMB simulation, this will overide any sim_config settings", level="info")
+            self.sp_keys = ['lens_rot','unlens_rot','unlens_unrot']
+            for i in list(cross_spectra.keys()):
+                if i not in self.sp_keys:
+                    raise ValueError(f"cross_spectra key {i} not recognized, must be one of {self.sp_keys}")
+            
         self.verbose = verbose if verbose is not None else False
     
     def scale_invariant(self, Acb):
@@ -1011,37 +1020,7 @@ class CMB:
                 ###### Anisotropic models ######
                 ###### Gaussian lensed ######
     def get_aniso_gauss_lensed_QU(self, idx: int) -> List[np.ndarray]:
-        raise NotImplementedError("Anisotropic Gaussian lensed CMB generation not implemented yet")
-        # fname = os.path.join(
-        #     self.cmbdir,
-        #     f"sims_g_nside{self.nside}_{idx:03d}.fits",
-        # )
-        # if os.path.isfile(fname):
-        #     return hp.read_map(fname, field=[0, 1])
-        # else:
-        #     spectra = self.get_lensed_spectra(dl=False)
-        #     np.random.seed(self.__cseeds__[idx])
-        #     Q, U = hp.synfast(
-        #         [spectra["tt"], spectra["ee"], spectra["bb"], spectra["te"]],
-        #         nside=self.nside,
-        #         new=True,
-        #     )[1:]
-            
-        #     # Check if rotation should be applied based on configuration
-        #     mode = self.__get_alpha_mode__(idx)
-        #     if self.Acb != 0 and mode != 'null':
-        #         alpha = self.alpha_map(idx)
-        #         rQ = Q * np.cos(2 * alpha) - U * np.sin(2 * alpha)
-        #         rU = Q * np.sin(2 * alpha) + U * np.cos(2 * alpha)
-        #         del (Q, U, alpha)
-        #     else:
-        #         if mode == 'null':
-        #             self.logger.log(f"Index {idx} in null_alpha range, no rotation applied", level="info")
-        #         else:
-        #             self.logger.log("Acb is zero, no rotation applied", level="info")
-        #         rQ, rU = Q, U
-        #     hp.write_map(fname, [rQ, rU], dtype=np.float64)
-        #     return [rQ, rU]
+        raise NotImplementedError("Anisotropic Gaussian lensed CMB not implemented yet")
     
     ################ CMB map generation methods ###############
                 ###### Anisotropic models ######
@@ -1057,6 +1036,21 @@ class CMB:
         if self.model == "iso" or self.model == "iso_td":
             return self.get_iso_model_cb_lensed_QU(idx)
         elif self.model == "aniso":
-            return self.get_aniso_model_cb_lensed_QU(idx)
+            if self.cross_spectra is not None:
+                return self.get_aniso_special(idx)
+            else:
+                return self.get_aniso_model_cb_lensed_QU(idx)
         else:
             raise NotImplementedError("Model not implemented yet")
+        
+    
+    ################# Anisotropic special cases ###############
+    def get_aniso_special_lens_unrot(self, idx: int) -> List[np.ndarray]:
+        pass
+
+    def get_aniso_special_unlens_unrot(self, idx: int) -> List[np.ndarray]:
+        pass
+
+    
+    def get_aniso_special(idx: int) -> List[np.ndarray]:
+        pass
