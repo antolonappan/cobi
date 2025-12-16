@@ -252,7 +252,7 @@ class CMB:
         Acb: Optional[float]=None,
         lensing: Optional[bool] = False,
         sim_config: Optional[Dict[str, Any]] = None,
-        cross_spectra: Optional[Dict[str, int]] = None,
+        cross_spectra: Optional[Dict[str, List[int]]] = None,
         verbose: Optional[bool] = True,
     ):
         self.logger = Logger(self.__class__.__name__, verbose=verbose if verbose is not None else False)
@@ -288,7 +288,7 @@ class CMB:
         self.cross_spectra = cross_spectra
         if cross_spectra is not None:
             self.logger.log("Cross-spectra provided for CMB simulation, this will overide any sim_config settings", level="info")
-            self.sp_keys = ['lens_rot','unlens_rot','unlens_unrot']
+            self.sp_keys =  ['lens_rot','lens_unrot','unlens_unrot']
             for i in list(cross_spectra.keys()):
                 if i not in self.sp_keys:
                     raise ValueError(f"cross_spectra key {i} not recognized, must be one of {self.sp_keys}")
@@ -1037,6 +1037,7 @@ class CMB:
             return self.get_iso_model_cb_lensed_QU(idx)
         elif self.model == "aniso":
             if self.cross_spectra is not None:
+                self.logger.log("Using special anisotropic CMB generation method based on cross_spectra", level="info")
                 return self.get_aniso_special(idx)
             else:
                 return self.get_aniso_model_cb_lensed_QU(idx)
@@ -1046,11 +1047,75 @@ class CMB:
     
     ################# Anisotropic special cases ###############
     def get_aniso_special_lens_unrot(self, idx: int) -> List[np.ndarray]:
-        pass
+        # Use mapped seed index for both CMB generation and alpha mode determination
+        seed_idx = self.__get_cmb_seed_idx__(idx)
+        mode = self.__get_alpha_mode__(idx)
+        
+        # Filename based on idx to distinguish different alpha modes for same CMB/phi
+        fname = os.path.join(
+            self.cmbdir,
+            f"sims_nside{self.nside}_l1r0_{idx:03d}.fits",
+        )
+        if os.path.isfile(fname):
+            return hp.read_map(fname, field=[0, 1])
+        else:
+            spectra = self.get_unlensed_spectra(dl=False)
+            
+            # Use mapped CMB seed
+            np.random.seed(self.__cseeds__[seed_idx])
+            
+            T, E, B = hp.synalm(
+                [spectra["tt"], spectra["ee"], spectra["bb"], spectra["te"]],
+                lmax=self.lmax,
+                new=True,
+            )
+            del T
+          
+            elm, blm = E, B
+            
+            defl = self.grad_phi_alm(idx)
+            geom_info = ('healpix', {'nside':self.nside})
+            Q, U = lenspyx.alm2lenmap_spin([elm, blm], defl, 2, geometry=geom_info, verbose=int(self.verbose))
+            del (elm, blm, defl)
+            hp.write_map(fname, [Q, U], dtype=np.float64)
+            return [Q, U]
 
     def get_aniso_special_unlens_unrot(self, idx: int) -> List[np.ndarray]:
-        pass
+        fname = os.path.join(
+            self.cmbdir,
+            f"sims_g_nside{self.nside}_l0r0_{idx:03d}.fits",
+        )
+        if os.path.isfile(fname):
+            return hp.read_map(fname, field=[0, 1])
+        else:
+            spectra = self.get_lensed_spectra(dl=False)
+            np.random.seed(self.__cseeds__[idx])
+            Q, U = hp.synfast(
+                [spectra["tt"], spectra["ee"], spectra["bb"], spectra["te"]],
+                nside=self.nside,
+                new=True,
+            )[1:]
+            
+            rQ, rU = Q, U
+            hp.write_map(fname, [rQ, rU], dtype=np.float64)
+            return [rQ, rU]
 
     
-    def get_aniso_special(idx: int) -> List[np.ndarray]:
-        pass
+    def get_aniso_special(self,idx: int) -> List[np.ndarray]:
+        assert self.cross_spectra is not None, "cross_spectra must be provided for special anisotropic cases"
+        l1r1_min, l1r1_max = self.cross_spectra['lens_rot']
+        l1r0_min, l1r0_max = self.cross_spectra['lens_unrot']
+        l0r0_min, l0r0_max = self.cross_spectra['unlens_unrot']
+        if l1r1_min <= idx < l1r1_max:
+            self.logger.log(f"Generating lensed & rotated CMB for index {idx}", level="info")
+            return self.get_aniso_real_lensed_QU(idx)
+        elif l1r0_min <= idx < l1r0_max:
+            self.logger.log(f"Generating lensed & unrotated CMB for index {idx}", level="info")
+            return self.get_aniso_special_lens_unrot(idx)
+        elif l0r0_min <= idx < l0r0_max:
+            self.logger.log(f"Generating unlensed & unrotated CMB for index {idx}", level="info")
+            return self.get_aniso_special_unlens_unrot(idx)
+        else:
+            raise ValueError(f"Index {idx} not in any specified cross_spectra range")
+        
+      

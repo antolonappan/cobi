@@ -119,6 +119,8 @@ from tqdm.auto import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import emcee
 
+from typing import Dict, Optional, Any, Union, List
+
 from cobi.simulation import LATsky, Mask
 from cobi.utils import cli, slice_alms
 from cobi import sht
@@ -764,7 +766,7 @@ class QE:
         
 
 class CrossQE:
-    def __init__(self, filter: FilterEB, lmin: int, lmax: int, recon_lmax: int, nlb=10, lmax_bin=1024):
+    def __init__(self, filter: FilterEB, lmin: int, lmax: int, recon_lmax: int, cross_spectra=Dict[str, List[int]], nlb=10, lmax_bin=1024):
         assert filter.sky.nsplits == 4, "CrossQE requires 4 splits in the FilterEB sky object."
         self.basedir = os.path.join(filter.sky.libdir, 'qecross')
         self.recdir = os.path.join(self.basedir, f'reco_min{lmin}_max{lmax}_rmax{recon_lmax}')
@@ -781,7 +783,9 @@ class CrossQE:
         self.cl_len = filter.cl_len
         
         self.lmax_bin = lmax_bin
-        self.NSIM = 100
+        self.stat_sims = cross_spectra['lens_rot']
+        self.nlens_sims = cross_spectra['lens_unrot']
+        self.n0_sims = cross_spectra['unlens_unrot'] 
         self.binner = nmt.NmtBin.from_lmax_linear(lmax_bin,nlb)
         self.b = self.binner.get_effective_ells()
         self.nlb = nlb
@@ -815,7 +819,7 @@ class CrossQE:
             nb_acc = np.zeros(self.lmax+1, dtype=np.float64)
             ncount = 0
 
-            for i in tqdm(range(self.NSIM), desc=f"Split OCL s={s}"):
+            for i in tqdm(range(self.stat_sims[0], self.stat_sims[1]), desc=f"Split OCL s={s}"):
                 ne, nb = self.filter.sky.HILC_obsEB(i, ret="nl", split=s)
                 ne_acc += ne[:self.lmax+1] / Tcmb**2
                 nb_acc += nb[:self.lmax+1] / Tcmb**2
@@ -943,8 +947,71 @@ class CrossQE:
             pl.dump(np.mean(cls, axis=0), open(fname, "wb"))
 
             return np.mean(cls, axis=0)
+
     
-    
+    def MCN0(self):
+        """
+        Monte Carlo average of N0_sim over n0_sims
+        """
+        fname = os.path.join(self.basedir, f'MCN0_crossonly_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            return pl.load(open(fname,'rb'))
+        else:
+            n0_list = []
+            for idx in tqdm(range(self.n0_sims[0], self.n0_sims[1]), desc='Computing MCN0 cross-only'):
+                n0_list.append(self.qcl_cross_only(idx, splits=(1,2,3,4)))
+            mcn0 = np.array(n0_list).mean(axis=0)
+            pl.dump(mcn0, open(fname,'wb'))
+            return mcn0
+            
+    def Nlens(self, binned=False):
+        """
+        Lensing bias: average qcl on null_index
+        """
+        fname = os.path.join(self.basedir, f'Nlens_crossonly_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            nlens = pl.load(open(fname,'rb'))
+        else:
+            qcl_list = []
+            for idx in tqdm(range(self.nlens_sims[0], self.nlens_sims[1]), desc='Computing Nlens cross-only'):
+                # Get qcl without any bias subtraction
+                qcl_list.append(self.qcl_cross_only(idx, splits=(1,2,3,4)))
+            nlens = np.array(qcl_list).mean(axis=0) - self.MCN0()
+            pl.dump(nlens, open(fname,'wb'))
+        if binned:
+            bnlen = self.binner.bin_cell(nlens[:self.lmax_bin+1])
+            return bnlen
+        else:
+            return nlens
+        
+    def qcl_stat(self, rm_n0=False,rm_nlens=False,binned=False):
+        fname = os.path.join(
+            self.basedir,
+            f'qcl_crossonly_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_{rm_n0}_{rm_nlens}_fsky{self.filter.fsky:.2f}_binned{binned}.pkl'
+        )
+        if os.path.isfile(fname):
+            return pl.load(open(fname,'rb'))
+        else:
+            if rm_n0:
+                n0 = self.MCN0()
+            else:
+                n0 = 0
+            if rm_nlens:
+                nlens = self.Nlens(binned=False)
+            else:
+                nlens = 0
+            cl = []
+            for i in tqdm(range(self.stat_sims[0], self.stat_sims[1]), desc='Computing cross-only cl statistics', unit='sim'):
+                cl.append(self.qcl_cross_only(i, splits=(1,2,3,4))- n0 - nlens)
+            cl = np.array(cl)
+            if binned:
+                bcl = []
+                for c in cl:
+                    bcl.append(self.binner.bin_cell(c[:self.lmax_bin+1]))
+                cl = np.array(bcl)
+            pl.dump(cl,open(fname,'wb'))
+            return cl
+
         
 class AcbLikelihood:
 
