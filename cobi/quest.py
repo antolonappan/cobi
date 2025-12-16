@@ -154,7 +154,7 @@ class FilterEB:
     def Bl(self):
         return np.reshape(self.bl,(1,self.lmax+1))
 
-    def convolved_EB(self,idx):
+    def convolved_EB(self,idx,split=0):
         """
         convolve the component separated map with the beam
 
@@ -162,22 +162,22 @@ class FilterEB:
         ----------
         idx : int : index of the simulation
         """
-        E,B = self.sky.HILC_obsEB(idx,ret='alm')
+        E,B = self.sky.HILC_obsEB(idx,ret='alm',split=split)
         hp.almxfl(E,self.bl,inplace=True)
         hp.almxfl(B,self.bl,inplace=True)
         return E,B
     
-    def NL(self,idx):
+    def NL(self,idx,split=0):
         """
         array manipulation of noise spectra obtained by ILC weight
         for the filtering process
         """
-        ne,nb = self.sky.HILC_obsEB(idx, ret='nl')/Tcmb**2
+        ne,nb = self.sky.HILC_obsEB(idx, ret='nl',split=split)/Tcmb**2
         return np.reshape(np.array((cli(ne[:self.lmax+1]*self.bl**2),
                           cli(nb[:self.lmax+1]*self.bl**2))),(2,1,self.lmax+1))
     
     
-    def QU(self, idx):
+    def QU(self, idx, split=0):
         """
         deconvolve the beam from the QU map
 
@@ -185,7 +185,7 @@ class FilterEB:
         ----------
         idx : int : index of the simulation
         """
-        E, B = self.convolved_EB(idx)
+        E, B = self.convolved_EB(idx, split=split)
         E, B = slice_alms(np.array([E, B]), self.lmax)
         if self.healpy:
             QU = hp.alm2map([E*0,E,B], self.nside)[1:]/Tcmb
@@ -195,8 +195,8 @@ class FilterEB:
         QU[QU == -0] = 0
         return QU
     
-    def __cinv_eb__(self, idx, fname, test=False):
-        QU = self.QU(idx)
+    def __cinv_eb__(self, idx, fname, test=False, split=0):
+        QU = self.QU(idx, split=split)
         QU = np.reshape(QU,(2,1,hp.nside2npix(self.nside)))
         
         iterations = [200]
@@ -207,12 +207,12 @@ class FilterEB:
 
         E,B = cs.cninv.cnfilter_freq(2,1,self.nside,self.lmax,self.cl_len[1:3,:self.lmax+1],
                                     self.Bl, self.ninv,QU,chn=1,itns=iterations,filter="",
-                                    eps=[1e-5],ro=10,inl=self.NL(idx),stat=stat_file)
+                                    eps=[1e-5],ro=10,inl=self.NL(idx,split=split),stat=stat_file)
         if not test:
             pl.dump((E,B), open(fname,'wb'))
         return E, B
 
-    def cinv_EB(self,idx,test=False):
+    def cinv_EB(self,idx,split=0,test=False):
         """
         C inv Filter for the component separated maps
 
@@ -222,22 +222,28 @@ class FilterEB:
         test : bool : if True, run the filter for 10 iterations (not cached)
         """
         fsky = f"{self.fsky:.2f}".replace('.','p')
-        fname = os.path.join(self.lib_dir,f"cinv_EB_{idx:04d}_fsky_{fsky}.pkl")
+        if split == 0:
+            fname = os.path.join(self.lib_dir,f"cinv_EB_{idx:04d}_fsky_{fsky}.pkl")
+        else:
+            fname = os.path.join(self.lib_dir,f"cinv_EB_{idx:04d}_fsky_{fsky}_split{split}.pkl")
         if os.path.isfile(fname):
             try:
                 E,B = pl.load(open(fname,'rb'))
             except:
-                E,B = self.__cinv_eb__(idx,fname,test=test)
+                E,B = self.__cinv_eb__(idx,fname,test=test,split=split)
         else:
-            E,B = self.__cinv_eb__(idx,fname,test=test)
+            E,B = self.__cinv_eb__(idx,fname,test=test,split=split)
         return E,B
     
-    def check_file_exist(self):
+    def check_file_exist(self,nsims=600,split=0):
         missing = []
         file_err = []
-        for idx in tqdm(range(600),desc='Checking cinv files'):
+        for idx in tqdm(range(nsims),desc='Checking cinv files'):
             fsky = f"{self.fsky:.2f}".replace('.','p')
-            fname = os.path.join(self.lib_dir,f"cinv_EB_{idx:04d}_fsky_{fsky}.pkl")
+            if split == 0:
+                fname = os.path.join(self.lib_dir,f"cinv_EB_{idx:04d}_fsky_{fsky}.pkl")
+            else:
+                fname = os.path.join(self.lib_dir,f"cinv_EB_{idx:04d}_fsky_{fsky}_split{split}.pkl")
             if not os.path.isfile(fname):
                 missing.append(idx)
             else:
@@ -250,7 +256,7 @@ class FilterEB:
         return missing, file_err
 
 
-    def plot_cinv(self,idx,lmin=2,lmax=3000):
+    def plot_cinv(self,idx,split=0,lmin=2,lmax=3000):
         """
         plot the cinv filtered Cls for a given idx
 
@@ -258,8 +264,8 @@ class FilterEB:
         ----------
         idx : int : index of the simulation
         """
-        E,_ = self.cinv_EB(idx)
-        ne,_ = self.sky.HILC_obsEB(idx, ret='nl')/Tcmb**2
+        E,_ = self.cinv_EB(idx, split=split)
+        ne,_ = self.sky.HILC_obsEB(idx,split=split, ret='nl')/Tcmb**2
         cle = cs.utils.alm2cl(self.lmax,E)/self.fsky
         plt.figure(figsize=(4,4))
         plt.loglog(cle,label='Cinv E mode')
@@ -756,7 +762,263 @@ class QE:
             pl.dump(cl,open(fname,'wb'))
             return cl
         
+
+class CrossQE:
+    def __init__(self, filter: FilterEB, lmin: int, lmax: int, recon_lmax: int, nlb=10, lmax_bin=1024):
+        assert filter.sky.nsplits == 4, "CrossQE requires 4 splits in the FilterEB sky object."
+        self.basedir = os.path.join(filter.sky.libdir, 'qecross')
+        self.recdir = os.path.join(self.basedir, f'reco_min{lmin}_max{lmax}_rmax{recon_lmax}')
+        self.n0dir = os.path.join(self.basedir, f'rdn0_min{lmin}_max{lmax}_rmax{recon_lmax}')
+        if mpi.rank == 0:
+            os.makedirs(self.basedir, exist_ok=True)
+            os.makedirs(self.recdir, exist_ok=True)
+            os.makedirs(self.n0dir, exist_ok=True)
+        self.filter = filter
+        self.sim_config = filter.sky.cmb.sim_config
+        self.lmin = lmin
+        self.lmax = lmax
+        self.recon_lmax = recon_lmax
+        self.cl_len = filter.cl_len
+        
+        self.lmax_bin = lmax_bin
+        self.NSIM = 100
+        self.binner = nmt.NmtBin.from_lmax_linear(lmax_bin,nlb)
+        self.b = self.binner.get_effective_ells()
+        self.nlb = nlb
+       
+    def precompute_split_ocl(self, splits=(1,2,3,4)):
+        """
+        Computes split-level total spectra:
+        oclE[s] = ClEE_lensed + <N_EE_split_s>
+        oclB[s] = ClBB_lensed + <N_BB_split_s>
+        Saves dict {s: (oclE, oclB)}.
+        """
+        fsky_tag = f"{self.filter.fsky:.2f}".replace('.', 'p')
+        fname = os.path.join(
+            self.basedir,
+            f"ocl_splits_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_fsky_{fsky_tag}.pkl"
+        )
+        if os.path.isfile(fname):
+            return pl.load(open(fname, "rb"))
+
+        # Start from theory (lensed) spectra
+        clE_th = self.cl_len[1, :self.lmax+1].copy()
+        clB_th = self.cl_len[2, :self.lmax+1].copy()
+
+        ocl = {}
+        for s in splits:
+            ne_acc = np.zeros(self.lmax+1, dtype=np.float64)
+            nb_acc = np.zeros(self.lmax+1, dtype=np.float64)
+            ncount = 0
+
+            for i in tqdm(range(self.NSIM), desc=f"Split OCL s={s}"):
+                ne, nb = self.filter.sky.HILC_obsEB(i, ret="nl", split=s)
+                ne_acc += ne[:self.lmax+1] / Tcmb**2
+                nb_acc += nb[:self.lmax+1] / Tcmb**2
+                ncount += 1
+
+            ne_mean = ne_acc / ncount
+            nb_mean = nb_acc / ncount
+
+            oclE = clE_th + ne_mean
+            oclB = clB_th + nb_mean
+            ocl[s] = (oclE, oclB)
+
+        pl.dump(ocl, open(fname, "wb"))
+        return ocl
     
+    def precompute_pair_norms(self, pairs=((1,2),(3,4),(1,3),(2,4),(1,4),(2,3))):
+        """
+        Precomputes normalization arrays for each split pair.
+
+        Returns dict:
+        norms[(i,j)] = {"EiBj": norm_ij, "EjBi": norm_ji}
+        where norm_ij normalizes Q(E^i, B^j).
+        """
+        fsky_tag = f"{self.filter.fsky:.2f}".replace('.', 'p')
+        fname = os.path.join(
+            self.basedir,
+            f"norm_pairs_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_fsky_{fsky_tag}.pkl"
+        )
+        if os.path.isfile(fname):
+            return pl.load(open(fname, "rb"))
+
+        ocl = self.precompute_split_ocl(splits=(1,2,3,4))
+        clE_th = self.cl_len[1, :self.lmax+1]
+
+        norms = {}
+        for (i, j) in pairs:
+            oclE_i, oclB_i = ocl[i]
+            oclE_j, oclB_j = ocl[j]
+
+            # norm for Q(E^i, B^j)
+            norm_ij = cs.norm_quad.qeb(
+                'rot',
+                self.recon_lmax, self.lmin, self.lmax,
+                clE_th,
+                oclE_i,   # total EE for E leg from split i
+                oclB_j    # total BB for B leg from split j
+            )[0]
+
+            # norm for Q(E^j, B^i)
+            norm_ji = cs.norm_quad.qeb(
+                'rot',
+                self.recon_lmax, self.lmin, self.lmax,
+                clE_th,
+                oclE_j,
+                oclB_i
+            )[0]
+
+            norms[(i, j)] = {"EiBj": norm_ij, "EjBi": norm_ji}
+
+        pl.dump(norms, open(fname, "wb"))
+        return norms
+    
+    def qlm_pair(self, idx, si: int, sj: int):
+        assert si != sj
+        i, j = (si, sj) if si < sj else (sj, si)
+
+        norms = self.precompute_pair_norms(
+            pairs=((1,2),(3,4),(1,3),(2,4),(1,4),(2,3))
+        )
+        n_ij = norms[(i, j)]["EiBj"] if (si, sj) == (i, j) else norms[(i, j)]["EjBi"]
+        n_ji = norms[(i, j)]["EjBi"] if (si, sj) == (i, j) else norms[(i, j)]["EiBj"]
+
+        Ei, Bi = self.filter.cinv_EB(idx, split=si)
+        Ej, Bj = self.filter.cinv_EB(idx, split=sj)
+
+        alm_EiBj = cs.rec_rot.qeb(
+            self.recon_lmax, self.lmin, self.lmax,
+            self.cl_len[1, :self.lmax+1],
+            Ei[:self.lmax+1, :self.lmax+1],
+            Bj[:self.lmax+1, :self.lmax+1]
+        )
+        alm_EjBi = cs.rec_rot.qeb(
+            self.recon_lmax, self.lmin, self.lmax,
+            self.cl_len[1, :self.lmax+1],
+            Ej[:self.lmax+1, :self.lmax+1],
+            Bi[:self.lmax+1, :self.lmax+1]
+        )
+
+        # Apply pair-direction-specific norms, then symmetrize
+        phi = 0.5 * (alm_EiBj * n_ij[:, None] + alm_EjBi * n_ji[:, None])
+        return phi
+    
+    def qcl_cross_only(self, idx, splits=(1,2,3,4)):
+        """
+        Cross-only lensing power estimate:
+        average over cross-spectra of reconstructions from disjoint split pairs.
+        For 4 splits, uses the 3 disjoint pairings.
+        """
+        s1, s2, s3, s4 = splits
+
+        # three disjoint pairings
+        pairings = [
+            ((s1, s2), (s3, s4)),
+            ((s1, s3), (s2, s4)),
+            ((s1, s4), (s2, s3)),
+        ]
+
+        cls = []
+        for (i, j), (k, l) in pairings:
+            phi_ij = self.qlm_pair(idx, i, j)
+            phi_kl = self.qlm_pair(idx, k, l)
+
+            # cross-spectrum of the two phi maps
+            cl = cs.utils.alm2cl(self.recon_lmax, phi_ij, phi_kl) / self.filter.fsky
+            cls.append(cl)
+
+        return np.mean(cls, axis=0)
+    
+    def qlm_pair_mixsim(self, simE: int, simB: int, si: int, sj: int):
+        """
+        phi-hat from split pair (si,sj) using E from simE and B from simB:
+        0.5 * [ Q(E_simE^si, B_simB^sj) + Q(E_simE^sj, B_simB^si) ]
+        with pair-direction-specific normalization.
+        """
+        assert si != sj
+
+        # load cached pair norms
+        norms = self.precompute_pair_norms(
+            pairs=((1,2),(3,4),(1,3),(2,4),(1,4),(2,3))
+        )
+
+        # canonical key
+        i, j = (si, sj) if si < sj else (sj, si)
+        # choose which stored direction corresponds to (si,sj)
+        if (si, sj) == (i, j):
+            n_ij = norms[(i, j)]["EiBj"]  # E from i, B from j
+            n_ji = norms[(i, j)]["EjBi"]  # E from j, B from i
+        else:
+            n_ij = norms[(i, j)]["EjBi"]
+            n_ji = norms[(i, j)]["EiBj"]
+
+        # E from simE
+        E_si, _ = self.filter.cinv_EB(simE, split=si)
+        E_sj, _ = self.filter.cinv_EB(simE, split=sj)
+        # B from simB
+        _, B_si = self.filter.cinv_EB(simB, split=si)
+        _, B_sj = self.filter.cinv_EB(simB, split=sj)
+        # Q(E_si, B_sj)
+        alm_ij = cs.rec_rot.qeb(
+            self.recon_lmax, self.lmin, self.lmax,
+            self.cl_len[1, :self.lmax+1],
+            E_si[:self.lmax+1, :self.lmax+1],
+            B_sj[:self.lmax+1, :self.lmax+1]
+        )[0]
+
+        # Q(E_sj, B_si)
+        alm_ji = cs.rec_rot.qeb(
+            self.recon_lmax, self.lmin, self.lmax,
+            self.cl_len[1, :self.lmax+1],
+            E_sj[:self.lmax+1, :self.lmax+1],
+            B_si[:self.lmax+1, :self.lmax+1]
+        )[0]
+
+        # Apply direction-specific norms then symmetrize
+        phi = 0.5 * (alm_ij * n_ij[:, None] + alm_ji * n_ji[:, None])
+        return phi
+    def N0_sim_crossonly(self, idx, splits=(1,2,3,4)):
+        """
+        Cross-only disconnected MC term (N0-like) for the split-pair estimator.
+
+        Uses two independent sims:
+        simA supplies E
+        simB supplies B
+        and forms the cross-only estimator using disjoint split pairs:
+        (12 x 34), (13 x 24), (14 x 23)
+
+        Returns: array [0..Lmax] of Cl(phi,phi) for this MC draw.
+        """
+        myidx = np.pad(np.arange(self.NSIM), (0, 1), mode='constant', constant_values=(0, 0))
+        simA = int(myidx[idx])
+        simB = int(myidx[idx+1])
+
+        fsky_tag = f"{self.filter.fsky:.2f}".replace('.', 'p')
+        fname = os.path.join(self.n0dir, f"N0x_{fsky_tag}_{idx:04d}.pkl")
+        if os.path.isfile(fname):
+            return pl.load(open(fname, "rb"))
+
+        s1, s2, s3, s4 = splits
+        disjoint = [((s1, s2), (s3, s4)),
+                ((s1, s3), (s2, s4)),
+                ((s1, s4), (s2, s3))]
+
+        cls = []
+        for (i, j), (k, l) in disjoint:
+            # phi from pair (i,j) with E from simA and B from simB
+            phi_ij = self.qlm_pair_mixsim(simA, simB, i, j)
+
+            # phi from pair (k,l) with E from simA and B from simB
+            phi_kl = self.qlm_pair_mixsim(simA, simB, k, l)
+
+            cl = cs.utils.alm2cl(self.recon_lmax, phi_ij, phi_kl) / self.filter.fsky
+            cls.append(cl)
+
+        n0cl = np.mean(cls, axis=0)
+        pl.dump(n0cl, open(fname, "wb"))
+        return n0cl
+        
 class AcbLikelihood:
 
     def __init__(self, qelib: QE, lmin=2,lmax=50,rdn0=False,simple_chi=False):
