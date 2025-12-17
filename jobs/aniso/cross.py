@@ -22,7 +22,9 @@ sim_config = {'set1': 400, 'reuse_last': 100}
 cross_spectra = {'lens_rot':[0,100],'lens_unrot':[100,200],'unlens_unrot':[200,300]}
 filt_lmax = 2048
 recon_lmax = 1024
-latsky = LATsky(dir, nside=1024, cb_model='aniso',Acb=1e-6,lensing=True,alpha=alpha,alpha_err=alpha_err,nsplits=4,noise_model='TOD',sim_config=sim_config,cross_spectra=cross_spectra)
+#latsky = LATsky(dir, nside=1024, cb_model='aniso',Acb=1e-6,lensing=True,alpha=alpha,alpha_err=alpha_err,nsplits=4,noise_model='TOD',sim_config=sim_config,cross_spectra=cross_spectra)
+latsky = LATsky(dir, nside=1024, cb_model='aniso',Acb=1e-7,lensing=True,alpha=alpha,alpha_err=alpha_err,nsplits=4,aso=True,noise_model='NC',sim_config=sim_config,cross_spectra=cross_spectra)
+
 
 start_i= 0
 end_i = 300

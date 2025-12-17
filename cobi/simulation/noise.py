@@ -258,6 +258,8 @@ class Noise:
         self.__nseeds__ = {
             1: np.arange(7777, 7777 + 1000),
             2: np.arange(9999, 9999 + 1000),
+            3: np.arange(5555, 5555 + 1000),
+            4: np.arange(8888, 8888 + 1000),
         }
     
     def __get_noise_seed_idx__(self, idx: int) -> int:

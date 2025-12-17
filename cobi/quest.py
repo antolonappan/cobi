@@ -753,7 +753,7 @@ class QE:
             st += '_nlens'
         if n1:
             st += '_n1'
-        fname = os.path.join(self.basedir, f'qcl_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_nlb{self.nlb}_{st}.pkl')
+        fname = os.path.join(self.basedir, f'qcl_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_nlb{self.nlb}_{st}_{binned}.pkl')
         if os.path.isfile(fname):
             return pl.load(open(fname,'rb'))
         else:
