@@ -771,10 +771,12 @@ class CrossQE:
         self.basedir = os.path.join(filter.sky.libdir, 'qecross')
         self.recdir = os.path.join(self.basedir, f'reco_min{lmin}_max{lmax}_rmax{recon_lmax}')
         self.n0dir = os.path.join(self.basedir, f'rdn0_min{lmin}_max{lmax}_rmax{recon_lmax}')
+        self.mdir = os.path.join(self.basedir, f'misc_min{lmin}_max{lmax}_rmax{recon_lmax}')
         if mpi.rank == 0:
             os.makedirs(self.basedir, exist_ok=True)
             os.makedirs(self.recdir, exist_ok=True)
             os.makedirs(self.n0dir, exist_ok=True)
+            os.makedirs(self.mdir, exist_ok=True)
         self.filter = filter
         self.sim_config = filter.sky.cmb.sim_config
         self.lmin = lmin
@@ -912,6 +914,64 @@ class CrossQE:
         phi = 0.5 * (alm_EiBj * n_ij[:, None] + alm_EjBi * n_ji[:, None])
         return phi
     
+    def mean(self, idx, splits=(1,2,3,4)):
+        """
+        Cross-only lensing power estimate:
+        average over cross-spectra of reconstructions from disjoint split pairs.
+        For 4 splits, uses the 3 disjoint pairings.
+        """
+
+        fname = os.path.join(
+            self.mdir,
+            f"mean_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_fsky{self.filter.fsky:.2f}_{idx:04d}.pkl"
+        )
+        if os.path.isfile(fname):
+            return pl.load(open(fname, "rb"))
+        else:
+            s1, s2, s3, s4 = splits
+            
+            # three disjoint pairings
+            pairings = [
+                ((s1, s2), (s3, s4)),
+                ((s1, s3), (s2, s4)),
+                ((s1, s4), (s2, s3)),
+            ]
+
+            m = None
+            for (i, j), (k, l) in pairings:
+                phi_ij = self.qlm_pair(idx, i, j)
+                phi_kl = self.qlm_pair(idx, k, l)
+
+                phi = 0.5 * (phi_ij + phi_kl)
+                if m is None:
+                    m = phi
+                else:
+                    m += phi
+            m /= 3.0
+            
+            pl.dump(m, open(fname, "wb"))
+
+            return m
+    
+    def mean_field(self):
+        m = []
+        for idx in tqdm(range(100), desc='Computing cross-only mean field'):
+            self.mean(idx)
+            m.append(self.mean(idx))
+        return np.mean(m, axis=0)
+    
+    def mean_field_cl(self):
+        fname = os.path.join(
+            self.mdir,
+            f"meanfield_cl_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_fsky{self.filter.fsky:.2f}.pkl"
+        )
+        if os.path.isfile(fname):
+            return pl.load(open(fname, "rb"))
+        else:
+            mf = self.mean_field()
+            mf_cl = cs.utils.alm2cl(self.recon_lmax, mf) / self.filter.fsky
+            pl.dump(mf_cl, open(fname, "wb"))
+            return mf_cl
     def qcl_cross_only(self, idx, splits=(1,2,3,4)):
         """
         Cross-only lensing power estimate:
