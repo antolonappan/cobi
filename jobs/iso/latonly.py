@@ -12,19 +12,19 @@ nside = 2048
 cb_model = "iso"
 beta = 0.0
 nc = 'NC'
-aso = True
+aso = False
 alpha_lat = 0
 alpha_lat_err =  0.05
 
 lat = LATskyC(libdir, nside, cb_model, beta, alpha=alpha_lat, alpha_err=alpha_lat_err, bandpass=True, nsplits=2, noise_model=nc, aso=aso, verbose=False)
 spec = SpectraCross(libdir, lat, binwidth=10, galcut=40, aposcale=2)
 
-start_i = 1
+start_i = 0
 end_i = 100
 jobs = np.arange(start_i, end_i)
 
 for i in jobs[mpi.rank::mpi.size]:
-    lat.SaveObsQUs(i)
+    #lat.SaveObsQUs(i)
     spec.__spectra_matrix_core__(i, which='EB')
 mpi.barrier()
 

@@ -42,16 +42,16 @@ beta = 0.35
 # nm = 'NC'
 
 #setting 4
-#alpha = [-0.1,-0.1,0.2,0.2,.15,.15]
-alpha = 0
-alpha_err = 0.05
+alpha = [-0.1,-0.1,0.2,0.2,.15,.15]
+#alpha = 0
+alpha_err = 0.1
 bp = True
 nm = 'NC'
 
 
 # Initialize LATsky and Spectra
 lat = LATsky(libdir, nside, cb_model, beta, alpha=alpha, alpha_err=alpha_err, bandpass=bp,noise_model=nm)
-spec = Spectra(lat, libdir, cache=True, parallel=0)
+spec = Spectra(lat, libdir, cache=True, parallel=0,lmax=3000)
 
 start_i = 0
 end_i = 100
@@ -85,8 +85,8 @@ if args.specsync:
 if args.mle:
     fit = "Ad + beta + alpha"
     binwidth = 10
-    bmin = 200
-    bmax = 2000
+    bmin = 50
+    bmax = 3000
     mle = MLE(libdir,spec,fit, alpha_per_split=False,rm_same_tube=True,binwidth=binwidth,bmin=bmin,bmax=bmax)
     for i in jobs[mpi.rank::mpi.size]:
         mle.estimate_angles(i)
