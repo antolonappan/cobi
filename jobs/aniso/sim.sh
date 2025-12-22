@@ -2,8 +2,8 @@
 #SBATCH --qos=debug
 #SBATCH --constraint=cpu
 #SBATCH --account=mp107d
-#SBATCH --nodes=2
-#SBATCH --ntasks=200
+#SBATCH --nodes=1
+#SBATCH --ntasks=100
 ##SBATCH --cpus-per-task=4
 #SBATCH -J SOLAT
 #SBATCH -o so.out
@@ -20,10 +20,10 @@ export OMP_NUM_THREADS=4
 #mpirun -np $SLURM_NTASKS python sim.py -sim
 #mpirun -np $SLURM_NTASKS python sim.py -cinv
 #mpirun -np $SLURM_NTASKS python sim.py -qe
-mpirun -np $SLURM_NTASKS python sim.py -n0sim
+#mpirun -np $SLURM_NTASKS python sim.py -n0sim
 
-# for IDX in $(seq 158 159); do
-#     echo "=== Starting RDN0 for sim ${IDX} ==="
-#     mpirun -np $SLURM_NTASKS python sim.py -rdn0 -idx $IDX
-# done
+for IDX in $(seq 0 100); do
+    echo "=== Starting RDN0 for sim ${IDX} ==="
+    mpirun -np $SLURM_NTASKS python sim.py -rdn0 -idx $IDX
+done
 

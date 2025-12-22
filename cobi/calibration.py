@@ -489,12 +489,12 @@ class BaseSat4LatCross(ABC):
                 if j == 0:
                     ax.set_ylabel(r'$C_\ell^{EB}$')
                 if i == 0:
-                    ax.set_title(f"${maptags[j].replace('_', ' ')}$", fontsize=10)
+                    ax.set_title(f"$\\rm {maptags[j].replace('_', '-')}$", fontsize=10)
 
         # Right-side frequency labels
         for i, tag in enumerate(maptags):
             axes[i, n_tags - 1].text(
-                1.05, 0.5, f"${tag.replace('_', ' ')}$",
+                1.05, 0.5, f"$\\rm {tag.replace('_', '-')}$",
                 transform=axes[i, n_tags - 1].transAxes,
                 va='center', ha='left', fontsize=10
             )
