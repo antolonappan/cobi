@@ -588,6 +588,7 @@ class QE:
         rdn0 = comm.bcast(rdn0, root=0)
         return rdn0
     
+    
     def N0_sim(self,idx,which='vary',debug=False):
         """
         Calculate the N0 bias from the Reconstructed potential using filtered Fields
@@ -1071,8 +1072,217 @@ class CrossQE:
                 cl = np.array(bcl)
             pl.dump(cl,open(fname,'wb'))
             return cl
+    
+    def _cl_cross_only_between(self, A: dict, B: dict):
+        """
+        Cross-only spectrum for 4 splits:
+        (12×34 + 13×24 + 14×23)/3
+        where A[(i,j)] are recon alms from split pair (i,j).
+        """
+        c12_34 = cs.utils.alm2cl(self.recon_lmax, A[(1,2)], B[(3,4)]) / self.filter.fsky
+        c13_24 = cs.utils.alm2cl(self.recon_lmax, A[(1,3)], B[(2,4)]) / self.filter.fsky
+        c14_23 = cs.utils.alm2cl(self.recon_lmax, A[(1,4)], B[(2,3)]) / self.filter.fsky
+        return (c12_34 + c13_24 + c14_23) / 3.0
+    
 
-        
+    def _qlm_pair_tag_rot(self, d_idx: int, s_idx: int, s0_idx: int,
+                      si: int, sj: int, tagE: str, tagB: str):
+        """
+        Implements the mixed estimator \hat{phi}^{ab(ij)} in Eq. (42),
+        specialized to rotation (rot) EB, with leg tags tagE/tagB in {'d','s','s0'}.
+
+        For rot, we use antisymmetrization under leg swap:
+        0.5 * [Q(E^si, B^sj) - Q(E^sj, B^si)]
+        and apply direction-dependent pair norms.
+        """
+        assert si != sj
+
+        def pick(tag: str) -> int:
+            if tag == "d":  return d_idx
+            if tag == "s":  return s_idx
+            if tag == "s0": return s0_idx
+            raise ValueError("tag must be one of {'d','s','s0'}")
+
+        idxE = pick(tagE)
+        idxB = pick(tagB)
+
+        # get direction-dependent norms
+        norms = self.precompute_pair_norms(pairs=((1,2),(3,4),(1,3),(2,4),(1,4),(2,3)))
+        i, j = (si, sj) if si < sj else (sj, si)
+        if (si, sj) == (i, j):
+            n_EiBj = norms[(i, j)]["EiBj"]
+            n_EjBi = norms[(i, j)]["EjBi"]
+        else:
+            n_EiBj = norms[(i, j)]["EjBi"]
+            n_EjBi = norms[(i, j)]["EiBj"]
+
+        # E from idxE, B from idxB
+        E_si, _ = self.filter.cinv_EB(idxE, split=si)
+        E_sj, _ = self.filter.cinv_EB(idxE, split=sj)
+        _, B_si = self.filter.cinv_EB(idxB, split=si)
+        _, B_sj = self.filter.cinv_EB(idxB, split=sj)
+
+        # ordered Q(E_si, B_sj)
+        alm_ij = cs.rec_rot.qeb(
+            self.recon_lmax, self.lmin, self.lmax,
+            self.cl_len[1, :self.lmax+1],
+            E_si[:self.lmax+1, :self.lmax+1],
+            B_sj[:self.lmax+1, :self.lmax+1]
+        )
+        # ordered Q(E_sj, B_si)
+        alm_ji = cs.rec_rot.qeb(
+            self.recon_lmax, self.lmin, self.lmax,
+            self.cl_len[1, :self.lmax+1],
+            E_sj[:self.lmax+1, :self.lmax+1],
+            B_si[:self.lmax+1, :self.lmax+1]
+        )
+
+        # ROT: antisymmetric combination + direction norms
+        alpha = 0.5 * (alm_ij * n_EiBj[:, None] - alm_ji * n_EjBi[:, None])
+        return alpha
+    
+    def _build_six_rot(self, d_idx: int, s_idx: int, s0_idx: int, tagE: str, tagB: str):
+        pairs = [(1,2),(3,4),(1,3),(2,4),(1,4),(2,3)]
+        out = {}
+        for (i,j) in pairs:
+            out[(i,j)] = self._qlm_pair_tag_rot(d_idx, s_idx, s0_idx, i, j, tagE, tagB)
+        return out
+    
+    def RDN0_crossonly_rot(self, idx: int, navg: int = 100):
+        """
+        Cross-only RDN(0) for rotation EB, implementing Eq. (43) with 4 splits. :contentReference[oaicite:6]{index=6}
+
+        'idx' is treated as the fixed data realization d.
+        Average is over (s,s0) pairs chosen from simulations excluding d (sim-as-data trick),
+        using navg Monte Carlo draws.
+
+        Returns: array C_L [0..recon_lmax]
+        """
+        fsky_tag = f"{self.filter.fsky:.2f}".replace('.', 'p')
+        fname = os.path.join(self.n0dir, f"RDN0x_rot_{fsky_tag}_{idx:04d}_navg{navg}.pkl")
+        if os.path.isfile(fname):
+            return pl.load(open(fname, "rb"))
+
+        # Construct the sim index pool the same way you did:
+        # append a couple indices to allow i+1 access and delete all occurrences of idx
+        myidx = np.append(np.arange(self.sim_config.nsim), np.arange(2))
+        sel = np.where(myidx == idx)[0]
+        myidx = np.delete(myidx, sel)
+
+        d_idx = idx
+        acc = np.zeros(self.recon_lmax + 1, dtype=np.float64)
+        nused = 0
+
+        for i in tqdm(range(navg), desc=f"RDN0x(rot) for sim {idx}", unit="mc"):
+            s_idx  = int(myidx[i])
+            s0_idx = int(myidx[i+1])
+
+            # Build the mixed estimators in Eq. (43):
+            ds  = self._build_six_rot(d_idx, s_idx, s0_idx, tagE="d",  tagB="s")
+            sd  = self._build_six_rot(d_idx, s_idx, s0_idx, tagE="s",  tagB="d")
+            ss0 = self._build_six_rot(d_idx, s_idx, s0_idx, tagE="s",  tagB="s0")
+            s0s = self._build_six_rot(d_idx, s_idx, s0_idx, tagE="s0", tagB="s")
+
+            # Eq. (43) combination (all spectra are cross-only C^×):
+            cl_ds_ds   = self._cl_cross_only_between(ds,  ds)
+            cl_ds_sd   = self._cl_cross_only_between(ds,  sd)
+            cl_sd_ds   = self._cl_cross_only_between(sd,  ds)
+            cl_sd_sd   = self._cl_cross_only_between(sd,  sd)
+            cl_ss0_ss0 = self._cl_cross_only_between(ss0, ss0)
+            cl_ss0_s0s = self._cl_cross_only_between(ss0, s0s)
+
+            rdn0_i = (cl_ds_ds + cl_ds_sd + cl_sd_ds + cl_sd_sd
+                    - cl_ss0_ss0 - cl_ss0_s0s)
+
+            acc += rdn0_i
+            nused += 1
+
+        rdn0 = acc / max(nused, 1)
+        pl.dump(rdn0, open(fname, "wb"))
+        return rdn0
+
+    def RDN0_crossonly_rot_mpi(self, idx: int, navg: int = 100):
+        """
+        MPI-parallel cross-only RDN0 for rotation EB, implementing Eq. (43) with 4 splits. 
+
+        Parallelizes the navg Monte-Carlo draws over (s, s0) pairs.
+        Only rank 0 reads/writes the cache.
+        """
+        MPI  = mpi.mpi
+        comm = mpi.com
+        rank = mpi.rank
+        size = mpi.size
+
+        fsky_tag = f"{self.filter.fsky:.2f}".replace('.', 'p')
+        fname = os.path.join(self.n0dir, f"RDN0x_rot_{fsky_tag}_{idx:04d}_navg{navg}.pkl")
+
+        # 1) Try to load cached result on rank 0, then broadcast.
+        rdn0 = None
+        if rank == 0 and os.path.isfile(fname):
+            with open(fname, "rb") as f:
+                rdn0 = pl.load(f)
+        rdn0 = comm.bcast(rdn0, root=0)
+        if rdn0 is not None:
+            return rdn0
+
+        # 2) Build the deterministic index pool excluding idx (same trick you used before).
+        # Use sim_config.nsim as the global size (consistent with your class usage).
+        nsim = self.sim_config.nsim if hasattr(self, "sim_config") else self.filter.sky.cmb.sim_config.nsim
+        myidx = np.append(np.arange(nsim), np.arange(2))
+        sel = np.where(myidx == idx)[0]
+        myidx = np.delete(myidx, sel)
+
+        # 3) Distribute the navg draws across ranks.
+        tasks = np.arange(navg, dtype=int)
+        chunks = np.array_split(tasks, size)
+        my_tasks = chunks[rank]
+
+        L = self.recon_lmax + 1
+        local_sum = np.zeros(L, dtype=np.float64)
+
+        # 4) One MC draw i -> choose (s, s0) and compute Eq. (43) combination.
+        def _one_draw(i: int):
+            s_idx  = int(myidx[i % len(myidx)])
+            s0_idx = int(myidx[(i + 1) % len(myidx)])
+
+            d_idx = idx
+
+            # Build the mixed estimators (six-pack of split pairs) needed in Eq. (43):
+            ds  = self._build_six_rot(d_idx, s_idx, s0_idx, tagE="d",  tagB="s")
+            sd  = self._build_six_rot(d_idx, s_idx, s0_idx, tagE="s",  tagB="d")
+            ss0 = self._build_six_rot(d_idx, s_idx, s0_idx, tagE="s",  tagB="s0")
+            s0s = self._build_six_rot(d_idx, s_idx, s0_idx, tagE="s0", tagB="s")
+
+            # Eq. (43): 4 data-sim terms - 2 pure-sim terms, all with cross-only C^×
+            cl_ds_ds   = self._cl_cross_only_between(ds,  ds)
+            cl_ds_sd   = self._cl_cross_only_between(ds,  sd)
+            cl_sd_ds   = self._cl_cross_only_between(sd,  ds)
+            cl_sd_sd   = self._cl_cross_only_between(sd,  sd)
+            cl_ss0_ss0 = self._cl_cross_only_between(ss0, ss0)
+            cl_ss0_s0s = self._cl_cross_only_between(ss0, s0s)
+
+            return (cl_ds_ds + cl_ds_sd + cl_sd_ds + cl_sd_sd
+                    - cl_ss0_ss0 - cl_ss0_s0s)
+
+        # 5) Local accumulation (progress bar only on rank 0).
+        iterator = tqdm(my_tasks, desc=f'RDN0x(rot) rank {rank} for sim {idx}', unit='mc') if rank == 0 else my_tasks
+        for t in iterator:
+            local_sum += _one_draw(int(t))
+
+        # 6) Reduce sum to rank 0, then average by navg.
+        global_sum = np.zeros_like(local_sum)
+        comm.Reduce(local_sum, global_sum, op=MPI.SUM, root=0)
+
+        if rank == 0:
+            rdn0 = global_sum / float(len(tasks))  # divide by navg
+            os.makedirs(self.n0dir, exist_ok=True)
+            with open(fname, "wb") as f:
+                pl.dump(rdn0, f)
+
+        # 7) Broadcast result to all ranks.
+        rdn0 = comm.bcast(rdn0, root=0)
+        return rdn0
+
 class AcbLikelihood:
 
     def __init__(self, qelib: QE, lmin=2,lmax=50,rdn0=False,simple_chi=False):
