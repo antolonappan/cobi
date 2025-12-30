@@ -261,7 +261,6 @@ class SkySimulation:
         deconv_maps: bool = False,
         fldname_suffix: str = "",
         sht_backend: str = "healpy",
-        cross_spectra: Optional[Dict[str, List[int]]] = None,
         verbose: bool = True,
     ):
         """
@@ -309,7 +308,7 @@ class SkySimulation:
         self.Acb = Acb
         self.cb_method = cb_model
         self.beta = beta
-        self.cmb = CMB(libdir, nside, cb_model, beta, mass, Acb, lensing, sim_config, cross_spectra=cross_spectra, verbose=self.verbose)
+        self.cmb = CMB(libdir, nside, cb_model, beta, mass, Acb, lensing, sim_config, verbose=self.verbose)
         self.foreground = Foreground(libdir, nside, dust_model, sync_model, bandpass, verbose=False)
         self.dust_model = dust_model
         self.sync_model = sync_model
@@ -639,7 +638,6 @@ class LATsky(SkySimulation):
         deconv_maps: bool = False,
         fldname_suffix: str = "",
         sht_backend: str = "healpy",
-        cross_spectra: Optional[Dict[str, List[int]]] = None,
         verbose: bool = True,
     ):
         super().__init__(
@@ -668,7 +666,6 @@ class LATsky(SkySimulation):
             deconv_maps = deconv_maps,
             fldname_suffix = fldname_suffix,
             sht_backend = sht_backend,
-            cross_spectra = cross_spectra,
             verbose = verbose,
         )
 
@@ -701,7 +698,6 @@ class SATsky(SkySimulation):
         deconv_maps: bool = False,
         fldname_suffix: str = "",
         sht_backend: str = "healpy",
-        cross_spectra: Optional[Dict[str, List[int]]] = None,
         verbose: bool = True,
     ):
         super().__init__(
@@ -729,7 +725,6 @@ class SATsky(SkySimulation):
             deconv_maps = deconv_maps,
             fldname_suffix = fldname_suffix,
             sht_backend = sht_backend,
-            cross_spectra = cross_spectra,
             verbose = verbose,
         )
 
@@ -762,7 +757,6 @@ class LATskyC(SkySimulation):
         hilc_bins: int = 10,
         deconv_maps: bool = False,
         fldname_suffix: str = "",
-        cross_spectra: Optional[Dict[str, List[int]]] = None,
         verbose: bool = True,
     ):
         super().__init__(
@@ -790,7 +784,6 @@ class LATskyC(SkySimulation):
             hilc_bins = hilc_bins,
             deconv_maps = deconv_maps,
             fldname_suffix = fldname_suffix,
-            cross_spectra = cross_spectra,
             verbose = verbose,
         )
 

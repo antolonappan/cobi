@@ -117,7 +117,7 @@ import matplotlib.pyplot as plt
 import pymaster as nmt
 from tqdm.auto import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import emcee
+
 
 from typing import Dict, Optional, Any, Union, List
 
@@ -125,6 +125,7 @@ from cobi.simulation import LATsky, Mask
 from cobi.utils import cli, slice_alms
 from cobi import sht
 from cobi import mpi
+from time import time
 
 
 Tcmb  = 2.726e6
@@ -298,8 +299,7 @@ class QE:
         if self.sim_config is None:
             raise ValueError("sim_config must be set in CMB initialization. QE requires sim_config to define simulation ranges.")
         
-        # Extract index ranges from sim_config
-        # sim_config = {'set1': 400, 'reuse_last': 100}
+        
         set1 = self.sim_config['set1']
         reuse_last = self.sim_config['reuse_last']
         
@@ -323,8 +323,6 @@ class QE:
         self.binner = nmt.NmtBin.from_lmax_linear(lmax_bin,nlb)
         self.b = self.binner.get_effective_ells()
         self.nlb = nlb
-       
-
 
     @property
     def __norm__(self):
@@ -356,7 +354,6 @@ class QE:
             pl.dump(ocl_len, open(fname,'wb'))
         return ocl_len
     
-
     @property
     def cl_aa(self):
         return self.filter.sky.cmb.cl_aa()[:self.recon_lmax+1]
@@ -587,8 +584,7 @@ class QE:
         # 7) Broadcast the final result so all ranks return the same array.
         rdn0 = comm.bcast(rdn0, root=0)
         return rdn0
-    
-    
+      
     def N0_sim(self,idx,which='vary',debug=False):
         """
         Calculate the N0 bias from the Reconstructed potential using filtered Fields
@@ -735,7 +731,21 @@ class QE:
         else:
             return nlens
         
-    
+    def RDN0_stat(self):
+        """
+        RDN0 for all stat_index simulations
+        """
+        fname = os.path.join(self.basedir, f'RDN0_stat_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            return pl.load(open(fname,'rb'))
+        else:
+            rdn0_list = []
+            for i in tqdm(self.stat_index, desc='Computing RDN0 statistics'):
+                rdn0_list.append(self.RDN0(i))
+            rdn0_array = np.array(rdn0_list).mean(axis=0)
+            pl.dump(rdn0_array, open(fname,'wb'))
+            return rdn0_array
+          
     def qcl_stat(self, n0=None, mf=False, nlens=False, n1=False,binned=True):
         st = ''
         if n0 is None:
@@ -767,7 +777,7 @@ class QE:
         
 
 class CrossQE:
-    def __init__(self, filter: FilterEB, lmin: int, lmax: int, recon_lmax: int, cross_spectra=Dict[str, List[int]], nlb=10, lmax_bin=1024):
+    def __init__(self, filter: FilterEB, lmin: int, lmax: int, recon_lmax: int,nsims_mf=100, nlb=10, lmax_bin=1024):
         assert filter.sky.nsplits == 4, "CrossQE requires 4 splits in the FilterEB sky object."
         self.basedir = os.path.join(filter.sky.libdir, 'qecross')
         self.recdir = os.path.join(self.basedir, f'reco_min{lmin}_max{lmax}_rmax{recon_lmax}')
@@ -786,9 +796,30 @@ class CrossQE:
         self.cl_len = filter.cl_len
         
         self.lmax_bin = lmax_bin
-        self.stat_sims = cross_spectra['lens_rot']
-        self.nlens_sims = cross_spectra['lens_unrot']
-        self.n0_sims = cross_spectra['unlens_unrot'] 
+
+
+        self.sim_config = filter.sky.cmb.sim_config
+
+        if self.sim_config is None:
+            raise ValueError("sim_config must be set in CMB initialization. QE requires sim_config to define simulation ranges.")
+        # Default simulation ranges
+        set1 = self.sim_config['set1']
+        reuse_last = self.sim_config['reuse_last']
+        
+        # Statistics simulations: first (set1 - nsims_mf)
+        self.stat_index = np.arange(0, set1 - nsims_mf)
+        
+        # Mean field simulations: last nsims_mf from set1
+        self.mf_index = np.arange(set1 - nsims_mf, set1)
+        
+        # Varying alpha range: last reuse_last from set1
+        self.vary_index = np.arange(set1 - reuse_last, set1)
+        
+        # Constant alpha range: set1 to set1+reuse_last
+        self.const_index = np.arange(set1, set1 + reuse_last)
+        
+        # Null alpha range: set1+reuse_last to set1+2*reuse_last
+        self.null_index = np.arange(set1 + reuse_last, set1 + 2 * reuse_last)
         self.binner = nmt.NmtBin.from_lmax_linear(lmax_bin,nlb)
         self.b = self.binner.get_effective_ells()
         self.nlb = nlb
@@ -822,7 +853,7 @@ class CrossQE:
             nb_acc = np.zeros(self.lmax+1, dtype=np.float64)
             ncount = 0
 
-            for i in tqdm(range(self.stat_sims[0], self.stat_sims[1]), desc=f"Split OCL s={s}"):
+            for i in tqdm(self.stat_index, desc=f"Split OCL s={s}"):
                 ne, nb = self.filter.sky.HILC_obsEB(i, ret="nl", split=s)
                 ne_acc += ne[:self.lmax+1] / Tcmb**2
                 nb_acc += nb[:self.lmax+1] / Tcmb**2
@@ -915,7 +946,7 @@ class CrossQE:
         phi = 0.5 * (alm_EiBj * n_ij[:, None] + alm_EjBi * n_ji[:, None])
         return phi
     
-    def mean(self, idx, splits=(1,2,3,4)):
+    def mean_field_sim(self, idx, splits=(1,2,3,4)):
         """
         Cross-only lensing power estimate:
         average over cross-spectra of reconstructions from disjoint split pairs.
@@ -956,9 +987,9 @@ class CrossQE:
     
     def mean_field(self):
         m = []
-        for idx in tqdm(range(100), desc='Computing cross-only mean field'):
-            self.mean(idx)
-            m.append(self.mean(idx))
+        for idx in tqdm(self.mf_index, desc='Computing cross-only mean field'):
+            self.mean_field_sim(idx)
+            m.append(self.mean_field_sim(idx))
         return np.mean(m, axis=0)
     
     def mean_field_cl(self):
@@ -973,6 +1004,7 @@ class CrossQE:
             mf_cl = cs.utils.alm2cl(self.recon_lmax, mf) / self.filter.fsky
             pl.dump(mf_cl, open(fname, "wb"))
             return mf_cl
+        
     def qcl_cross_only(self, idx, splits=(1,2,3,4)):
         """
         Cross-only lensing power estimate:
@@ -1008,69 +1040,126 @@ class CrossQE:
             pl.dump(np.mean(cls, axis=0), open(fname, "wb"))
 
             return np.mean(cls, axis=0)
-
-    
-    def MCN0(self):
+       
+    def Nlens(self,binned=False):
         """
-        Monte Carlo average of N0_sim over n0_sims
+        Lensing bias: average qcl on null_index minus MCN0('vary')
+        Nlens = <qcl(null_alpha)> - MCN0('vary')
         """
-        fname = os.path.join(self.basedir, f'MCN0_crossonly_fsky{self.filter.fsky:.2f}.pkl')
-        if os.path.isfile(fname):
-            return pl.load(open(fname,'rb'))
-        else:
-            n0_list = []
-            for idx in tqdm(range(self.n0_sims[0], self.n0_sims[1]), desc='Computing MCN0 cross-only'):
-                n0_list.append(self.qcl_cross_only(idx, splits=(1,2,3,4)))
-            mcn0 = np.array(n0_list).mean(axis=0)
-            pl.dump(mcn0, open(fname,'wb'))
-            return mcn0
-            
-    def Nlens(self, binned=False):
-        """
-        Lensing bias: average qcl on null_index
-        """
-        fname = os.path.join(self.basedir, f'Nlens_crossonly_fsky{self.filter.fsky:.2f}.pkl')
+        fname = os.path.join(self.basedir, f'Nlens_fsky{self.filter.fsky:.2f}.pkl')
         if os.path.isfile(fname):
             nlens = pl.load(open(fname,'rb'))
         else:
             qcl_list = []
-            for idx in tqdm(range(self.nlens_sims[0], self.nlens_sims[1]), desc='Computing Nlens cross-only'):
+            for idx in tqdm(self.null_index, desc='Computing Nlens'):
                 # Get qcl without any bias subtraction
-                qcl_list.append(self.qcl_cross_only(idx, splits=(1,2,3,4)))
-            nlens = np.array(qcl_list).mean(axis=0) - self.MCN0()
+                qcl_list.append(self.qcl_cross_only(idx))
+            avg_qcl = np.array(qcl_list).mean(axis=0)
+            nlens = avg_qcl - self.MCN0('stat')
             pl.dump(nlens, open(fname,'wb'))
         if binned:
             bnlen = self.binner.bin_cell(nlens[:self.lmax_bin+1])
             return bnlen
         else:
             return nlens
+    
+    def N1(self,binned=False):
+        """
+        N1 bias: difference between MCN0 for constant and varying alpha
+        N1 = MCN0('const') - MCN0('vary')
+        """
+        fname = os.path.join(self.basedir, f'N1_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            n1 = pl.load(open(fname,'rb'))
+        else:
+            n1 = self.MCN0('const') - self.MCN0('vary')
+            pl.dump(n1, open(fname,'wb'))
+        if binned:
+            bn1 = self.binner.bin_cell(n1[:self.lmax_bin+1])
+            return bn1
+        else:
+            return n1  
+         
+    def qcl_stat(self, n0=None, mf=False, nlens=False, binned=True):
+        """
+        Compute statistics of qcl over stat_sims with various bias corrections.
         
-    def qcl_stat(self, rm_n0=False,rm_nlens=False,binned=False):
+        Parameters
+        ----------
+        n0 : str or None
+            N0 bias correction: None (no correction), 'mcn0', or 'rdn0'
+        mf : bool
+            If True, subtract mean field bias
+        nlens : bool
+            If True, subtract lensing bias
+        binned : bool
+            If True, return binned spectra
+            
+        Returns
+        -------
+        cl : array
+            Array of shape (nsims, nlmax+1) or (nsims, nbins) if binned
+        """
+        st = ''
+        if n0 is None:
+            st += '_noN0'
+        elif n0 == 'mcn0':
+            st += '_n0mcn0'
+        elif n0 == 'rdn0':
+            st += '_n0rdn0'
+        else:
+            raise ValueError("n0 must be None, 'mcn0', or 'rdn0'")
+        if mf:
+            st += '_mf'
+        if nlens:
+            st += '_nlens'
         fname = os.path.join(
-            self.basedir,
-            f'qcl_crossonly_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_{rm_n0}_{rm_nlens}_fsky{self.filter.fsky:.2f}_binned{binned}.pkl'
+            self.basedir, 
+            f'qcl_crossonly_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_nlb{self.nlb}_{st}_{binned}.pkl'
         )
         if os.path.isfile(fname):
             return pl.load(open(fname,'rb'))
         else:
-            if rm_n0:
-                n0 = self.MCN0()
+            # Determine bias corrections
+            if n0 is None:
+                N0 = np.zeros(self.recon_lmax + 1)
+            elif n0 == 'mcn0':
+                N0 = self.MCN0()
+            elif n0 == 'rdn0':
+                # For cross-only, RDN0 should be computed per simulation
+                # This will be handled in the loop below
+                N0 = None
+            
+            if mf:
+                MF = self.mean_field_cl()
             else:
-                n0 = 0
-            if rm_nlens:
-                nlens = self.Nlens(binned=False)
+                MF = np.zeros(self.recon_lmax + 1)
+            
+            if nlens:
+                NLENS = self.Nlens(binned=False)
             else:
-                nlens = 0
+                NLENS = np.zeros(self.recon_lmax + 1)
+            
             cl = []
             for i in tqdm(range(self.stat_sims[0], self.stat_sims[1]), desc='Computing cross-only cl statistics', unit='sim'):
-                cl.append(self.qcl_cross_only(i, splits=(1,2,3,4))- n0 - nlens)
+                qcl_i = self.qcl_cross_only(i, splits=(1,2,3,4))
+                
+                # Apply RDN0 correction if requested
+                if n0 == 'rdn0':
+                    N0_i = self.RDN0(i)
+                else:
+                    N0_i = N0
+                
+                # Apply all bias corrections
+                qcl_i = qcl_i - N0_i - MF - NLENS
+                
+                if binned:
+                    qcl_i = self.binner.bin_cell(qcl_i[:self.lmax_bin+1])
+                
+                cl.append(qcl_i)
+            
             cl = np.array(cl)
-            if binned:
-                bcl = []
-                for c in cl:
-                    bcl.append(self.binner.bin_cell(c[:self.lmax_bin+1]))
-                cl = np.array(bcl)
-            pl.dump(cl,open(fname,'wb'))
+            pl.dump(cl, open(fname, 'wb'))
             return cl
     
     def _cl_cross_only_between(self, A: dict, B: dict):
@@ -1084,16 +1173,13 @@ class CrossQE:
         c14_23 = cs.utils.alm2cl(self.recon_lmax, A[(1,4)], B[(2,3)]) / self.filter.fsky
         return (c12_34 + c13_24 + c14_23) / 3.0
     
-
-    def _qlm_pair_tag_rot(self, d_idx: int, s_idx: int, s0_idx: int,
+    def _qlm_pair_tag_sym(self, d_idx: int, s_idx: int, s0_idx: int,
                       si: int, sj: int, tagE: str, tagB: str):
         """
-        Implements the mixed estimator \hat{phi}^{ab(ij)} in Eq. (42),
-        specialized to rotation (rot) EB, with leg tags tagE/tagB in {'d','s','s0'}.
-
-        For rot, we use antisymmetrization under leg swap:
-        0.5 * [Q(E^si, B^sj) - Q(E^sj, B^si)]
-        and apply direction-dependent pair norms.
+        Symmetric EB estimator (lensing-like), compatible with qlm_pair():
+        0.5 * [ Q(E^si, B^sj) + Q(E^sj, B^si) ]
+        with direction-dependent norms.
+        tagE/tagB in {'d','s','s0'} select which realization supplies E and B legs.
         """
         assert si != sj
 
@@ -1106,9 +1192,10 @@ class CrossQE:
         idxE = pick(tagE)
         idxB = pick(tagB)
 
-        # get direction-dependent norms
+        # direction-dependent norms (same logic as qlm_pair)
         norms = self.precompute_pair_norms(pairs=((1,2),(3,4),(1,3),(2,4),(1,4),(2,3)))
         i, j = (si, sj) if si < sj else (sj, si)
+
         if (si, sj) == (i, j):
             n_EiBj = norms[(i, j)]["EiBj"]
             n_EjBi = norms[(i, j)]["EjBi"]
@@ -1116,20 +1203,20 @@ class CrossQE:
             n_EiBj = norms[(i, j)]["EjBi"]
             n_EjBi = norms[(i, j)]["EiBj"]
 
-        # E from idxE, B from idxB
+        # Pull E from idxE, B from idxB, with the requested split indices
         E_si, _ = self.filter.cinv_EB(idxE, split=si)
         E_sj, _ = self.filter.cinv_EB(idxE, split=sj)
         _, B_si = self.filter.cinv_EB(idxB, split=si)
         _, B_sj = self.filter.cinv_EB(idxB, split=sj)
 
-        # ordered Q(E_si, B_sj)
+        # Q(E_si, B_sj)
         alm_ij = cs.rec_rot.qeb(
             self.recon_lmax, self.lmin, self.lmax,
             self.cl_len[1, :self.lmax+1],
             E_si[:self.lmax+1, :self.lmax+1],
             B_sj[:self.lmax+1, :self.lmax+1]
         )
-        # ordered Q(E_sj, B_si)
+        # Q(E_sj, B_si)
         alm_ji = cs.rec_rot.qeb(
             self.recon_lmax, self.lmin, self.lmax,
             self.cl_len[1, :self.lmax+1],
@@ -1137,53 +1224,147 @@ class CrossQE:
             B_si[:self.lmax+1, :self.lmax+1]
         )
 
-        # ROT: antisymmetric combination + direction norms
-        alpha = 0.5 * (alm_ij * n_EiBj[:, None] - alm_ji * n_EjBi[:, None])
-        return alpha
-    
-    def _build_six_rot(self, d_idx: int, s_idx: int, s0_idx: int, tagE: str, tagB: str):
+        # SYM: symmetric combination + direction norms
+        phi = 0.5 * (alm_ij * n_EiBj[:, None] + alm_ji * n_EjBi[:, None])
+        return phi
+
+    def _build_six_sym(self, d_idx: int, s_idx: int, s0_idx: int, tagE: str, tagB: str):
+        """
+        Build the six split-pair reconstructions (12,34,13,24,14,23) using the symmetric estimator.
+        """
         pairs = [(1,2),(3,4),(1,3),(2,4),(1,4),(2,3)]
         out = {}
-        for (i,j) in pairs:
-            out[(i,j)] = self._qlm_pair_tag_rot(d_idx, s_idx, s0_idx, i, j, tagE, tagB)
+        for (i, j) in pairs:
+            out[(i, j)] = self._qlm_pair_tag_sym(d_idx, s_idx, s0_idx, i, j, tagE, tagB)
         return out
     
-    def RDN0_crossonly_rot(self, idx: int, navg: int = 100):
+    def N0_sim(self,idx,which='vary',debug=False):
         """
-        Cross-only RDN(0) for rotation EB, implementing Eq. (43) with 4 splits. :contentReference[oaicite:6]{index=6}
+        Calculate the N0 bias from the Reconstructed potential using filtered Fields
+        with different CMB fields. If E modes is from ith simulation then B modes is 
+        from (i+1)th simulation
 
-        'idx' is treated as the fixed data realization d.
-        Average is over (s,s0) pairs chosen from simulations excluding d (sim-as-data trick),
-        using navg Monte Carlo draws.
-
-        Returns: array C_L [0..recon_lmax]
+        idx: int : index of the N0
+        which: str : 'stat', 'vary', or 'const' to select which index range to use
+        debug: bool : if True, print the indices used for computation and return None
+        
+        Index ranges and wrapping:
+        - 'stat': stat_index, wraps within stat range
+        - 'vary': vary_index, wraps within vary range
+        - 'const': const_index, wraps within const range
+        
+        Requires sim_config to be set, or manually set the corresponding index array.
         """
-        fsky_tag = f"{self.filter.fsky:.2f}".replace('.', 'p')
-        fname = os.path.join(self.n0dir, f"RDN0x_rot_{fsky_tag}_{idx:04d}_navg{navg}.pkl")
+        if which == 'stat':
+            index_range = self.stat_index
+            label = 'stat'
+        elif which == 'vary':
+            index_range = self.vary_index
+            label = 'vary'
+        elif which == 'const':
+            index_range = self.const_index
+            label = 'const'
+        else:
+            raise ValueError("which must be 'stat', 'vary', or 'const'")
+        
+        assert idx in index_range, f"The requested idx {idx} is not in the {which} index range"
+            
+        # Simple increment with wrapping within the index_range bounds
+        idx1 = idx
+        min_idx = min(index_range)
+        max_idx = max(index_range)
+        # If at the end of range, wrap to beginning of range
+        if idx == max_idx:
+            idx2 = min_idx
+        else:
+            idx2 = idx + 1
+        
+        if debug:
+            print(f"N0_sim debug mode:")
+            print(f"  which: {which}")
+            print(f"  index_range: [{min_idx}, {max_idx}]")
+            print(f"  idx1 (E1B1): {idx1}")
+            print(f"  idx2 (E2B2): {idx2}")
+            return None
+            
+        # choose (a,b) as consecutive sims, like your lensing codeims[0],self.stat_sims[1]), (0,1), mode="wrap")
+        # pad/wrap to avoid idx+1 overflo
+        a = idx1
+        b = idx2
+
+        fname = os.path.join(self.n0dir, f"N0_{label}_{self.filter.fsky:.2f}_{idx:04d}.pkl")
         if os.path.isfile(fname):
             return pl.load(open(fname, "rb"))
 
-        # Construct the sim index pool the same way you did:
-        # append a couple indices to allow i+1 access and delete all occurrences of idx
-        myidx = np.append(np.arange(self.sim_config.nsim), np.arange(2))
-        sel = np.where(myidx == idx)[0]
-        myidx = np.delete(myidx, sel)
+        # Build six recon alms for each split-pair:
+        # ab = Q(E_a, B_b), ba = Q(E_b, B_a)
+        # We can use your (d_idx, s_idx, s0_idx) interface with tags:
+        # tagE="s", tagB="s0"  -> E from s_idx, B from s0_idx
+        # tagE="s0", tagB="s"  -> E from s0_idx, B from s_idx
+        ab = self._build_six_sym(d_idx=0, s_idx=a, s0_idx=b, tagE="s",  tagB="s0")
+        ba = self._build_six_sym(d_idx=0, s_idx=a, s0_idx=b, tagE="s0", tagB="s")
+
+        # Cross-only operator already divides by fsky internally.
+        n0 = self._cl_cross_only_between(ab, ab) + self._cl_cross_only_between(ab, ba)
+
+        pl.dump(n0, open(fname, "wb"))
+        return n0
+    
+    def MCN0(self, which='vary'):
+        fname = os.path.join(self.basedir, f'MCN0_{which}_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            return pl.load(open(fname,'rb'))
+        else:
+            if which == 'stat':
+                index = self.stat_index
+            elif which == 'vary':
+                index = self.vary_index
+            elif which == 'const':
+                index = self.const_index
+            else:
+                raise ValueError("which must be 'stat', 'vary', or 'const'")
+            
+            n0_list = []
+            for idx in tqdm(index, desc=f'Computing MCN0 ({which})'):
+                n0_list.append(self.N0_sim(idx, which=which))
+            
+            mcn0 = np.array(n0_list).mean(axis=0)
+            pl.dump(mcn0, open(fname,'wb'))
+            return mcn0
+    
+    def RDN0(self, idx: int, navg: int = 100):
+        """
+        Realization-dependent N0 (RDN0) compatible with qcl_cross_only() (symmetric estimator).
+
+        Uses the same Eq.(43)-style structure:
+        RDN0 = Cx(ds,ds) + Cx(ds,sd) + Cx(sd,ds) + Cx(sd,sd) - Cx(ss0,ss0) - Cx(ss0,s0s)
+        where Cx is the cross-only spectrum operator (12×34+13×24+14×23)/3.
+
+        Returns: array C_L[0..recon_lmax]
+        """
+        fsky_tag = f"{self.filter.fsky:.2f}".replace('.', 'p')
+        fname = os.path.join(self.n0dir, f"RDN0x_{fsky_tag}_{idx:04d}_navg{navg}.pkl")
+        if os.path.isfile(fname):
+            return pl.load(open(fname, "rb"))
+
+        # pool of sim indices excluding idx
+        myidx = np.append(np.arange(100), np.arange(2))
+        myidx = np.delete(myidx, np.where(myidx == idx)[0])
 
         d_idx = idx
         acc = np.zeros(self.recon_lmax + 1, dtype=np.float64)
         nused = 0
 
-        for i in tqdm(range(navg), desc=f"RDN0x(rot) for sim {idx}", unit="mc"):
+        for i in tqdm(range(navg), desc=f"RDN0x for sim {idx}", unit="mc"):
             s_idx  = int(myidx[i])
             s0_idx = int(myidx[i+1])
 
-            # Build the mixed estimators in Eq. (43):
-            ds  = self._build_six_rot(d_idx, s_idx, s0_idx, tagE="d",  tagB="s")
-            sd  = self._build_six_rot(d_idx, s_idx, s0_idx, tagE="s",  tagB="d")
-            ss0 = self._build_six_rot(d_idx, s_idx, s0_idx, tagE="s",  tagB="s0")
-            s0s = self._build_six_rot(d_idx, s_idx, s0_idx, tagE="s0", tagB="s")
+            # Build the needed recon sets
+            ds  = self._build_six_sym(d_idx, s_idx, s0_idx, tagE="d",  tagB="s")
+            sd  = self._build_six_sym(d_idx, s_idx, s0_idx, tagE="s",  tagB="d")
+            ss0 = self._build_six_sym(d_idx, s_idx, s0_idx, tagE="s",  tagB="s0")
+            s0s = self._build_six_sym(d_idx, s_idx, s0_idx, tagE="s0", tagB="s")
 
-            # Eq. (43) combination (all spectra are cross-only C^×):
             cl_ds_ds   = self._cl_cross_only_between(ds,  ds)
             cl_ds_sd   = self._cl_cross_only_between(ds,  sd)
             cl_sd_ds   = self._cl_cross_only_between(sd,  ds)
@@ -1200,12 +1381,16 @@ class CrossQE:
         rdn0 = acc / max(nused, 1)
         pl.dump(rdn0, open(fname, "wb"))
         return rdn0
-
-    def RDN0_crossonly_rot_mpi(self, idx: int, navg: int = 100):
+    
+    def RDN0_mpi(self, idx: int, navg: int = 100):
         """
-        MPI-parallel cross-only RDN0 for rotation EB, implementing Eq. (43) with 4 splits. 
+        MPI-parallel cross-only RDN0 for SYM estimator (compatible with qcl_cross_only()).
 
-        Parallelizes the navg Monte-Carlo draws over (s, s0) pairs.
+        Implements the Eq.(43)-style combination (same algebra as your rot version),
+        but with SYM estimator:
+        RDN0 = Cx(ds,ds)+Cx(ds,sd)+Cx(sd,ds)+Cx(sd,sd) - Cx(ss0,ss0) - Cx(ss0,s0s)
+
+        Parallelizes navg Monte-Carlo draws over (s, s0) pairs.
         Only rank 0 reads/writes the cache.
         """
         MPI  = mpi.mpi
@@ -1214,7 +1399,7 @@ class CrossQE:
         size = mpi.size
 
         fsky_tag = f"{self.filter.fsky:.2f}".replace('.', 'p')
-        fname = os.path.join(self.n0dir, f"RDN0x_rot_{fsky_tag}_{idx:04d}_navg{navg}.pkl")
+        fname = os.path.join(self.n0dir, f"RDN0x_{fsky_tag}_{idx:04d}_navg{navg}.pkl")
 
         # 1) Try to load cached result on rank 0, then broadcast.
         rdn0 = None
@@ -1225,14 +1410,12 @@ class CrossQE:
         if rdn0 is not None:
             return rdn0
 
-        # 2) Build the deterministic index pool excluding idx (same trick you used before).
-        # Use sim_config.nsim as the global size (consistent with your class usage).
-        nsim = self.sim_config.nsim if hasattr(self, "sim_config") else self.filter.sky.cmb.sim_config.nsim
+        # 2) Build deterministic index pool excluding idx (same trick).
+        nsim = 100  # or self.sim_config.nsim if available and consistent
         myidx = np.append(np.arange(nsim), np.arange(2))
-        sel = np.where(myidx == idx)[0]
-        myidx = np.delete(myidx, sel)
+        myidx = np.delete(myidx, np.where(myidx == idx)[0])
 
-        # 3) Distribute the navg draws across ranks.
+        # 3) Distribute tasks.
         tasks = np.arange(navg, dtype=int)
         chunks = np.array_split(tasks, size)
         my_tasks = chunks[rank]
@@ -1240,20 +1423,18 @@ class CrossQE:
         L = self.recon_lmax + 1
         local_sum = np.zeros(L, dtype=np.float64)
 
-        # 4) One MC draw i -> choose (s, s0) and compute Eq. (43) combination.
+        # 4) One MC draw.
         def _one_draw(i: int):
             s_idx  = int(myidx[i % len(myidx)])
             s0_idx = int(myidx[(i + 1) % len(myidx)])
-
             d_idx = idx
 
-            # Build the mixed estimators (six-pack of split pairs) needed in Eq. (43):
-            ds  = self._build_six_rot(d_idx, s_idx, s0_idx, tagE="d",  tagB="s")
-            sd  = self._build_six_rot(d_idx, s_idx, s0_idx, tagE="s",  tagB="d")
-            ss0 = self._build_six_rot(d_idx, s_idx, s0_idx, tagE="s",  tagB="s0")
-            s0s = self._build_six_rot(d_idx, s_idx, s0_idx, tagE="s0", tagB="s")
+            # Build the mixed estimators needed in Eq.(43)
+            ds  = self._build_six_sym(d_idx, s_idx, s0_idx, tagE="d",  tagB="s")
+            sd  = self._build_six_sym(d_idx, s_idx, s0_idx, tagE="s",  tagB="d")
+            ss0 = self._build_six_sym(d_idx, s_idx, s0_idx, tagE="s",  tagB="s0")
+            s0s = self._build_six_sym(d_idx, s_idx, s0_idx, tagE="s0", tagB="s")
 
-            # Eq. (43): 4 data-sim terms - 2 pure-sim terms, all with cross-only C^×
             cl_ds_ds   = self._cl_cross_only_between(ds,  ds)
             cl_ds_sd   = self._cl_cross_only_between(ds,  sd)
             cl_sd_ds   = self._cl_cross_only_between(sd,  ds)
@@ -1264,86 +1445,37 @@ class CrossQE:
             return (cl_ds_ds + cl_ds_sd + cl_sd_ds + cl_sd_sd
                     - cl_ss0_ss0 - cl_ss0_s0s)
 
-        # 5) Local accumulation (progress bar only on rank 0).
-        iterator = tqdm(my_tasks, desc=f'RDN0x(rot) rank {rank} for sim {idx}', unit='mc') if rank == 0 else my_tasks
+        # 5) Local accumulation (progress only on rank 0).
+        iterator = tqdm(my_tasks, desc=f'RDN0x(sym) rank {rank} for sim {idx}', unit='mc') if rank == 0 else my_tasks
         for t in iterator:
             local_sum += _one_draw(int(t))
 
-        # 6) Reduce sum to rank 0, then average by navg.
+        # 6) Reduce to rank 0 and normalize by navg.
         global_sum = np.zeros_like(local_sum)
         comm.Reduce(local_sum, global_sum, op=MPI.SUM, root=0)
 
         if rank == 0:
-            rdn0 = global_sum / float(len(tasks))  # divide by navg
+            rdn0 = global_sum / float(len(tasks))
             os.makedirs(self.n0dir, exist_ok=True)
             with open(fname, "wb") as f:
                 pl.dump(rdn0, f)
 
-        # 7) Broadcast result to all ranks.
+        # 7) Broadcast to all ranks.
         rdn0 = comm.bcast(rdn0, root=0)
         return rdn0
 
-class AcbLikelihood:
-
-    def __init__(self, qelib: QE, lmin=2,lmax=50,rdn0=False,simple_chi=False):
-        self.qe = qelib
-        self.lmax = lmax
-        n0 = 'rdn0' if rdn0 else None
-        qcl = self.qe.qcl_stat(n0=n0)*1e7
-        self.binner = self.qe.binner
-        self.b = self.qe.b
-        self.sel = np.where((self.b >= lmin) & (self.b <= lmax))[0]
-        self.mean = qcl.mean(axis=0)[self.sel]
-        self.cov = np.cov(qcl.T)[self.sel][:,self.sel]
-        self.std = qcl.std(axis=0)[self.sel]
-        self.icov = np.linalg.inv(self.cov)
-        self.simple_chi = simple_chi
-
-    def theory(self, Acb):
-        l = np.arange(self.qe.lmax_bin+1)
-        cl =  Acb * 2 * np.pi / ( l**2 + l + 1e-30)*1e7
-        cl[0], cl[1] = 0, 0
-        return self.binner.bin_cell(cl)[self.sel]
-    
-    def plot(self,Acb):
-        plt.figure(figsize=(6,6))
-        plt.errorbar(self.b[self.sel], self.mean, yerr=self.std[self.sel], fmt='o')
-        plt.loglog(self.b[self.sel], self.theory(Acb), label='Theory')
-        plt.xlabel(r'$l$')
-        plt.ylabel(r'$C_l^{\mathrm{BB}}$')
-        plt.title(r'$C_l^{\mathrm{BB}}$ vs $l$')
-        plt.grid()
-        plt.legend()
-        plt.show()
-
-    def ln_prior(self, Acb):
-        if 0 < Acb < 1e-5:
-            return 0.0
+    def RDN0_stat(self):
+        """
+        RDN0 for all stat_index simulations
+        """
+        fname = os.path.join(self.basedir, f'RDN0_stat_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            return pl.load(open(fname,'rb'))
         else:
-            return -np.inf
-        
-    def ln_likelihood(self, Acb):
-        theory = self.theory(Acb)
-        delta = theory - self.mean
-        if self.simple_chi:
-            chisq = (delta/self.std)**2
-            return -0.5 * chisq.sum()
-        else:
-            return -0.5 * (delta @ self.icov @ delta)
+            rdn0_list = []
+            for i in tqdm(range(100), desc='Computing RDN0 statistics'):
+                rdn0_list.append(self.RDN0(i))
+            rdn0_array = np.array(rdn0_list).mean(axis=0)
+            pl.dump(rdn0_array, open(fname,'wb'))
+            return rdn0_array
 
-    def ln_posterior(self, Acb):
-        lp = self.ln_prior(Acb)
-        if not np.isfinite(lp):
-            return -np.inf
-        return lp + self.ln_likelihood(Acb)
-    
-    def sampler(self,nwalkers=32,nsamples=1000):
-        pos = np.array([3.5e-6]) * np.random.randn(nwalkers, 1)
-        sampler = emcee.EnsembleSampler(nwalkers, 1, self.ln_posterior)
-        sampler.run_mcmc(pos, nsamples, progress=True)
-        return sampler
-
-    def samples(self, nwalkers=100, nsamples=2000, discard=300):
-        sampler = self.sampler(nwalkers=nwalkers, nsamples=nsamples)
-        flat_samples = sampler.get_chain(discard=discard, thin=15, flat=True)
-        return flat_samples
