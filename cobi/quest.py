@@ -277,98 +277,7 @@ class FilterEB:
         plt.legend()
 
 
-class QEBase:
-    def __init__(self, filter: FilterEB, lmin: int, lmax: int, recon_lmax: int, nsims_mf=100, nlb=10, lmax_bin=1024):
-        self.filter = filter
-        self.sim_config = filter.sky.cmb.sim_config
-        self.lmin = lmin
-        self.lmax = lmax
-        self.recon_lmax = recon_lmax
-        self.cl_len = filter.cl_len
-        self.nsims_mf = nsims_mf
-        self.lmax_bin = lmax_bin
-        self.binner = nmt.NmtBin.from_lmax_linear(lmax_bin, nlb)
-        self.b = self.binner.get_effective_ells()
-        self.nlb = nlb
-
-        # sim_config is required
-        if self.sim_config is None:
-            raise ValueError("sim_config must be set in CMB initialization. QE requires sim_config to define simulation ranges.")
-
-        set1 = self.sim_config['set1']
-        reuse_last = self.sim_config['reuse_last']
-
-        # Statistics simulations: first (set1 - nsims_mf)
-        self.stat_index = np.arange(0, set1 - nsims_mf)
-
-        # Mean field simulations: last nsims_mf from set1
-        self.mf_index = np.arange(set1 - nsims_mf, set1)
-
-        # Varying alpha range: last reuse_last from set1
-        self.vary_index = np.arange(set1 - reuse_last, set1)
-
-        # Constant alpha range: set1 to set1+reuse_last
-        self.const_index = np.arange(set1, set1 + reuse_last)
-
-        # Null alpha range: set1+reuse_last to set1+2*reuse_last
-        self.null_index = np.arange(set1 + reuse_last, set1 + 2 * reuse_last)
-
-    @property
-    def cl_aa(self):
-        return self.filter.sky.cmb.cl_aa()[:self.recon_lmax+1]
-
-    def MCN0(self, which='vary'):
-        """
-        Monte Carlo average of N0_sim over specified index range
-
-        which: str : 'stat', 'vary', or 'const' to select which index range to use
-                     'stat' uses stat_index
-                     'vary' uses vary_index
-                     'const' uses const_index
-
-        Requires sim_config to be set, or manually set the corresponding index arrays.
-        Note: vary_index overlaps with mf_index only when nsims_mf equals reuse_last.
-        """
-        fname = os.path.join(self.basedir, f'MCN0_{which}_fsky{self.filter.fsky:.2f}.pkl')
-        if os.path.isfile(fname):
-            return pl.load(open(fname,'rb'))
-        else:
-            if which == 'stat':
-                index = self.stat_index
-            elif which == 'vary':
-                index = self.vary_index
-            elif which == 'const':
-                index = self.const_index
-            else:
-                raise ValueError("which must be 'stat', 'vary', or 'const'")
-
-            n0_list = []
-            for idx in tqdm(index, desc=f'Computing MCN0 ({which})'):
-                n0_list.append(self.N0_sim(idx, which=which))
-
-            mcn0 = np.array(n0_list).mean(axis=0)
-            pl.dump(mcn0, open(fname,'wb'))
-            return mcn0
-
-    def N1(self,binned=False):
-        """
-        N1 bias: difference between MCN0 for constant and varying alpha
-        N1 = MCN0('const') - MCN0('vary')
-        """
-        fname = os.path.join(self.basedir, f'N1_fsky{self.filter.fsky:.2f}.pkl')
-        if os.path.isfile(fname):
-            n1 = pl.load(open(fname,'rb'))
-        else:
-            n1 = self.MCN0('const') - self.MCN0('vary')
-            pl.dump(n1, open(fname,'wb'))
-        if binned:
-            bn1 = self.binner.bin_cell(n1[:self.lmax_bin+1])
-            return bn1
-        else:
-            return n1
-
-
-class QE(QEBase):
+class QE:
     def __init__(self, filter: FilterEB, lmin: int, lmax: int, recon_lmax: int, nsims_mf=100, nlb=10, lmax_bin=1024):
         self.basedir = os.path.join(filter.sky.libdir, 'qe')
         self.recdir = os.path.join(self.basedir, f'reco_min{lmin}_max{lmax}_rmax{recon_lmax}')
@@ -378,9 +287,42 @@ class QE(QEBase):
             os.makedirs(self.recdir, exist_ok=True)
             os.makedirs(self.rdn0dir, exist_ok=True)
 
-        super().__init__(filter, lmin, lmax, recon_lmax, nsims_mf=nsims_mf, nlb=nlb, lmax_bin=lmax_bin)
-
+        self.filter = filter
+        self.sim_config = filter.sky.cmb.sim_config
+        self.lmin = lmin
+        self.lmax = lmax
+        self.recon_lmax = recon_lmax
+        self.cl_len = filter.cl_len
+        self.nsims_mf = nsims_mf
+        
+        # sim_config is required
+        if self.sim_config is None:
+            raise ValueError("sim_config must be set in CMB initialization. QE requires sim_config to define simulation ranges.")
+        
+        
+        set1 = self.sim_config['set1']
+        reuse_last = self.sim_config['reuse_last']
+        
+        # Statistics simulations: first (set1 - nsims_mf)
+        self.stat_index = np.arange(0, set1 - nsims_mf)
+        
+        # Mean field simulations: last nsims_mf from set1
+        self.mf_index = np.arange(set1 - nsims_mf, set1)
+        
+        # Varying alpha range: last reuse_last from set1
+        self.vary_index = np.arange(set1 - reuse_last, set1)
+        
+        # Constant alpha range: set1 to set1+reuse_last
+        self.const_index = np.arange(set1, set1 + reuse_last)
+        
+        # Null alpha range: set1+reuse_last to set1+2*reuse_last
+        self.null_index = np.arange(set1 + reuse_last, set1 + 2 * reuse_last)
+        
         self.norm = self.__norm__
+        self.lmax_bin = lmax_bin
+        self.binner = nmt.NmtBin.from_lmax_linear(lmax_bin,nlb)
+        self.b = self.binner.get_effective_ells()
+        self.nlb = nlb
 
     @property
     def __norm__(self):
@@ -411,7 +353,11 @@ class QE(QEBase):
             ocl_len[2,:self.lmax+1] += nb
             pl.dump(ocl_len, open(fname,'wb'))
         return ocl_len
-
+    
+    @property
+    def cl_aa(self):
+        return self.filter.sky.cmb.cl_aa()[:self.recon_lmax+1]
+    
     def qlm(self, idx):
         fname = os.path.join(self.recdir, f'qlm_fsky{self.filter.fsky:.2f}_{idx:04d}.pkl')
         if os.path.isfile(fname):
@@ -710,6 +656,56 @@ class QE(QEBase):
             pl.dump(n0cl,open(fname,'wb'))
             return n0cl
     
+    def MCN0(self, which='vary'):
+        """
+        Monte Carlo average of N0_sim over specified index range
+        
+        which: str : 'stat', 'vary', or 'const' to select which index range to use
+                     'stat' uses stat_index
+                     'vary' uses vary_index
+                     'const' uses const_index
+        
+        Requires sim_config to be set, or manually set the corresponding index arrays.
+        Note: vary_index overlaps with mf_index only when nsims_mf equals reuse_last.
+        """
+        fname = os.path.join(self.basedir, f'MCN0_{which}_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            return pl.load(open(fname,'rb'))
+        else:
+            if which == 'stat':
+                index = self.stat_index
+            elif which == 'vary':
+                index = self.vary_index
+            elif which == 'const':
+                index = self.const_index
+            else:
+                raise ValueError("which must be 'stat', 'vary', or 'const'")
+            
+            n0_list = []
+            for idx in tqdm(index, desc=f'Computing MCN0 ({which})'):
+                n0_list.append(self.N0_sim(idx, which=which))
+            
+            mcn0 = np.array(n0_list).mean(axis=0)
+            pl.dump(mcn0, open(fname,'wb'))
+            return mcn0
+    
+    def N1(self,binned=False):
+        """
+        N1 bias: difference between MCN0 for constant and varying alpha
+        N1 = MCN0('const') - MCN0('vary')
+        """
+        fname = os.path.join(self.basedir, f'N1_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            n1 = pl.load(open(fname,'rb'))
+        else:
+            n1 = self.MCN0('const') - self.MCN0('vary')
+            pl.dump(n1, open(fname,'wb'))
+        if binned:
+            bn1 = self.binner.bin_cell(n1[:self.lmax_bin+1])
+            return bn1
+        else:
+            return n1
+    
     def Nlens(self,MCN0=True,binned=False):
         """
         Lensing bias: average qcl on null_index minus MCN0('vary')
@@ -780,7 +776,7 @@ class QE(QEBase):
             return cl
         
 
-class CrossQE(QEBase):
+class CrossQE:
     def __init__(self, filter: FilterEB, lmin: int, lmax: int, recon_lmax: int,nsims_mf=100, nlb=10, lmax_bin=1024):
         assert filter.sky.nsplits == 4, "CrossQE requires 4 splits in the FilterEB sky object."
         self.basedir = os.path.join(filter.sky.libdir, 'qecross')
@@ -792,7 +788,45 @@ class CrossQE(QEBase):
             os.makedirs(self.recdir, exist_ok=True)
             os.makedirs(self.n0dir, exist_ok=True)
             os.makedirs(self.mdir, exist_ok=True)
-        super().__init__(filter, lmin, lmax, recon_lmax, nsims_mf=nsims_mf, nlb=nlb, lmax_bin=lmax_bin)
+        self.filter = filter
+        self.sim_config = filter.sky.cmb.sim_config
+        self.lmin = lmin
+        self.lmax = lmax
+        self.recon_lmax = recon_lmax
+        self.cl_len = filter.cl_len
+        
+        self.lmax_bin = lmax_bin
+
+
+        self.sim_config = filter.sky.cmb.sim_config
+
+        if self.sim_config is None:
+            raise ValueError("sim_config must be set in CMB initialization. QE requires sim_config to define simulation ranges.")
+        # Default simulation ranges
+        set1 = self.sim_config['set1']
+        reuse_last = self.sim_config['reuse_last']
+        
+        # Statistics simulations: first (set1 - nsims_mf)
+        self.stat_index = np.arange(0, set1 - nsims_mf)
+        
+        # Mean field simulations: last nsims_mf from set1
+        self.mf_index = np.arange(set1 - nsims_mf, set1)
+        
+        # Varying alpha range: last reuse_last from set1
+        self.vary_index = np.arange(set1 - reuse_last, set1)
+        
+        # Constant alpha range: set1 to set1+reuse_last
+        self.const_index = np.arange(set1, set1 + reuse_last)
+        
+        # Null alpha range: set1+reuse_last to set1+2*reuse_last
+        self.null_index = np.arange(set1 + reuse_last, set1 + 2 * reuse_last)
+        self.binner = nmt.NmtBin.from_lmax_linear(lmax_bin,nlb)
+        self.b = self.binner.get_effective_ells()
+        self.nlb = nlb
+
+    @property
+    def cl_aa(self):
+        return self.filter.sky.cmb.cl_aa()[:self.recon_lmax+1]
     
     def precompute_split_ocl(self, splits=(1,2,3,4)):
         """
@@ -1028,8 +1062,25 @@ class CrossQE(QEBase):
             return bnlen
         else:
             return nlens
+    
+    def N1(self,binned=False):
+        """
+        N1 bias: difference between MCN0 for constant and varying alpha
+        N1 = MCN0('const') - MCN0('vary')
+        """
+        fname = os.path.join(self.basedir, f'N1_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            n1 = pl.load(open(fname,'rb'))
+        else:
+            n1 = self.MCN0('const') - self.MCN0('vary')
+            pl.dump(n1, open(fname,'wb'))
+        if binned:
+            bn1 = self.binner.bin_cell(n1[:self.lmax_bin+1])
+            return bn1
+        else:
+            return n1  
          
-    def qcl_stat(self, n0=None, mf=False, nlens=False, binned=True):
+    def qcl_stat(self, n0=None, n1=False, mf=False, nlens=False, binned=False):
         """
         Compute statistics of qcl over stat_sims with various bias corrections.
         
@@ -1058,6 +1109,8 @@ class CrossQE(QEBase):
             st += '_n0rdn0'
         else:
             raise ValueError("n0 must be None, 'mcn0', or 'rdn0'")
+        if n1:
+            st += '_n1'
         if mf:
             st += '_mf'
         if nlens:
@@ -1078,6 +1131,8 @@ class CrossQE(QEBase):
                 # For cross-only, RDN0 should be computed per simulation
                 # This will be handled in the loop below
                 N0 = None
+            if n1:
+                N1 = self.N1(binned=False)
             
             if mf:
                 MF = self.mean_field_cl()
@@ -1090,7 +1145,7 @@ class CrossQE(QEBase):
                 NLENS = np.zeros(self.recon_lmax + 1)
             
             cl = []
-            for i in tqdm(range(self.stat_sims[0], self.stat_sims[1]), desc='Computing cross-only cl statistics', unit='sim'):
+            for i in tqdm(self.stat_index, desc='Computing cross-only cl statistics', unit='sim'):
                 qcl_i = self.qcl_cross_only(i, splits=(1,2,3,4))
                 
                 # Apply RDN0 correction if requested
@@ -1259,6 +1314,28 @@ class CrossQE(QEBase):
         pl.dump(n0, open(fname, "wb"))
         return n0
     
+    def MCN0(self, which='vary'):
+        fname = os.path.join(self.basedir, f'MCN0_{which}_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            return pl.load(open(fname,'rb'))
+        else:
+            if which == 'stat':
+                index = self.stat_index
+            elif which == 'vary':
+                index = self.vary_index
+            elif which == 'const':
+                index = self.const_index
+            else:
+                raise ValueError("which must be 'stat', 'vary', or 'const'")
+            
+            n0_list = []
+            for idx in tqdm(index, desc=f'Computing MCN0 ({which})'):
+                n0_list.append(self.N0_sim(idx, which=which))
+            
+            mcn0 = np.array(n0_list).mean(axis=0)
+            pl.dump(mcn0, open(fname,'wb'))
+            return mcn0
+    
     def RDN0(self, idx: int, navg: int = 100):
         """
         Realization-dependent N0 (RDN0) compatible with qcl_cross_only() (symmetric estimator).
@@ -1391,17 +1468,26 @@ class CrossQE(QEBase):
         rdn0 = comm.bcast(rdn0, root=0)
         return rdn0
 
-    def RDN0_stat(self):
+    def RDN0_stat(self,array=False):
         """
         RDN0 for all stat_index simulations
         """
-        fname = os.path.join(self.basedir, f'RDN0_stat_fsky{self.filter.fsky:.2f}.pkl')
+        if array:
+            fname = os.path.join(self.basedir, f'RDN0_stat_fsky{self.filter.fsky:.2f}_array{len(self.stat_index)}.pkl')
+        else:
+            fname = os.path.join(self.basedir, f'RDN0_stat_fsky{self.filter.fsky:.2f}.pkl')
         if os.path.isfile(fname):
             return pl.load(open(fname,'rb'))
         else:
             rdn0_list = []
-            for i in tqdm(range(100), desc='Computing RDN0 statistics'):
+            for i in tqdm(self.stat_index, desc='Computing RDN0 statistics'):
                 rdn0_list.append(self.RDN0(i))
-            rdn0_array = np.array(rdn0_list).mean(axis=0)
-            pl.dump(rdn0_array, open(fname,'wb'))
-            return rdn0_array
+            if array:
+                rdn0_array = np.array(rdn0_list)
+                pl.dump(rdn0_array, open(fname,'wb'))
+                return rdn0_array
+            else:
+                rdn0_array = np.array(rdn0_list).mean(axis=0)
+                pl.dump(rdn0_array, open(fname,'wb'))
+                return rdn0_array
+
