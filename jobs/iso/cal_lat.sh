@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --qos=debug
 #SBATCH --constraint=cpu
-#SBATCH --account=mp107b
+#SBATCH --account=mp107d
 #SBATCH --nodes=2
 #SBATCH --ntasks=50
 ##SBATCH --cpus-per-task=4

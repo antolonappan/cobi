@@ -319,13 +319,8 @@ class SkySimulation:
         self.gal_cut = gal_cut
         self.mask, self.fsky = self.__set_mask_fsky__(libdir)
         self.noise_model = noise_model
-        self.ext_sims = False
-        if noise_model == "TOD":
-            if nsplits <= 2:
-                self.logger.log("For TOD noise model, nsplits <= 2 allows extending simualtions. Setting ext_sims = True")
-                self.ext_sims = True
-        
-        self.noise = Noise(nside, self.fsky, self.__class__.__name__[:3], noise_model, atm_noise, nsplits, aso, sim_config=sim_config, ext_sims=self.ext_sims, verbose=self.verbose)
+        self.noise = Noise(nside, self.fsky, self.__class__.__name__[:3], noise_model, atm_noise, nsplits, aso, verbose=self.verbose)
+        self.aso = aso
         self.config = {}
         for split in range(nsplits):
             for band in range(len(self.freqs)):

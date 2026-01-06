@@ -291,7 +291,7 @@ class BaseSat4LatCross(ABC):
 
         if fname is None:
             fname = os.path.join(self.libdir,
-                f"samples_cross_{nwalkers}_{nsamples}_fitper_{self.fit_per_split}_ndim_{len(self.__pnames__)}_lmin{self.lat_lrange[0]}_lmax{self.lat_lrange[1]}.pkl"
+                f"samples_cross_{nwalkers}_{nsamples}_fitper_{self.fit_per_split}_ndim_{len(self.__pnames__)}_lmin{self.lat_lrange[0]}_lmax{self.lat_lrange[1]}_slmin{self.sat_lrange[0]}_slmax{self.sat_lrange[1]}.pkl"
                 )
         if os.path.exists(fname) and not rerun:
             self.logger.log(f"Loading cached samples: {fname}", level="info")
@@ -342,6 +342,26 @@ class BaseSat4LatCross(ABC):
         """
         import matplotlib.pyplot as plt
         ells = self.binner.get_effective_ells()
+        
+        # Build ell masks based on sat_lrange and lat_lrange
+        n_bins = len(ells)
+        
+        # SAT ell mask
+        sat_ell_mask = np.ones(n_bins, dtype=bool)
+        if self.sat_lrange[0] is not None:
+            sat_ell_mask &= (ells >= self.sat_lrange[0])
+        if self.sat_lrange[1] is not None:
+            sat_ell_mask &= (ells <= self.sat_lrange[1])
+        
+        # LAT ell mask
+        lat_ell_mask = np.ones(n_bins, dtype=bool)
+        if self.lat_lrange[0] is not None:
+            lat_ell_mask &= (ells >= self.lat_lrange[0])
+        if self.lat_lrange[1] is not None:
+            lat_ell_mask &= (ells <= self.lat_lrange[1])
+        
+        # Cross-correlation mask (intersection)
+        cross_ell_mask = sat_ell_mask & lat_ell_mask
 
         # ----------------------------------------------------------
         # Optionally average over splits for display only
@@ -417,22 +437,41 @@ class BaseSat4LatCross(ABC):
                     ax.set_visible(False)
                     continue
 
+                # Determine which ell mask to use for this subplot
+                is_i_sat = maptags[i].startswith('SAT')
+                is_j_sat = maptags[j].startswith('SAT')
+                
+                if is_i_sat and is_j_sat:
+                    # SAT-SAT correlation: use SAT range
+                    subplot_mask = sat_ell_mask
+                elif not is_i_sat and not is_j_sat:
+                    # LAT-LAT correlation: use LAT range
+                    subplot_mask = lat_ell_mask
+                else:
+                    # SAT-LAT cross-correlation: use intersection
+                    subplot_mask = cross_ell_mask
+                
+                # Filter data for this subplot
+                ells_plot = ells[subplot_mask]
+                data_plot = data_spec[i, j, subplot_mask]
+                error_plot = error_spec[i, j, subplot_mask]
+                
                 # Plot data ±1σ
                 ax.errorbar(
-                    ells, data_spec[i, j], yerr=error_spec[i, j],
+                    ells_plot, data_plot, yerr=error_plot,
                     fmt='.', capsize=2, color='black', markersize=4, alpha=0.5,
                 )
 
-                # Overlay theory if provided
+                # Overlay theory if provided (plot over full range)
                 if theory_spec is not None:
                     ax.loglog(ells, theory_spec[i, j], color='red')
 
                 # Shade region used in likelihood
                 if average_split:
-                    mask_1d = self.__likelihood_mask__[0, 0, :]
+                    mask_1d = self.__likelihood_mask__[0, 0, :][subplot_mask]
                 else:
-                    mask_1d = self.__likelihood_mask__[i, j, :]
-                used_ells = ells[mask_1d]
+                    mask_1d = self.__likelihood_mask__[i, j, :][subplot_mask]
+                used_ells = ells_plot[mask_1d]
                 # if len(used_ells) > 0:
                 #     ax.axvspan(used_ells.min(), used_ells.max(), color='green', alpha=0.1, zorder=-1)
 
@@ -450,12 +489,12 @@ class BaseSat4LatCross(ABC):
                 if j == 0:
                     ax.set_ylabel(r'$C_\ell^{EB}$')
                 if i == 0:
-                    ax.set_title(maptags[j].replace('_', ' '), fontsize=10)
+                    ax.set_title(f"$\\rm {maptags[j].replace('_', '-')}$", fontsize=10)
 
         # Right-side frequency labels
         for i, tag in enumerate(maptags):
             axes[i, n_tags - 1].text(
-                1.05, 0.5, tag.replace('_', ' '),
+                1.05, 0.5, f"$\\rm {tag.replace('_', '-')}$",
                 transform=axes[i, n_tags - 1].transAxes,
                 va='center', ha='left', fontsize=10
             )

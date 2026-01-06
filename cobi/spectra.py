@@ -126,16 +126,24 @@ class Spectra:
             fld_ext = ""
         self.__fld_ext__ = fld_ext
         
-
-        deconv = self.lat.deconv_maps
-        libdiri    = os.path.join(libdir, f"spectra_{self.nside}{'_d' if deconv else ''}_aposcale{str(aposcale).replace('.','p')}{'_pureB' if pureB else ''}" + fld_ext)
-        comdir     = os.path.join(common_dir, f"spectra_{self.nside}{'_d' if deconv else ''}_aposcale{str(aposcale).replace('.','p')}{'_pureB' if pureB else ''}" + fld_ext)
-        self.__set_dir__(libdiri, comdir)
-        
         if lmax > 0:
             self.lmax = lmax
         else:
             self.lmax     = min(2000,3 * self.lat.nside - 1)
+
+        deconv = self.lat.deconv_maps
+
+        if self.lmax == 2000:
+            self.logger.log(f"Setting lmax to 2000",'info')
+            libdiri    = os.path.join(libdir, f"spectra_{self.nside}{'_d' if deconv else ''}_aposcale{str(aposcale).replace('.','p')}{'_pureB' if pureB else ''}" + fld_ext)
+            comdir     = os.path.join(common_dir, f"spectra_{self.nside}{'_d' if deconv else ''}_aposcale{str(aposcale).replace('.','p')}{'_pureB' if pureB else ''}" + fld_ext)
+        else:
+            self.logger.log(f"Setting lmax to {self.lmax}",'info')
+            libdiri    = os.path.join(libdir, f"spectra_N{self.nside}_lmax{self.lmax}{'_d' if deconv else ''}_aposcale{str(aposcale).replace('.','p')}{'_pureB' if pureB else ''}" + fld_ext)
+            comdir     = os.path.join(common_dir, f"spectra_N{self.nside}_lmax{self.lmax}{'_d' if deconv else ''}_aposcale{str(aposcale).replace('.','p')}{'_pureB' if pureB else ''}" + fld_ext)
+        self.__set_dir__(libdiri, comdir)
+        
+
         
         self.temp_bp  = template_bandpass
 
@@ -1358,8 +1366,12 @@ class SpectraCross:
         self.__create_maptags__()
         laerr = lat.alpha_err
         saerr = sat.alpha_err if not self.lat_only else 0.0
-
-        suffix = f"LatOnly_laerr{str(laerr).replace('.','p')}" if self.lat_only else f"laerr{str(laerr).replace('.','p')}_saerr{str(saerr).replace('.','p')}"
+        
+        if self.lat.aso:
+            aso_suffix = '_aso'
+        else:
+            aso_suffix = '' 
+        suffix = f"LatOnly_laerr{str(laerr).replace('.','p')}{aso_suffix}" if self.lat_only else f"laerr{str(laerr).replace('.','p')}_saerr{str(saerr).replace('.','p')}{aso_suffix}"
         self.libdir = os.path.join(libdir,f"SpectraCross_s{str(lat.cmb.beta).replace('.','p')}_n{self.nside}_b{self.binwidth}_g{self.galcut}_a{str(self.aposcale).replace('.','p')}_l{self.lmax}_{suffix}")
         self.specdir = os.path.join(self.libdir,'spectra')
         os.makedirs(self.libdir, exist_ok=True)
