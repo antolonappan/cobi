@@ -1,0 +1,3 @@
+[submodule "examples/Papers"]
+	path = examples/Papers
+	url = https://github.com/antolonappan/cobi-results.git
