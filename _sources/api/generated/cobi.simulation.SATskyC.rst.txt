@@ -1,0 +1,38 @@
+﻿cobi.simulation.SATskyC
+=======================
+
+.. currentmodule:: cobi.simulation
+
+.. autoclass:: SATskyC
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SATskyC.HILC_obsEB
+      ~SATskyC.SaveObsQUs
+      ~SATskyC.__init__
+      ~SATskyC.checkObsQU
+      ~SATskyC.get_alpha
+      ~SATskyC.obsQU
+      ~SATskyC.obsQUfname
+      ~SATskyC.obsQUwAlpha
+      ~SATskyC.signalOnlyQU
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SATskyC.freqs
+      ~SATskyC.fwhm
+      ~SATskyC.tube
+   
+   

@@ -1,0 +1,48 @@
+﻿cobi.simulation.CMB
+===================
+
+.. currentmodule:: cobi.simulation
+
+.. autoclass:: CMB
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~CMB.__init__
+      ~CMB.alpha_alm
+      ~CMB.alpha_map
+      ~CMB.cl_aa
+      ~CMB.cl_pp
+      ~CMB.compute_powers
+      ~CMB.get_aniso_gauss_lensed_QU
+      ~CMB.get_aniso_model_cb_lensed_QU
+      ~CMB.get_aniso_real_lensed_QU
+      ~CMB.get_cb_lensed_QU
+      ~CMB.get_cb_lensed_mass_spectra
+      ~CMB.get_cb_lensed_spectra
+      ~CMB.get_cb_unlensed_mass_spectra
+      ~CMB.get_cb_unlensed_spectra
+      ~CMB.get_iso_const_cb_gaussian_lensed_QU
+      ~CMB.get_iso_const_cb_real_lensed_QU
+      ~CMB.get_iso_model_cb_gaussian_lensed_QU
+      ~CMB.get_iso_model_cb_lensed_QU
+      ~CMB.get_iso_model_cb_real_lensed_QU
+      ~CMB.get_iso_td_cb_gaussian_lensed_QU
+      ~CMB.get_iso_td_cb_real_lensed_QU
+      ~CMB.get_lensed_spectra
+      ~CMB.get_power
+      ~CMB.get_unlensed_spectra
+      ~CMB.grad_phi_alm
+      ~CMB.phi_alm
+      ~CMB.scale_invariant
+   
+   
+
+   
+   
+   
