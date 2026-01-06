@@ -76,7 +76,7 @@ import os
 import pickle as pl
 from tqdm import tqdm
 from cobi import mpi
-from typing import Union, List, Optional
+from typing import Dict, Union, List, Optional
 
 from cobi.simulation import CMB, Foreground, Mask, Noise
 from cobi.utils import Logger, inrad
@@ -131,13 +131,10 @@ class SkySimulation:
         - array: per-frequency angles (must match len(freqs))
     alpha_err : float, default=0.0
         Gaussian uncertainty on miscalibration angle (degrees).
-    miscal_samples : int, optional
-        Number of miscalibration angle realizations.
-        Default: max index from Acb_sim_config or 300.
-    Acb_sim_config : dict, optional
-        Anisotropic birefringence simulation batch configuration.
-        Keys: 'alpha_vary_index', 'alpha_cons_index', 'null_alpha_index'
-        Values: [start, end] index ranges.
+    sim_config : dict, optional
+        Simulation seed management configuration.
+        Keys: 'set1' (int), 'reuse_last' (int)
+        Controls efficient seed reuse for CMB/Noise across different alpha modes.
     noise_model : {'NC', 'TOD'}, default='NC'
         Noise simulation type (curves vs. time-ordered data).
     atm_noise : bool, default=True
@@ -233,7 +230,7 @@ class SkySimulation:
     -----
     - Automatically manages caching and directory structure
     - MPI-aware for parallel processing
-    - Supports batch processing with Acb_sim_config
+    - Supports batch processing with sim_config
     - ILC uses harmonic-space cleaning
     - All outputs in μK_CMB units
     """
@@ -254,8 +251,7 @@ class SkySimulation:
         bandpass: bool = True,
         alpha: Union[float,List[float]] = 0.0,
         alpha_err: float = 0.0,
-        miscal_samples: Optional[int] = None,
-        Acb_sim_config: Optional[dict] = None,
+        sim_config: Optional[dict] = None,
         noise_model: str = "NC",
         aso: bool = False,
         atm_noise: bool = True,
@@ -274,20 +270,6 @@ class SkySimulation:
         """
         self.logger = Logger(self.__class__.__name__, verbose)
         self.verbose = verbose
-
-        # Determine miscal_samples default based on Acb_sim_config
-        if miscal_samples is None:
-            if Acb_sim_config is not None:
-                # Find the maximum index across all configured ranges
-                max_idx = 0
-                for key, (start, end) in Acb_sim_config.items():
-                    max_idx = max(max_idx, end)
-                miscal_samples = max_idx
-            else:
-                # Default value when no Acb_sim_config is provided
-                miscal_samples = 300
-        
-        self.miscal_samples = miscal_samples
 
         fldname = "_an" if atm_noise else "_wn"
         fldname += "_bp" if bandpass else ""
@@ -326,7 +308,7 @@ class SkySimulation:
         self.Acb = Acb
         self.cb_method = cb_model
         self.beta = beta
-        self.cmb = CMB(libdir, nside, cb_model, beta, mass, Acb, lensing, Acb_sim_config, verbose=self.verbose)
+        self.cmb = CMB(libdir, nside, cb_model, beta, mass, Acb, lensing, sim_config, verbose=self.verbose)
         self.foreground = Foreground(libdir, nside, dust_model, sync_model, bandpass, verbose=False)
         self.dust_model = dust_model
         self.sync_model = sync_model
@@ -363,7 +345,6 @@ class SkySimulation:
         self.bandpass = bandpass
         self.hilc_bins = hilc_bins
         self.deconv_maps = deconv_maps
-        self.__set_alpha__()
         if sht_backend in ["ducc0", "ducc", "d"]:
             self.hp = sht.HealpixDUCC(nside=self.nside)
             self.healpy = False
@@ -382,34 +363,36 @@ class SkySimulation:
         syncQU = self.foreground.syncQU(band)
         return cmbQU + dustQU + syncQU
     
-    def __gen_alpha_dict__(self, samples: int = 300):
-        fname = os.path.join(self.libdir, 'alpha_dict.pkl')
-        if os.path.isfile(fname):
-            self.alpha_dict = pl.load(open(fname, 'rb'))
-        else:
-            self.alpha_dict = {}
-            base_bands = set([band.split('-')[0] for band in self.config.keys()])
-            for base_band in base_bands:
-                band_1 = f"{base_band}-1"
-                alpha = self.config[band_1]["alpha"]
-                sample = np.random.normal(alpha, self.alpha_err, samples)
-                for split in range(1, self.nsplits + 1):
-                    band_key = f"{base_band}-{split}"
-                    self.alpha_dict[band_key] = sample
-            if mpi.rank == 0:
-                pl.dump(self.alpha_dict, open(fname, 'wb'))
-        
-
-    def __set_alpha__(self):
-        if self.alpha_err > 0:
-            self.__gen_alpha_dict__(samples=self.miscal_samples)
-        else:
-            self.alpha_dict = None
-    
     def get_alpha(self, idx: int, band: str):
+        """
+        Get alpha value for a given index and band.
+        
+        If alpha_err > 0, generates alpha values deterministically on-demand.
+        Same (band, idx) always returns the same alpha value due to deterministic seeding.
+        
+        Parameters
+        ----------
+        idx : int
+            Simulation index
+        band : str
+            Band identifier (e.g., '93-1', '145-2')
+        
+        Returns
+        -------
+        float
+            Alpha value in degrees
+        """
         if self.alpha_err > 0:
-            assert self.alpha_dict is not None, "Alpha dictionary not found. Run __gen_alpha_dict__ first."
-            return self.alpha_dict[band][idx]
+            # Generate value deterministically (MPI-safe: all ranks generate same value)
+            base_band = band.split('-')[0]
+            band_1 = f"{base_band}-1"
+            alpha_mean = self.config[band_1]["alpha"]
+            
+            # Use deterministic seed based on band and idx for reproducibility
+            np.random.seed(hash((base_band, idx)) % (2**32))
+            alpha_value = np.random.normal(alpha_mean, self.alpha_err)
+            
+            return alpha_value
         else:
             return self.config[band]["alpha"]
         
@@ -524,12 +507,47 @@ class SkySimulation:
             raise ValueError(f"Unknown check {what}. Please use 'filesize' or 'file'.")
 
     
-    def HILC_obsEB(self, idx: int, ret=None) -> np.ndarray:
-        fnameS = os.path.join(
+    def HILC_obsEB(self, idx: int, ret=None, split: int = 0, debug=False) -> np.ndarray:
+        # Validate split parameter
+        if split < 0 or split > self.nsplits:
+            raise ValueError(f"split must be between 0 and {self.nsplits}, got {split}")
+        
+        # For nsplits=1, split=0 and split=1 are equivalent
+        if self.nsplits == 1 and split == 1:
+            split = 0
+        
+        # Construct filename based on split and nsplits
+        if self.nsplits == 1:
+            # For nsplits=1, always use same filename regardless of split value
+            fnameS = os.path.join(
                 self.libdir,
                 f"obs/hilcEB_N{self.nside}_A{str(self.Acb).replace('.','p')}{'_bp' if self.bandpass else ''}_{idx:03d}.fits",
             )
+        elif split == 0:
+            # For nsplits>1 and split=0, use all splits (no split suffix)
+            fnameS = os.path.join(
+                self.libdir,
+                f"obs/hilcEB_N{self.nside}_A{str(self.Acb).replace('.','p')}{'_bp' if self.bandpass else ''}_{idx:03d}.fits",
+            )
+        else:
+            # For nsplits>1 and split>0, add split number to filename
+            fnameS = os.path.join(
+                self.libdir,
+                f"obs/hilcEB_N{self.nside}_A{str(self.Acb).replace('.','p')}{'_bp' if self.bandpass else ''}_s{split}_{idx:03d}.fits",
+            )
         fnameN = fnameS.replace('hilcEB','hilcNoise')
+        
+        # Debug: print bands and filename
+        if split == 0:
+            bands = list(self.config.keys())
+        else:
+            bands = [key for key in self.config.keys() if key.endswith(f'-{split}')]
+
+        if debug:
+            self.logger.log(f"HILC_obsEB: split={split}, nsplits={self.nsplits}, bands={bands}")
+            self.logger.log(f"HILC_obsEB: Output files: {fnameS}")
+            return
+        
         if os.path.isfile(fnameS) and os.path.isfile(fnameN):
             if ret is None:
                 return hp.read_alm(fnameS, hdu=[1, 2]), hp.read_cl(fnameN)
@@ -542,11 +560,11 @@ class SkySimulation:
         else:
             alms = []
             nalms = []
-            bands = list(self.config.keys())
+            
             i = 0
-            for band in tqdm(bands, desc="Computing HILC Observed QUs", unit="band"):
+            for band in tqdm(bands, desc=f"Computing HILC Observed QUs (split={split})", unit="band"):
                 fwhm = self.config[band]["fwhm"]
-                alpha = self.config[band]["alpha"]
+                alpha = self.get_alpha(idx, band)
                 noise = hp.ud_grade(self.noise.noiseQU_freq(idx, band),self.nside)*self.mask
                 QU = self.obsQUwAlpha(idx, band, fwhm, alpha, apply_tranf=False, return_alms=False)
                 if self.healpy:
@@ -605,8 +623,7 @@ class LATsky(SkySimulation):
         bandpass: bool = True,
         alpha: float = 0.0,
         alpha_err: float = 0.0,
-        miscal_samples: Optional[int] = None,
-        Acb_sim_config: Optional[dict] = None,
+        sim_config: Optional[dict] = None,
         noise_model: str = "NC",
         aso: bool = False,
         atm_noise: bool = True,
@@ -634,8 +651,7 @@ class LATsky(SkySimulation):
             bandpass = bandpass,
             alpha = alpha,
             alpha_err = alpha_err,
-            miscal_samples = miscal_samples,
-            Acb_sim_config = Acb_sim_config,
+            sim_config = sim_config,
             noise_model = noise_model,
             aso = aso,
             atm_noise = atm_noise,
@@ -668,7 +684,7 @@ class SATsky(SkySimulation):
         bandpass: bool = True,
         alpha: float = 0.0,
         alpha_err: float = 0.0,
-        miscal_samples: Optional[int] = None,
+        sim_config: Optional[dict] = None,
         noise_model: str = "NC",
         atm_noise: bool = True,
         nsplits: int = 2,
@@ -695,7 +711,7 @@ class SATsky(SkySimulation):
             bandpass = bandpass,
             alpha = alpha,
             alpha_err = alpha_err,
-            miscal_samples = miscal_samples,
+            sim_config = sim_config,
             noise_model = noise_model,
             atm_noise = atm_noise,
             nsplits = nsplits,
@@ -727,7 +743,7 @@ class LATskyC(SkySimulation):
         bandpass: bool = True,
         alpha: Optional[float|List[float]] = 0.0,
         alpha_err: float = 0.0,
-        miscal_samples: Optional[int] = None,
+        sim_config: Optional[dict] = None,
         noise_model: str = "NC",
         aso: bool = False,
         atm_noise: bool = True,
@@ -754,7 +770,7 @@ class LATskyC(SkySimulation):
             bandpass = bandpass,
             alpha = alpha,
             alpha_err = alpha_err,
-            miscal_samples = miscal_samples,
+            sim_config = sim_config,
             noise_model = noise_model,
             aso = aso,
             atm_noise = atm_noise,
@@ -786,7 +802,7 @@ class SATskyC(SkySimulation):
         bandpass: bool = True,
         alpha: float = 0.0,
         alpha_err: float = 0.0,
-        miscal_samples: Optional[int] = None,
+        sim_config: Optional[dict] = None,
         noise_model: str = "NC",
         atm_noise: bool = True,
         nsplits: int = 2,
@@ -812,7 +828,7 @@ class SATskyC(SkySimulation):
             bandpass = bandpass,
             alpha = alpha,
             alpha_err = alpha_err,
-            miscal_samples = miscal_samples,
+            sim_config = sim_config,
             noise_model = noise_model,
             atm_noise = atm_noise,
             nsplits = nsplits,

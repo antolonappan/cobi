@@ -23,6 +23,24 @@ QE
     Quadratic estimator class for cosmic birefringence reconstruction.
     Computes rotation angle power spectra with various bias correction
     methods (analytical N0, realization-dependent N0, mean field).
+    
+    Simulation Index Structure (sim_config is required):
+    
+    From sim_config={'set1': 400, 'reuse_last': 100} and nsims_mf=100:
+    - stat_index: 0-299 (set1 - nsims_mf) - Statistics and OCL computation
+    - mf_index: 300-399 (last nsims_mf from set1) - Mean field simulations
+    - vary_index: 300-399 (last reuse_last from set1) - Varying alpha (CMB mode='vary')
+    - const_index: 400-499 (reuse_last sims) - Constant alpha (CMB mode='constant')
+    - null_index: 500-599 (reuse_last sims) - Null alpha (CMB mode='null')
+    
+    Note: When nsims_mf equals reuse_last, mf_index and vary_index are identical.
+    
+    Bias Estimation:
+    - MCN0('stat'): Uses stat_index (0-299)
+    - MCN0('vary'): Uses vary_index (300-399)
+    - MCN0('const'): Uses const_index (400-499)
+    - N1 = MCN0('const') - MCN0('vary')
+    - Nlens: Uses null_index (500-599) and MCN0('vary')
 
 AcbLikelihood
     Likelihood analysis class for constraining the cosmic birefringence
@@ -99,12 +117,15 @@ import matplotlib.pyplot as plt
 import pymaster as nmt
 from tqdm.auto import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import emcee
+
+
+from typing import Dict, Optional, Any, Union, List
 
 from cobi.simulation import LATsky, Mask
 from cobi.utils import cli, slice_alms
 from cobi import sht
 from cobi import mpi
+from time import time
 
 
 Tcmb  = 2.726e6
@@ -136,7 +157,7 @@ class FilterEB:
     def Bl(self):
         return np.reshape(self.bl,(1,self.lmax+1))
 
-    def convolved_EB(self,idx):
+    def convolved_EB(self,idx,split=0):
         """
         convolve the component separated map with the beam
 
@@ -144,22 +165,22 @@ class FilterEB:
         ----------
         idx : int : index of the simulation
         """
-        E,B = self.sky.HILC_obsEB(idx,ret='alm')
+        E,B = self.sky.HILC_obsEB(idx,ret='alm',split=split)
         hp.almxfl(E,self.bl,inplace=True)
         hp.almxfl(B,self.bl,inplace=True)
         return E,B
     
-    def NL(self,idx):
+    def NL(self,idx,split=0):
         """
         array manipulation of noise spectra obtained by ILC weight
         for the filtering process
         """
-        ne,nb = self.sky.HILC_obsEB(idx, ret='nl')/Tcmb**2
+        ne,nb = self.sky.HILC_obsEB(idx, ret='nl',split=split)/Tcmb**2
         return np.reshape(np.array((cli(ne[:self.lmax+1]*self.bl**2),
                           cli(nb[:self.lmax+1]*self.bl**2))),(2,1,self.lmax+1))
     
     
-    def QU(self, idx):
+    def QU(self, idx, split=0):
         """
         deconvolve the beam from the QU map
 
@@ -167,7 +188,7 @@ class FilterEB:
         ----------
         idx : int : index of the simulation
         """
-        E, B = self.convolved_EB(idx)
+        E, B = self.convolved_EB(idx, split=split)
         E, B = slice_alms(np.array([E, B]), self.lmax)
         if self.healpy:
             QU = hp.alm2map([E*0,E,B], self.nside)[1:]/Tcmb
@@ -176,44 +197,56 @@ class FilterEB:
         QU = QU*self.mask
         QU[QU == -0] = 0
         return QU
+    
+    def __cinv_eb__(self, idx, fname, test=False, split=0):
+        QU = self.QU(idx, split=split)
+        QU = np.reshape(QU,(2,1,hp.nside2npix(self.nside)))
+        
+        iterations = [200]
+        stat_file = '' 
+        if test:
+            iterations = [10]
+            stat_file = os.path.join('test_stat.txt')
 
-    def cinv_EB(self,idx,test=False):
+        E,B = cs.cninv.cnfilter_freq(2,1,self.nside,self.lmax,self.cl_len[1:3,:self.lmax+1],
+                                    self.Bl, self.ninv,QU,chn=1,itns=iterations,filter="",
+                                    eps=[1e-5],ro=10,inl=self.NL(idx,split=split),stat=stat_file)
+        if not test:
+            pl.dump((E,B), open(fname,'wb'))
+        return E, B
+
+    def cinv_EB(self,idx,split=0,test=False):
         """
         C inv Filter for the component separated maps
 
         Parameters
         ----------
         idx : int : index of the simulation
-        test : bool : if True, run the filter for 10 iterations
+        test : bool : if True, run the filter for 10 iterations (not cached)
         """
         fsky = f"{self.fsky:.2f}".replace('.','p')
-        fname = os.path.join(self.lib_dir,f"cinv_EB_{idx:04d}_fsky_{fsky}.pkl")
-        if not os.path.isfile(fname):
-            QU = self.QU(idx)
-            QU = np.reshape(QU,(2,1,hp.nside2npix(self.nside)))
-            
-            iterations = [200]
-            stat_file = '' 
-            if test:
-                iterations = [10]
-                stat_file = os.path.join('test_stat.txt')
-
-            E,B = cs.cninv.cnfilter_freq(2,1,self.nside,self.lmax,self.cl_len[1:3,:self.lmax+1],
-                                        self.Bl, self.ninv,QU,chn=1,itns=iterations,filter="",
-                                        eps=[1e-5],ro=10,inl=self.NL(idx),stat=stat_file)
-            if not test:
-                pl.dump((E,B),open(fname,'wb'))
+        if split == 0:
+            fname = os.path.join(self.lib_dir,f"cinv_EB_{idx:04d}_fsky_{fsky}.pkl")
         else:
-            E,B = pl.load(open(fname,'rb'))
-        
+            fname = os.path.join(self.lib_dir,f"cinv_EB_{idx:04d}_fsky_{fsky}_split{split}.pkl")
+        if os.path.isfile(fname):
+            try:
+                E,B = pl.load(open(fname,'rb'))
+            except:
+                E,B = self.__cinv_eb__(idx,fname,test=test,split=split)
+        else:
+            E,B = self.__cinv_eb__(idx,fname,test=test,split=split)
         return E,B
     
-    def check_file_exist(self):
+    def check_file_exist(self,nsims=600,split=0):
         missing = []
         file_err = []
-        for idx in tqdm(range(600),desc='Checking cinv files'):
+        for idx in tqdm(range(nsims),desc='Checking cinv files'):
             fsky = f"{self.fsky:.2f}".replace('.','p')
-            fname = os.path.join(self.lib_dir,f"cinv_EB_{idx:04d}_fsky_{fsky}.pkl")
+            if split == 0:
+                fname = os.path.join(self.lib_dir,f"cinv_EB_{idx:04d}_fsky_{fsky}.pkl")
+            else:
+                fname = os.path.join(self.lib_dir,f"cinv_EB_{idx:04d}_fsky_{fsky}_split{split}.pkl")
             if not os.path.isfile(fname):
                 missing.append(idx)
             else:
@@ -226,7 +259,7 @@ class FilterEB:
         return missing, file_err
 
 
-    def plot_cinv(self,idx,lmin=2,lmax=3000):
+    def plot_cinv(self,idx,split=0,lmin=2,lmax=3000):
         """
         plot the cinv filtered Cls for a given idx
 
@@ -234,8 +267,8 @@ class FilterEB:
         ----------
         idx : int : index of the simulation
         """
-        E,_ = self.cinv_EB(idx)
-        ne,_ = self.sky.HILC_obsEB(idx, ret='nl')/Tcmb**2
+        E,_ = self.cinv_EB(idx, split=split)
+        ne,_ = self.sky.HILC_obsEB(idx,split=split, ret='nl')/Tcmb**2
         cle = cs.utils.alm2cl(self.lmax,E)/self.fsky
         plt.figure(figsize=(4,4))
         plt.loglog(cle,label='Cinv E mode')
@@ -255,34 +288,41 @@ class QE:
             os.makedirs(self.rdn0dir, exist_ok=True)
 
         self.filter = filter
-        self.alpha_config = filter.sky.cmb.Acb_sim_config
+        self.sim_config = filter.sky.cmb.sim_config
         self.lmin = lmin
         self.lmax = lmax
         self.recon_lmax = recon_lmax
         self.cl_len = filter.cl_len
         self.nsims_mf = nsims_mf
         
-        # Extract index ranges from alpha_config
-        self.alpha_vary_index = np.arange(self.alpha_config['alpha_vary_index'][0], 
-                                          self.alpha_config['alpha_vary_index'][1])
-        self.alpha_cons_index = np.arange(self.alpha_config['alpha_cons_index'][0], 
-                                          self.alpha_config['alpha_cons_index'][1])
-        self.null_alpha_index = np.arange(self.alpha_config['null_alpha_index'][0], 
-                                          self.alpha_config['null_alpha_index'][1])
+        # sim_config is required
+        if self.sim_config is None:
+            raise ValueError("sim_config must be set in CMB initialization. QE requires sim_config to define simulation ranges.")
         
-        # Mean field simulations: last nsims_mf from alpha_vary_index
-        self.mf_index = self.alpha_vary_index[-self.nsims_mf:]
         
-        # N0 simulations: remaining alpha_vary_index (excluding mean field sims)
-        self.n0_index = self.alpha_vary_index[:-self.nsims_mf]
+        set1 = self.sim_config['set1']
+        reuse_last = self.sim_config['reuse_last']
+        
+        # Statistics simulations: first (set1 - nsims_mf)
+        self.stat_index = np.arange(0, set1 - nsims_mf)
+        
+        # Mean field simulations: last nsims_mf from set1
+        self.mf_index = np.arange(set1 - nsims_mf, set1)
+        
+        # Varying alpha range: last reuse_last from set1
+        self.vary_index = np.arange(set1 - reuse_last, set1)
+        
+        # Constant alpha range: set1 to set1+reuse_last
+        self.const_index = np.arange(set1, set1 + reuse_last)
+        
+        # Null alpha range: set1+reuse_last to set1+2*reuse_last
+        self.null_index = np.arange(set1 + reuse_last, set1 + 2 * reuse_last)
         
         self.norm = self.__norm__
         self.lmax_bin = lmax_bin
         self.binner = nmt.NmtBin.from_lmax_linear(lmax_bin,nlb)
         self.b = self.binner.get_effective_ells()
         self.nlb = nlb
-       
-
 
     @property
     def __norm__(self):
@@ -303,8 +343,8 @@ class QE:
         else:
             ocl_len = self.cl_len.copy()
             ne,nb = [],[]
-            # Use N0 indexes for computing OCL
-            for i in tqdm(self.n0_index, desc='Computing OCL'):
+            # Use stat_index for computing OCL
+            for i in tqdm(self.stat_index, desc='Computing OCL'):
                 e,b = self.filter.sky.HILC_obsEB(i, ret='nl')
                 ne.append(e[:self.lmax+1]/Tcmb**2)
                 nb.append(b[:self.lmax+1]/Tcmb**2)
@@ -314,7 +354,6 @@ class QE:
             pl.dump(ocl_len, open(fname,'wb'))
         return ocl_len
     
-
     @property
     def cl_aa(self):
         return self.filter.sky.cmb.cl_aa()[:self.recon_lmax+1]
@@ -345,7 +384,7 @@ class QE:
         elif n0 == 'norm':
             N0 = self.norm
         elif n0 == 'mcn0':
-            N0 = self.MCN0('vary')
+            N0 = self.MCN0('stat')
         elif n0 == 'rdn0':
             N0 = self.RDN0(idx)
         else:
@@ -387,8 +426,8 @@ class QE:
         if os.path.isfile(fname):
             return pl.load(open(fname,'rb'))
         else:
-            # Use N0 indexes for cycling
-            myidx = self.n0_index.copy()
+            # Use stat_index for cycling
+            myidx = self.stat_index.copy()
 
             E0,B0 = self.filter.cinv_EB(idx)
 
@@ -459,7 +498,7 @@ class QE:
             return rdn0
 
         # 2) Build the index cycling array on all ranks (cheap & deterministic).
-        myidx = self.n0_index.copy()
+        myidx = self.stat_index.copy()
 
         # 3) Compute (or broadcast) the fixed E0, B0 for this idx.
         if rank == 0:
@@ -545,35 +584,62 @@ class QE:
         # 7) Broadcast the final result so all ranks return the same array.
         rdn0 = comm.bcast(rdn0, root=0)
         return rdn0
-    
-    def N0_sim(self,idx,which='vary'):
+      
+    def N0_sim(self,idx,which='vary',debug=False):
         """
         Calculate the N0 bias from the Reconstructed potential using filtered Fields
         with different CMB fields. If E modes is from ith simulation then B modes is 
         from (i+1)th simulation
 
         idx: int : index of the N0
-        which: str : 'vary' or 'cons' to select which alpha_config index to use
-        """
-        if which == 'vary':
-            index_range = self.alpha_vary_index
-            label = 'vary'
-        elif which == 'cons':
-            index_range = self.alpha_cons_index
-            label = 'cons'
-        else:
-            raise ValueError("which must be 'vary' or 'cons'")
+        which: str : 'stat', 'vary', or 'const' to select which index range to use
+        debug: bool : if True, print the indices used for computation and return None
         
-        assert idx in index_range, f"The requested idx {idx} is not in the {which} alpha_config index range"
+        Index ranges and wrapping:
+        - 'stat': stat_index, wraps within stat range
+        - 'vary': vary_index, wraps within vary range
+        - 'const': const_index, wraps within const range
+        
+        Requires sim_config to be set, or manually set the corresponding index array.
+        """
+        if which == 'stat':
+            index_range = self.stat_index
+            label = 'stat'
+        elif which == 'vary':
+            index_range = self.vary_index
+            label = 'vary'
+        elif which == 'const':
+            index_range = self.const_index
+            label = 'const'
+        else:
+            raise ValueError("which must be 'stat', 'vary', or 'const'")
+        
+        assert idx in index_range, f"The requested idx {idx} is not in the {which} index range"
             
-        myidx = np.pad(index_range,(0,1),'wrap')
+        # Simple increment with wrapping within the index_range bounds
+        idx1 = idx
+        min_idx = min(index_range)
+        max_idx = max(index_range)
+        # If at the end of range, wrap to beginning of range
+        if idx == max_idx:
+            idx2 = min_idx
+        else:
+            idx2 = idx + 1
+        
+        if debug:
+            print(f"N0_sim debug mode:")
+            print(f"  which: {which}")
+            print(f"  index_range: [{min_idx}, {max_idx}]")
+            print(f"  idx1 (E1B1): {idx1}")
+            print(f"  idx2 (E2B2): {idx2}")
+            return None
+            
         fname = os.path.join(self.rdn0dir,f"N0_{label}_{self.filter.fsky:.2f}_{idx:04d}.pkl")
         if os.path.isfile(fname):
             return pl.load(open(fname,'rb'))
         else:
-            idx = idx - min(index_range)
-            E1,B1 = self.filter.cinv_EB(myidx[idx])
-            E2,B2 = self.filter.cinv_EB(myidx[idx+1])
+            E1,B1 = self.filter.cinv_EB(idx1)
+            E2,B2 = self.filter.cinv_EB(idx2)
             glm1 = cs.rec_rot.qeb(self.recon_lmax,self.lmin,self.lmax,
                                        self.cl_len[1,:self.lmax+1],
                                        E1[:self.lmax+1,:self.lmax+1],
@@ -592,18 +658,33 @@ class QE:
     
     def MCN0(self, which='vary'):
         """
-        Monte Carlo average of N0_sim over N0 indexes
+        Monte Carlo average of N0_sim over specified index range
         
-        which: str : 'vary' or 'cons' to select which alpha_config index to use
+        which: str : 'stat', 'vary', or 'const' to select which index range to use
+                     'stat' uses stat_index
+                     'vary' uses vary_index
+                     'const' uses const_index
+        
+        Requires sim_config to be set, or manually set the corresponding index arrays.
+        Note: vary_index overlaps with mf_index only when nsims_mf equals reuse_last.
         """
         fname = os.path.join(self.basedir, f'MCN0_{which}_fsky{self.filter.fsky:.2f}.pkl')
-        index = self.n0_index if which == 'vary' else self.alpha_cons_index
         if os.path.isfile(fname):
             return pl.load(open(fname,'rb'))
         else:
+            if which == 'stat':
+                index = self.stat_index
+            elif which == 'vary':
+                index = self.vary_index
+            elif which == 'const':
+                index = self.const_index
+            else:
+                raise ValueError("which must be 'stat', 'vary', or 'const'")
+            
             n0_list = []
             for idx in tqdm(index, desc=f'Computing MCN0 ({which})'):
                 n0_list.append(self.N0_sim(idx, which=which))
+            
             mcn0 = np.array(n0_list).mean(axis=0)
             pl.dump(mcn0, open(fname,'wb'))
             return mcn0
@@ -611,13 +692,13 @@ class QE:
     def N1(self,binned=False):
         """
         N1 bias: difference between MCN0 for constant and varying alpha
-        N1 = MCN0('cons') - MCN0('vary')
+        N1 = MCN0('const') - MCN0('vary')
         """
         fname = os.path.join(self.basedir, f'N1_fsky{self.filter.fsky:.2f}.pkl')
         if os.path.isfile(fname):
             n1 = pl.load(open(fname,'rb'))
         else:
-            n1 = self.MCN0('cons') - self.MCN0('vary')
+            n1 = self.MCN0('const') - self.MCN0('vary')
             pl.dump(n1, open(fname,'wb'))
         if binned:
             bn1 = self.binner.bin_cell(n1[:self.lmax_bin+1])
@@ -627,7 +708,7 @@ class QE:
     
     def Nlens(self,MCN0=True,binned=False):
         """
-        Lensing bias: average qcl on null_alpha_index minus MCN0('vary')
+        Lensing bias: average qcl on null_index minus MCN0('vary')
         Nlens = <qcl(null_alpha)> - MCN0('vary')
         """
         fname = os.path.join(self.basedir, f'Nlens_fsky{self.filter.fsky:.2f}_mcn0{MCN0}.pkl')
@@ -635,7 +716,7 @@ class QE:
             nlens = pl.load(open(fname,'rb'))
         else:
             qcl_list = []
-            for idx in tqdm(self.null_alpha_index, desc='Computing Nlens'):
+            for idx in tqdm(self.null_index, desc='Computing Nlens'):
                 # Get qcl without any bias subtraction
                 qcl_list.append(cs.utils.alm2cl(self.recon_lmax, self.qlm(idx))/self.filter.fsky)
             avg_qcl = np.array(qcl_list).mean(axis=0)
@@ -650,7 +731,21 @@ class QE:
         else:
             return nlens
         
-    
+    def RDN0_stat(self):
+        """
+        RDN0 for all stat_index simulations
+        """
+        fname = os.path.join(self.basedir, f'RDN0_stat_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            return pl.load(open(fname,'rb'))
+        else:
+            rdn0_list = []
+            for i in tqdm(self.stat_index, desc='Computing RDN0 statistics'):
+                rdn0_list.append(self.RDN0(i))
+            rdn0_array = np.array(rdn0_list).mean(axis=0)
+            pl.dump(rdn0_array, open(fname,'wb'))
+            return rdn0_array
+          
     def qcl_stat(self, n0=None, mf=False, nlens=False, n1=False,binned=True):
         st = ''
         if n0 is None:
@@ -669,78 +764,730 @@ class QE:
             st += '_nlens'
         if n1:
             st += '_n1'
-        fname = os.path.join(self.basedir, f'qcl_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_nlb{self.nlb}_{st}.pkl')
+        fname = os.path.join(self.basedir, f'qcl_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_nlb{self.nlb}_{st}_{binned}.pkl')
         if os.path.isfile(fname):
             return pl.load(open(fname,'rb'))
         else:
             cl = []
-            for i in tqdm(self.n0_index,desc='Computing cl statistics',unit='sim'):
+            for i in tqdm(self.stat_index,desc='Computing cl statistics',unit='sim'):
                 cl.append(self.qcl(i,n0=n0,mf=mf,nlens=nlens,n1=n1,binned=binned))
             cl = np.array(cl)
             pl.dump(cl,open(fname,'wb'))
             return cl
         
-    
-class AcbLikelihood:
 
-    def __init__(self, qelib: QE, lmin=2,lmax=50,rdn0=False,simple_chi=False):
-        self.qe = qelib
+class CrossQE:
+    def __init__(self, filter: FilterEB, lmin: int, lmax: int, recon_lmax: int,nsims_mf=100, nlb=10, lmax_bin=1024):
+        assert filter.sky.nsplits == 4, "CrossQE requires 4 splits in the FilterEB sky object."
+        self.basedir = os.path.join(filter.sky.libdir, 'qecross')
+        self.recdir = os.path.join(self.basedir, f'reco_min{lmin}_max{lmax}_rmax{recon_lmax}')
+        self.n0dir = os.path.join(self.basedir, f'rdn0_min{lmin}_max{lmax}_rmax{recon_lmax}')
+        self.mdir = os.path.join(self.basedir, f'misc_min{lmin}_max{lmax}_rmax{recon_lmax}')
+        if mpi.rank == 0:
+            os.makedirs(self.basedir, exist_ok=True)
+            os.makedirs(self.recdir, exist_ok=True)
+            os.makedirs(self.n0dir, exist_ok=True)
+            os.makedirs(self.mdir, exist_ok=True)
+        self.filter = filter
+        self.sim_config = filter.sky.cmb.sim_config
+        self.lmin = lmin
         self.lmax = lmax
-        qcl = self.qe.qcl_stat(rdn0=rdn0)*1e7
-        self.binner = self.qe.binner
-        self.b = self.qe.b
-        self.sel = np.where((self.b >= lmin) & (self.b <= lmax))[0]
-        self.mean = qcl.mean(axis=0)[self.sel]
-        self.cov = np.cov(qcl.T)[self.sel][:,self.sel]
-        self.std = qcl.std(axis=0)[self.sel]
-        self.icov = np.linalg.inv(self.cov)
-        self.simple_chi = simple_chi
-
-    def theory(self, Acb):
-        l = np.arange(self.qe.lmax_bin+1)
-        cl =  Acb * 2 * np.pi / ( l**2 + l + 1e-30)*1e7
-        cl[0], cl[1] = 0, 0
-        return self.binner.bin_cell(cl)[self.sel]
-    
-    def plot(self,Acb):
-        plt.figure(figsize=(6,6))
-        plt.errorbar(self.b[self.sel], self.mean, yerr=self.std[self.sel], fmt='o')
-        plt.loglog(self.b[self.sel], self.theory(Acb), label='Theory')
-        plt.xlabel(r'$l$')
-        plt.ylabel(r'$C_l^{\mathrm{BB}}$')
-        plt.title(r'$C_l^{\mathrm{BB}}$ vs $l$')
-        plt.grid()
-        plt.legend()
-        plt.show()
-
-    def ln_prior(self, Acb):
-        if 0 < Acb < 1e-5:
-            return 0.0
-        else:
-            return -np.inf
+        self.recon_lmax = recon_lmax
+        self.cl_len = filter.cl_len
         
-    def ln_likelihood(self, Acb):
-        theory = self.theory(Acb)
-        delta = theory - self.mean
-        if self.simple_chi:
-            chisq = (delta/self.std)**2
-            return -0.5 * chisq.sum()
-        else:
-            return -0.5 * (delta @ self.icov @ delta)
+        self.lmax_bin = lmax_bin
 
-    def ln_posterior(self, Acb):
-        lp = self.ln_prior(Acb)
-        if not np.isfinite(lp):
-            return -np.inf
-        return lp + self.ln_likelihood(Acb)
+
+        self.sim_config = filter.sky.cmb.sim_config
+
+        if self.sim_config is None:
+            raise ValueError("sim_config must be set in CMB initialization. QE requires sim_config to define simulation ranges.")
+        # Default simulation ranges
+        set1 = self.sim_config['set1']
+        reuse_last = self.sim_config['reuse_last']
+        
+        # Statistics simulations: first (set1 - nsims_mf)
+        self.stat_index = np.arange(0, set1 - nsims_mf)
+        
+        # Mean field simulations: last nsims_mf from set1
+        self.mf_index = np.arange(set1 - nsims_mf, set1)
+        
+        # Varying alpha range: last reuse_last from set1
+        self.vary_index = np.arange(set1 - reuse_last, set1)
+        
+        # Constant alpha range: set1 to set1+reuse_last
+        self.const_index = np.arange(set1, set1 + reuse_last)
+        
+        # Null alpha range: set1+reuse_last to set1+2*reuse_last
+        self.null_index = np.arange(set1 + reuse_last, set1 + 2 * reuse_last)
+        self.binner = nmt.NmtBin.from_lmax_linear(lmax_bin,nlb)
+        self.b = self.binner.get_effective_ells()
+        self.nlb = nlb
+
+    @property
+    def cl_aa(self):
+        return self.filter.sky.cmb.cl_aa()[:self.recon_lmax+1]
     
-    def sampler(self,nwalkers=32,nsamples=1000):
-        pos = np.array([3.5e-6]) * np.random.randn(nwalkers, 1)
-        sampler = emcee.EnsembleSampler(nwalkers, 1, self.ln_posterior)
-        sampler.run_mcmc(pos, nsamples, progress=True)
-        return sampler
+    def precompute_split_ocl(self, splits=(1,2,3,4)):
+        """
+        Computes split-level total spectra:
+        oclE[s] = ClEE_lensed + <N_EE_split_s>
+        oclB[s] = ClBB_lensed + <N_BB_split_s>
+        Saves dict {s: (oclE, oclB)}.
+        """
+        fsky_tag = f"{self.filter.fsky:.2f}".replace('.', 'p')
+        fname = os.path.join(
+            self.basedir,
+            f"ocl_splits_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_fsky_{fsky_tag}.pkl"
+        )
+        if os.path.isfile(fname):
+            return pl.load(open(fname, "rb"))
 
-    def samples(self, nwalkers=100, nsamples=2000, discard=300):
-        sampler = self.sampler(nwalkers=nwalkers, nsamples=nsamples)
-        flat_samples = sampler.get_chain(discard=discard, thin=15, flat=True)
-        return flat_samples
+        # Start from theory (lensed) spectra
+        clE_th = self.cl_len[1, :self.lmax+1].copy()
+        clB_th = self.cl_len[2, :self.lmax+1].copy()
+
+        ocl = {}
+        for s in splits:
+            ne_acc = np.zeros(self.lmax+1, dtype=np.float64)
+            nb_acc = np.zeros(self.lmax+1, dtype=np.float64)
+            ncount = 0
+
+            for i in tqdm(self.stat_index, desc=f"Split OCL s={s}"):
+                ne, nb = self.filter.sky.HILC_obsEB(i, ret="nl", split=s)
+                ne_acc += ne[:self.lmax+1] / Tcmb**2
+                nb_acc += nb[:self.lmax+1] / Tcmb**2
+                ncount += 1
+
+            ne_mean = ne_acc / ncount
+            nb_mean = nb_acc / ncount
+
+            oclE = clE_th + ne_mean
+            oclB = clB_th + nb_mean
+            ocl[s] = (oclE, oclB)
+
+        pl.dump(ocl, open(fname, "wb"))
+        return ocl
+    
+    def precompute_pair_norms(self, pairs=((1,2),(3,4),(1,3),(2,4),(1,4),(2,3))):
+        """
+        Precomputes normalization arrays for each split pair.
+
+        Returns dict:
+        norms[(i,j)] = {"EiBj": norm_ij, "EjBi": norm_ji}
+        where norm_ij normalizes Q(E^i, B^j).
+        """
+        fsky_tag = f"{self.filter.fsky:.2f}".replace('.', 'p')
+        fname = os.path.join(
+            self.basedir,
+            f"norm_pairs_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_fsky_{fsky_tag}.pkl"
+        )
+        if os.path.isfile(fname):
+            return pl.load(open(fname, "rb"))
+
+        ocl = self.precompute_split_ocl(splits=(1,2,3,4))
+        clE_th = self.cl_len[1, :self.lmax+1]
+
+        norms = {}
+        for (i, j) in pairs:
+            oclE_i, oclB_i = ocl[i]
+            oclE_j, oclB_j = ocl[j]
+
+            # norm for Q(E^i, B^j)
+            norm_ij = cs.norm_quad.qeb(
+                'rot',
+                self.recon_lmax, self.lmin, self.lmax,
+                clE_th,
+                oclE_i,   # total EE for E leg from split i
+                oclB_j    # total BB for B leg from split j
+            )[0]
+
+            # norm for Q(E^j, B^i)
+            norm_ji = cs.norm_quad.qeb(
+                'rot',
+                self.recon_lmax, self.lmin, self.lmax,
+                clE_th,
+                oclE_j,
+                oclB_i
+            )[0]
+
+            norms[(i, j)] = {"EiBj": norm_ij, "EjBi": norm_ji}
+
+        pl.dump(norms, open(fname, "wb"))
+        return norms
+    
+    def qlm_pair(self, idx, si: int, sj: int):
+        assert si != sj
+        i, j = (si, sj) if si < sj else (sj, si)
+
+        norms = self.precompute_pair_norms(
+            pairs=((1,2),(3,4),(1,3),(2,4),(1,4),(2,3))
+        )
+        n_ij = norms[(i, j)]["EiBj"] if (si, sj) == (i, j) else norms[(i, j)]["EjBi"]
+        n_ji = norms[(i, j)]["EjBi"] if (si, sj) == (i, j) else norms[(i, j)]["EiBj"]
+
+        Ei, Bi = self.filter.cinv_EB(idx, split=si)
+        Ej, Bj = self.filter.cinv_EB(idx, split=sj)
+
+        alm_EiBj = cs.rec_rot.qeb(
+            self.recon_lmax, self.lmin, self.lmax,
+            self.cl_len[1, :self.lmax+1],
+            Ei[:self.lmax+1, :self.lmax+1],
+            Bj[:self.lmax+1, :self.lmax+1]
+        )
+        alm_EjBi = cs.rec_rot.qeb(
+            self.recon_lmax, self.lmin, self.lmax,
+            self.cl_len[1, :self.lmax+1],
+            Ej[:self.lmax+1, :self.lmax+1],
+            Bi[:self.lmax+1, :self.lmax+1]
+        )
+
+        # Apply pair-direction-specific norms, then symmetrize
+        phi = 0.5 * (alm_EiBj * n_ij[:, None] + alm_EjBi * n_ji[:, None])
+        return phi
+    
+    def mean_field_sim(self, idx, splits=(1,2,3,4)):
+        """
+        Cross-only lensing power estimate:
+        average over cross-spectra of reconstructions from disjoint split pairs.
+        For 4 splits, uses the 3 disjoint pairings.
+        """
+
+        fname = os.path.join(
+            self.mdir,
+            f"mean_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_fsky{self.filter.fsky:.2f}_{idx:04d}.pkl"
+        )
+        if os.path.isfile(fname):
+            return pl.load(open(fname, "rb"))
+        else:
+            s1, s2, s3, s4 = splits
+            
+            # three disjoint pairings
+            pairings = [
+                ((s1, s2), (s3, s4)),
+                ((s1, s3), (s2, s4)),
+                ((s1, s4), (s2, s3)),
+            ]
+
+            m = None
+            for (i, j), (k, l) in pairings:
+                phi_ij = self.qlm_pair(idx, i, j)
+                phi_kl = self.qlm_pair(idx, k, l)
+
+                phi = 0.5 * (phi_ij + phi_kl)
+                if m is None:
+                    m = phi
+                else:
+                    m += phi
+            m /= 3.0
+            
+            pl.dump(m, open(fname, "wb"))
+
+            return m
+    
+    def mean_field(self):
+        m = []
+        for idx in tqdm(self.mf_index, desc='Computing cross-only mean field'):
+            self.mean_field_sim(idx)
+            m.append(self.mean_field_sim(idx))
+        return np.mean(m, axis=0)
+    
+    def mean_field_cl(self):
+        fname = os.path.join(
+            self.mdir,
+            f"meanfield_cl_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_fsky{self.filter.fsky:.2f}.pkl"
+        )
+        if os.path.isfile(fname):
+            return pl.load(open(fname, "rb"))
+        else:
+            mf = self.mean_field()
+            mf_cl = cs.utils.alm2cl(self.recon_lmax, mf) / self.filter.fsky
+            pl.dump(mf_cl, open(fname, "wb"))
+            return mf_cl
+        
+    def qcl_cross_only(self, idx, splits=(1,2,3,4)):
+        """
+        Cross-only lensing power estimate:
+        average over cross-spectra of reconstructions from disjoint split pairs.
+        For 4 splits, uses the 3 disjoint pairings.
+        """
+
+        fname = os.path.join(
+            self.recdir,
+            f"qcl_crossonly_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_fsky{self.filter.fsky:.2f}_{idx:04d}.pkl"
+        )
+        if os.path.isfile(fname):
+            return pl.load(open(fname, "rb"))
+        else:
+            s1, s2, s3, s4 = splits
+            
+            # three disjoint pairings
+            pairings = [
+                ((s1, s2), (s3, s4)),
+                ((s1, s3), (s2, s4)),
+                ((s1, s4), (s2, s3)),
+            ]
+
+            cls = []
+            for (i, j), (k, l) in pairings:
+                phi_ij = self.qlm_pair(idx, i, j)
+                phi_kl = self.qlm_pair(idx, k, l)
+
+                # cross-spectrum of the two phi maps
+                cl = cs.utils.alm2cl(self.recon_lmax, phi_ij, phi_kl) / self.filter.fsky
+                cls.append(cl)
+            
+            pl.dump(np.mean(cls, axis=0), open(fname, "wb"))
+
+            return np.mean(cls, axis=0)
+       
+    def Nlens(self,binned=False):
+        """
+        Lensing bias: average qcl on null_index minus MCN0('vary')
+        Nlens = <qcl(null_alpha)> - MCN0('vary')
+        """
+        fname = os.path.join(self.basedir, f'Nlens_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            nlens = pl.load(open(fname,'rb'))
+        else:
+            qcl_list = []
+            for idx in tqdm(self.null_index, desc='Computing Nlens'):
+                # Get qcl without any bias subtraction
+                qcl_list.append(self.qcl_cross_only(idx))
+            avg_qcl = np.array(qcl_list).mean(axis=0)
+            nlens = avg_qcl - self.MCN0('stat')
+            pl.dump(nlens, open(fname,'wb'))
+        if binned:
+            bnlen = self.binner.bin_cell(nlens[:self.lmax_bin+1])
+            return bnlen
+        else:
+            return nlens
+    
+    def N1(self,binned=False):
+        """
+        N1 bias: difference between MCN0 for constant and varying alpha
+        N1 = MCN0('const') - MCN0('vary')
+        """
+        fname = os.path.join(self.basedir, f'N1_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            n1 = pl.load(open(fname,'rb'))
+        else:
+            n1 = self.MCN0('const') - self.MCN0('vary')
+            pl.dump(n1, open(fname,'wb'))
+        if binned:
+            bn1 = self.binner.bin_cell(n1[:self.lmax_bin+1])
+            return bn1
+        else:
+            return n1  
+         
+    def qcl_stat(self, n0=None, n1=False, mf=False, nlens=False, binned=False):
+        """
+        Compute statistics of qcl over stat_sims with various bias corrections.
+        
+        Parameters
+        ----------
+        n0 : str or None
+            N0 bias correction: None (no correction), 'mcn0', or 'rdn0'
+        mf : bool
+            If True, subtract mean field bias
+        nlens : bool
+            If True, subtract lensing bias
+        binned : bool
+            If True, return binned spectra
+            
+        Returns
+        -------
+        cl : array
+            Array of shape (nsims, nlmax+1) or (nsims, nbins) if binned
+        """
+        st = ''
+        if n0 is None:
+            st += '_noN0'
+        elif n0 == 'mcn0':
+            st += '_n0mcn0'
+        elif n0 == 'rdn0':
+            st += '_n0rdn0'
+        else:
+            raise ValueError("n0 must be None, 'mcn0', or 'rdn0'")
+        if n1:
+            st += '_n1'
+        if mf:
+            st += '_mf'
+        if nlens:
+            st += '_nlens'
+        fname = os.path.join(
+            self.basedir, 
+            f'qcl_crossonly_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}_nlb{self.nlb}_{st}_{binned}.pkl'
+        )
+        if os.path.isfile(fname):
+            return pl.load(open(fname,'rb'))
+        else:
+            # Determine bias corrections
+            if n0 is None:
+                N0 = np.zeros(self.recon_lmax + 1)
+            elif n0 == 'mcn0':
+                N0 = self.MCN0()
+            elif n0 == 'rdn0':
+                # For cross-only, RDN0 should be computed per simulation
+                # This will be handled in the loop below
+                N0 = None
+            if n1:
+                N1 = self.N1(binned=False)
+            
+            if mf:
+                MF = self.mean_field_cl()
+            else:
+                MF = np.zeros(self.recon_lmax + 1)
+            
+            if nlens:
+                NLENS = self.Nlens(binned=False)
+            else:
+                NLENS = np.zeros(self.recon_lmax + 1)
+            
+            cl = []
+            for i in tqdm(self.stat_index, desc='Computing cross-only cl statistics', unit='sim'):
+                qcl_i = self.qcl_cross_only(i, splits=(1,2,3,4))
+                
+                # Apply RDN0 correction if requested
+                if n0 == 'rdn0':
+                    N0_i = self.RDN0(i)
+                else:
+                    N0_i = N0
+                
+                # Apply all bias corrections
+                qcl_i = qcl_i - N0_i - MF - NLENS
+                
+                if binned:
+                    qcl_i = self.binner.bin_cell(qcl_i[:self.lmax_bin+1])
+                
+                cl.append(qcl_i)
+            
+            cl = np.array(cl)
+            pl.dump(cl, open(fname, 'wb'))
+            return cl
+    
+    def _cl_cross_only_between(self, A: dict, B: dict):
+        """
+        Cross-only spectrum for 4 splits:
+        (12×34 + 13×24 + 14×23)/3
+        where A[(i,j)] are recon alms from split pair (i,j).
+        """
+        c12_34 = cs.utils.alm2cl(self.recon_lmax, A[(1,2)], B[(3,4)]) / self.filter.fsky
+        c13_24 = cs.utils.alm2cl(self.recon_lmax, A[(1,3)], B[(2,4)]) / self.filter.fsky
+        c14_23 = cs.utils.alm2cl(self.recon_lmax, A[(1,4)], B[(2,3)]) / self.filter.fsky
+        return (c12_34 + c13_24 + c14_23) / 3.0
+    
+    def _qlm_pair_tag_sym(self, d_idx: int, s_idx: int, s0_idx: int,
+                      si: int, sj: int, tagE: str, tagB: str):
+        """
+        Symmetric EB estimator (lensing-like), compatible with qlm_pair():
+        0.5 * [ Q(E^si, B^sj) + Q(E^sj, B^si) ]
+        with direction-dependent norms.
+        tagE/tagB in {'d','s','s0'} select which realization supplies E and B legs.
+        """
+        assert si != sj
+
+        def pick(tag: str) -> int:
+            if tag == "d":  return d_idx
+            if tag == "s":  return s_idx
+            if tag == "s0": return s0_idx
+            raise ValueError("tag must be one of {'d','s','s0'}")
+
+        idxE = pick(tagE)
+        idxB = pick(tagB)
+
+        # direction-dependent norms (same logic as qlm_pair)
+        norms = self.precompute_pair_norms(pairs=((1,2),(3,4),(1,3),(2,4),(1,4),(2,3)))
+        i, j = (si, sj) if si < sj else (sj, si)
+
+        if (si, sj) == (i, j):
+            n_EiBj = norms[(i, j)]["EiBj"]
+            n_EjBi = norms[(i, j)]["EjBi"]
+        else:
+            n_EiBj = norms[(i, j)]["EjBi"]
+            n_EjBi = norms[(i, j)]["EiBj"]
+
+        # Pull E from idxE, B from idxB, with the requested split indices
+        E_si, _ = self.filter.cinv_EB(idxE, split=si)
+        E_sj, _ = self.filter.cinv_EB(idxE, split=sj)
+        _, B_si = self.filter.cinv_EB(idxB, split=si)
+        _, B_sj = self.filter.cinv_EB(idxB, split=sj)
+
+        # Q(E_si, B_sj)
+        alm_ij = cs.rec_rot.qeb(
+            self.recon_lmax, self.lmin, self.lmax,
+            self.cl_len[1, :self.lmax+1],
+            E_si[:self.lmax+1, :self.lmax+1],
+            B_sj[:self.lmax+1, :self.lmax+1]
+        )
+        # Q(E_sj, B_si)
+        alm_ji = cs.rec_rot.qeb(
+            self.recon_lmax, self.lmin, self.lmax,
+            self.cl_len[1, :self.lmax+1],
+            E_sj[:self.lmax+1, :self.lmax+1],
+            B_si[:self.lmax+1, :self.lmax+1]
+        )
+
+        # SYM: symmetric combination + direction norms
+        phi = 0.5 * (alm_ij * n_EiBj[:, None] + alm_ji * n_EjBi[:, None])
+        return phi
+
+    def _build_six_sym(self, d_idx: int, s_idx: int, s0_idx: int, tagE: str, tagB: str):
+        """
+        Build the six split-pair reconstructions (12,34,13,24,14,23) using the symmetric estimator.
+        """
+        pairs = [(1,2),(3,4),(1,3),(2,4),(1,4),(2,3)]
+        out = {}
+        for (i, j) in pairs:
+            out[(i, j)] = self._qlm_pair_tag_sym(d_idx, s_idx, s0_idx, i, j, tagE, tagB)
+        return out
+    
+    def N0_sim(self,idx,which='vary',debug=False):
+        """
+        Calculate the N0 bias from the Reconstructed potential using filtered Fields
+        with different CMB fields. If E modes is from ith simulation then B modes is 
+        from (i+1)th simulation
+
+        idx: int : index of the N0
+        which: str : 'stat', 'vary', or 'const' to select which index range to use
+        debug: bool : if True, print the indices used for computation and return None
+        
+        Index ranges and wrapping:
+        - 'stat': stat_index, wraps within stat range
+        - 'vary': vary_index, wraps within vary range
+        - 'const': const_index, wraps within const range
+        
+        Requires sim_config to be set, or manually set the corresponding index array.
+        """
+        if which == 'stat':
+            index_range = self.stat_index
+            label = 'stat'
+        elif which == 'vary':
+            index_range = self.vary_index
+            label = 'vary'
+        elif which == 'const':
+            index_range = self.const_index
+            label = 'const'
+        else:
+            raise ValueError("which must be 'stat', 'vary', or 'const'")
+        
+        assert idx in index_range, f"The requested idx {idx} is not in the {which} index range"
+            
+        # Simple increment with wrapping within the index_range bounds
+        idx1 = idx
+        min_idx = min(index_range)
+        max_idx = max(index_range)
+        # If at the end of range, wrap to beginning of range
+        if idx == max_idx:
+            idx2 = min_idx
+        else:
+            idx2 = idx + 1
+        
+        if debug:
+            print(f"N0_sim debug mode:")
+            print(f"  which: {which}")
+            print(f"  index_range: [{min_idx}, {max_idx}]")
+            print(f"  idx1 (E1B1): {idx1}")
+            print(f"  idx2 (E2B2): {idx2}")
+            return None
+            
+        # choose (a,b) as consecutive sims, like your lensing codeims[0],self.stat_sims[1]), (0,1), mode="wrap")
+        # pad/wrap to avoid idx+1 overflo
+        a = idx1
+        b = idx2
+
+        fname = os.path.join(self.n0dir, f"N0_{label}_{self.filter.fsky:.2f}_{idx:04d}.pkl")
+        if os.path.isfile(fname):
+            return pl.load(open(fname, "rb"))
+
+        # Build six recon alms for each split-pair:
+        # ab = Q(E_a, B_b), ba = Q(E_b, B_a)
+        # We can use your (d_idx, s_idx, s0_idx) interface with tags:
+        # tagE="s", tagB="s0"  -> E from s_idx, B from s0_idx
+        # tagE="s0", tagB="s"  -> E from s0_idx, B from s_idx
+        ab = self._build_six_sym(d_idx=0, s_idx=a, s0_idx=b, tagE="s",  tagB="s0")
+        ba = self._build_six_sym(d_idx=0, s_idx=a, s0_idx=b, tagE="s0", tagB="s")
+
+        # Cross-only operator already divides by fsky internally.
+        n0 = self._cl_cross_only_between(ab, ab) + self._cl_cross_only_between(ab, ba)
+
+        pl.dump(n0, open(fname, "wb"))
+        return n0
+    
+    def MCN0(self, which='vary'):
+        fname = os.path.join(self.basedir, f'MCN0_{which}_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            return pl.load(open(fname,'rb'))
+        else:
+            if which == 'stat':
+                index = self.stat_index
+            elif which == 'vary':
+                index = self.vary_index
+            elif which == 'const':
+                index = self.const_index
+            else:
+                raise ValueError("which must be 'stat', 'vary', or 'const'")
+            
+            n0_list = []
+            for idx in tqdm(index, desc=f'Computing MCN0 ({which})'):
+                n0_list.append(self.N0_sim(idx, which=which))
+            
+            mcn0 = np.array(n0_list).mean(axis=0)
+            pl.dump(mcn0, open(fname,'wb'))
+            return mcn0
+    
+    def RDN0(self, idx: int, navg: int = 100):
+        """
+        Realization-dependent N0 (RDN0) compatible with qcl_cross_only() (symmetric estimator).
+
+        Uses the same Eq.(43)-style structure:
+        RDN0 = Cx(ds,ds) + Cx(ds,sd) + Cx(sd,ds) + Cx(sd,sd) - Cx(ss0,ss0) - Cx(ss0,s0s)
+        where Cx is the cross-only spectrum operator (12×34+13×24+14×23)/3.
+
+        Returns: array C_L[0..recon_lmax]
+        """
+        fsky_tag = f"{self.filter.fsky:.2f}".replace('.', 'p')
+        fname = os.path.join(self.n0dir, f"RDN0x_{fsky_tag}_{idx:04d}_navg{navg}.pkl")
+        if os.path.isfile(fname):
+            return pl.load(open(fname, "rb"))
+
+        # pool of sim indices excluding idx
+        myidx = np.append(np.arange(100), np.arange(2))
+        myidx = np.delete(myidx, np.where(myidx == idx)[0])
+
+        d_idx = idx
+        acc = np.zeros(self.recon_lmax + 1, dtype=np.float64)
+        nused = 0
+
+        for i in tqdm(range(navg), desc=f"RDN0x for sim {idx}", unit="mc"):
+            s_idx  = int(myidx[i])
+            s0_idx = int(myidx[i+1])
+
+            # Build the needed recon sets
+            ds  = self._build_six_sym(d_idx, s_idx, s0_idx, tagE="d",  tagB="s")
+            sd  = self._build_six_sym(d_idx, s_idx, s0_idx, tagE="s",  tagB="d")
+            ss0 = self._build_six_sym(d_idx, s_idx, s0_idx, tagE="s",  tagB="s0")
+            s0s = self._build_six_sym(d_idx, s_idx, s0_idx, tagE="s0", tagB="s")
+
+            cl_ds_ds   = self._cl_cross_only_between(ds,  ds)
+            cl_ds_sd   = self._cl_cross_only_between(ds,  sd)
+            cl_sd_ds   = self._cl_cross_only_between(sd,  ds)
+            cl_sd_sd   = self._cl_cross_only_between(sd,  sd)
+            cl_ss0_ss0 = self._cl_cross_only_between(ss0, ss0)
+            cl_ss0_s0s = self._cl_cross_only_between(ss0, s0s)
+
+            rdn0_i = (cl_ds_ds + cl_ds_sd + cl_sd_ds + cl_sd_sd
+                    - cl_ss0_ss0 - cl_ss0_s0s)
+
+            acc += rdn0_i
+            nused += 1
+
+        rdn0 = acc / max(nused, 1)
+        pl.dump(rdn0, open(fname, "wb"))
+        return rdn0
+    
+    def RDN0_mpi(self, idx: int, navg: int = 100):
+        """
+        MPI-parallel cross-only RDN0 for SYM estimator (compatible with qcl_cross_only()).
+
+        Implements the Eq.(43)-style combination (same algebra as your rot version),
+        but with SYM estimator:
+        RDN0 = Cx(ds,ds)+Cx(ds,sd)+Cx(sd,ds)+Cx(sd,sd) - Cx(ss0,ss0) - Cx(ss0,s0s)
+
+        Parallelizes navg Monte-Carlo draws over (s, s0) pairs.
+        Only rank 0 reads/writes the cache.
+        """
+        MPI  = mpi.mpi
+        comm = mpi.com
+        rank = mpi.rank
+        size = mpi.size
+
+        fsky_tag = f"{self.filter.fsky:.2f}".replace('.', 'p')
+        fname = os.path.join(self.n0dir, f"RDN0x_{fsky_tag}_{idx:04d}_navg{navg}.pkl")
+
+        # 1) Try to load cached result on rank 0, then broadcast.
+        rdn0 = None
+        if rank == 0 and os.path.isfile(fname):
+            with open(fname, "rb") as f:
+                rdn0 = pl.load(f)
+        rdn0 = comm.bcast(rdn0, root=0)
+        if rdn0 is not None:
+            return rdn0
+
+        # 2) Build deterministic index pool excluding idx (same trick).
+        nsim = 100  # or self.sim_config.nsim if available and consistent
+        myidx = np.append(np.arange(nsim), np.arange(2))
+        myidx = np.delete(myidx, np.where(myidx == idx)[0])
+
+        # 3) Distribute tasks.
+        tasks = np.arange(navg, dtype=int)
+        chunks = np.array_split(tasks, size)
+        my_tasks = chunks[rank]
+
+        L = self.recon_lmax + 1
+        local_sum = np.zeros(L, dtype=np.float64)
+
+        # 4) One MC draw.
+        def _one_draw(i: int):
+            s_idx  = int(myidx[i % len(myidx)])
+            s0_idx = int(myidx[(i + 1) % len(myidx)])
+            d_idx = idx
+
+            # Build the mixed estimators needed in Eq.(43)
+            ds  = self._build_six_sym(d_idx, s_idx, s0_idx, tagE="d",  tagB="s")
+            sd  = self._build_six_sym(d_idx, s_idx, s0_idx, tagE="s",  tagB="d")
+            ss0 = self._build_six_sym(d_idx, s_idx, s0_idx, tagE="s",  tagB="s0")
+            s0s = self._build_six_sym(d_idx, s_idx, s0_idx, tagE="s0", tagB="s")
+
+            cl_ds_ds   = self._cl_cross_only_between(ds,  ds)
+            cl_ds_sd   = self._cl_cross_only_between(ds,  sd)
+            cl_sd_ds   = self._cl_cross_only_between(sd,  ds)
+            cl_sd_sd   = self._cl_cross_only_between(sd,  sd)
+            cl_ss0_ss0 = self._cl_cross_only_between(ss0, ss0)
+            cl_ss0_s0s = self._cl_cross_only_between(ss0, s0s)
+
+            return (cl_ds_ds + cl_ds_sd + cl_sd_ds + cl_sd_sd
+                    - cl_ss0_ss0 - cl_ss0_s0s)
+
+        # 5) Local accumulation (progress only on rank 0).
+        iterator = tqdm(my_tasks, desc=f'RDN0x(sym) rank {rank} for sim {idx}', unit='mc') if rank == 0 else my_tasks
+        for t in iterator:
+            local_sum += _one_draw(int(t))
+
+        # 6) Reduce to rank 0 and normalize by navg.
+        global_sum = np.zeros_like(local_sum)
+        comm.Reduce(local_sum, global_sum, op=MPI.SUM, root=0)
+
+        if rank == 0:
+            rdn0 = global_sum / float(len(tasks))
+            os.makedirs(self.n0dir, exist_ok=True)
+            with open(fname, "wb") as f:
+                pl.dump(rdn0, f)
+
+        # 7) Broadcast to all ranks.
+        rdn0 = comm.bcast(rdn0, root=0)
+        return rdn0
+
+    def RDN0_stat(self,array=False):
+        """
+        RDN0 for all stat_index simulations
+        """
+        if array:
+            fname = os.path.join(self.basedir, f'RDN0_stat_fsky{self.filter.fsky:.2f}_array{len(self.stat_index)}.pkl')
+        else:
+            fname = os.path.join(self.basedir, f'RDN0_stat_fsky{self.filter.fsky:.2f}.pkl')
+        if os.path.isfile(fname):
+            return pl.load(open(fname,'rb'))
+        else:
+            rdn0_list = []
+            for i in tqdm(self.stat_index, desc='Computing RDN0 statistics'):
+                rdn0_list.append(self.RDN0(i))
+            if array:
+                rdn0_array = np.array(rdn0_list)
+                pl.dump(rdn0_array, open(fname,'wb'))
+                return rdn0_array
+            else:
+                rdn0_array = np.array(rdn0_list).mean(axis=0)
+                pl.dump(rdn0_array, open(fname,'wb'))
+                return rdn0_array
+

@@ -184,11 +184,10 @@ class CMB:
         (required for model='aniso').
     lensing : bool, default=False
         Whether to include CMB lensing effects.
-    Acb_sim_config : dict, optional
-        Configuration for anisotropic simulation batches with keys:
-        - 'alpha_vary_index': [start, end] indices for varying α
-        - 'alpha_cons_index': [start, end] indices for constant α  
-        - 'null_alpha_index': [start, end] indices for null test (α=0)
+    sim_config : dict, optional
+        Configuration for simulation seed management with keys:
+        - 'set1': Number of sims with varying CMB, Noise, and alpha
+        - 'other_sets': Number of base CMB+Noise sims, each used with 3 alpha modes
     verbose : bool, default=True
         Enable logging output.
     
@@ -252,7 +251,7 @@ class CMB:
         mass: Optional[float]=None,
         Acb: Optional[float]=None,
         lensing: Optional[bool] = False,
-        Acb_sim_config: Optional[Dict[str, List[int]]] = None,
+        sim_config: Optional[Dict[str, Any]] = None,
         verbose: Optional[bool] = True,
     ):
         self.logger = Logger(self.__class__.__name__, verbose=verbose if verbose is not None else False)
@@ -280,8 +279,8 @@ class CMB:
 
         
         self.lensing = lensing
-        self.Acb_sim_config = Acb_sim_config
-        self.__validate_Acb_sim_config__()
+        self.sim_config = sim_config
+        self.__validate_sim_config__()
 
         self.__set_workspace__()
         self.__set_seeds__()
@@ -293,28 +292,36 @@ class CMB:
         cl[0], cl[1] = 0, 0
         return cl
    
-    def __validate_Acb_sim_config__(self) -> None:
+    def __validate_sim_config__(self) -> None:
         """
-        Validate the Acb_sim_config dictionary structure.
+        Validate the sim_config dictionary structure for new seed regime.
+        
+        Expected structure:
+        {
+            'set1': 400,  # Number of sims with varying CMB, Noise, and alpha
+            'reuse_last': 100  # Number of sims from end of set1 to reuse for constant/null alpha
+        }
+        
+        This creates:
+        - Indices 0-399: set1 sims (all vary independently)
+        - Indices 400-499: reuse CMB/Noise from 300-399 with constant alpha
+        - Indices 500-599: reuse CMB/Noise from 300-399 with null alpha (α=0)
+        Total: 600 simulations instead of 700
         """
-        if self.Acb_sim_config is None:
+        if self.sim_config is None:
             return
         
-        if self.model != "aniso":
-            self.logger.log("Acb_sim_config is only applicable for anisotropic model. Ignoring.", level="warning")
-            self.Acb_sim_config = None
-            return
+        required_keys = ['set1', 'reuse_last']
+        for key in required_keys:
+            if key not in self.sim_config:
+                raise ValueError(f"Missing required key '{key}' in sim_config")
+            if not isinstance(self.sim_config[key], int) or self.sim_config[key] <= 0:
+                raise ValueError(f"Value for '{key}' must be a positive integer")
         
-        valid_keys = ['alpha_vary_index', 'alpha_cons_index', 'null_alpha_index']
-        for key in self.Acb_sim_config.keys():
-            if key not in valid_keys:
-                raise ValueError(f"Invalid key '{key}' in Acb_sim_config. Valid keys are: {valid_keys}")
-            if not isinstance(self.Acb_sim_config[key], (list, tuple)) or len(self.Acb_sim_config[key]) != 2:
-                raise ValueError(f"Value for '{key}' must be a list/tuple of two integers [start, end]")
-            if self.Acb_sim_config[key][0] >= self.Acb_sim_config[key][1]:
-                raise ValueError(f"Invalid range for '{key}': start must be less than end")
+        if self.sim_config['reuse_last'] > self.sim_config['set1']:
+            raise ValueError(f"'reuse_last' ({self.sim_config['reuse_last']}) cannot exceed 'set1' ({self.sim_config['set1']})")
         
-        self.logger.log(f"Acb simulation configuration validated: {self.Acb_sim_config}", level="info")
+        self.logger.log(f"Simulation configuration validated: {self.sim_config}", level="info")
     
     def __get_alpha_mode__(self, idx: int) -> str:
         """
@@ -326,21 +333,49 @@ class CMB:
         Returns:
         str: One of 'vary', 'constant', or 'null'
         """
-        if self.Acb_sim_config is None:
-            return 'vary'  # Default behavior
-        
-        for key, (start, end) in self.Acb_sim_config.items():
-            if start <= idx < end:
-                if key == 'alpha_vary_index':
-                    return 'vary'
-                elif key == 'alpha_cons_index':
-                    return 'constant'
-                elif key == 'null_alpha_index':
-                    return 'null'
+        if self.sim_config is not None:
+            set1 = self.sim_config['set1']
+            reuse_last = self.sim_config['reuse_last']
+            
+            if idx < set1:
+                # First set: all vary
+                return 'vary'
+            elif set1 <= idx < set1 + reuse_last:
+                # Second set: constant alpha (reusing last reuse_last from set1)
+                return 'constant'
+            elif set1 + reuse_last <= idx < set1 + 2 * reuse_last:
+                # Third set: null alpha (reusing last reuse_last from set1)
+                return 'null'
         
         # If idx is not in any configured range, use default
         return 'vary'
 
+    def __get_cmb_seed_idx__(self, idx: int) -> int:
+        """
+        Map simulation index to the actual CMB seed index.
+        
+        For indices < set1: use idx directly
+        For indices >= set1: map to last reuse_last indices of set1
+        
+        Parameters:
+        idx (int): The simulation realization index.
+        
+        Returns:
+        int: The seed index to use for CMB generation.
+        """
+        if self.sim_config is None:
+            return idx
+        
+        set1 = self.sim_config['set1']
+        if idx < set1:
+            return idx
+        
+        # Map to last reuse_last simulations from set1
+        reuse_last = self.sim_config['reuse_last']
+        offset = idx - set1
+        base_idx = (set1 - reuse_last) + (offset % reuse_last)
+        return base_idx
+    
     def __set_seeds__(self) -> None:
         """
         Sets the seeds for the simulation.
@@ -806,7 +841,8 @@ class CMB:
                 dl=False,
             )
             # PDP: spectra start at ell=0, we are fine
-            np.random.seed(self.__cseeds__[idx])
+            seed_idx = self.__get_cmb_seed_idx__(idx)
+            np.random.seed(self.__cseeds__[seed_idx])
             T, E, B = hp.synalm(
                 [spectra["tt"], spectra["ee"], spectra["bb"], spectra["te"], spectra["eb"], spectra["tb"]],
                 lmax=self.lmax,
@@ -868,22 +904,23 @@ class CMB:
         
         if mode == 'constant':
             # Use a fixed seed for constant alpha across this range
-            # Use the first seed as the constant seed
             np.random.seed(44444)
         else:  # mode == 'vary'
-            # Use index-specific seed (default behavior)
+            # Use index-specific seed for varying alpha
             np.random.seed(self.__aseeds__[idx])
         
         alm = hp.synalm(cl_aa, lmax=self.lmax, new=True)
         return alm
     
     def phi_alm(self, idx: int) -> np.ndarray:
-        fname = os.path.join(self.phidir, f"phi_Lmax{self.lmax}_{idx:03d}.fits")
+        # Use mapped seed index for phi (lensing potential)
+        seed_idx = self.__get_cmb_seed_idx__(idx)
+        fname = os.path.join(self.phidir, f"phi_Lmax{self.lmax}_{seed_idx:03d}.fits")
         if os.path.isfile(fname):
             return hp.read_alm(fname)
         else:
             cl_pp = self.cl_pp()
-            np.random.seed(self.__pseeds__[idx])
+            np.random.seed(self.__pseeds__[seed_idx])
             alm = hp.synalm(cl_pp, lmax=self.lmax, new=True)
             hp.write_alm(fname, alm)
             return alm
@@ -925,6 +962,11 @@ class CMB:
                 ###### Anisotropic models ######
                 ###### Real space lensed ######
     def get_aniso_real_lensed_QU(self, idx: int) -> List[np.ndarray]:
+        # Use mapped seed index for both CMB generation and alpha mode determination
+        seed_idx = self.__get_cmb_seed_idx__(idx)
+        mode = self.__get_alpha_mode__(idx)
+        
+        # Filename based on idx to distinguish different alpha modes for same CMB/phi
         fname = os.path.join(
             self.cmbdir,
             f"sims_nside{self.nside}_{idx:03d}.fits",
@@ -933,26 +975,34 @@ class CMB:
             return hp.read_map(fname, field=[0, 1])
         else:
             spectra = self.get_unlensed_spectra(dl=False)
-            np.random.seed(self.__cseeds__[idx])
-            Q,U = hp.synfast(
+            
+            # Use mapped CMB seed
+            np.random.seed(self.__cseeds__[seed_idx])
+            
+            T, E, B = hp.synalm(
                 [spectra["tt"], spectra["ee"], spectra["bb"], spectra["te"]],
-                nside=self.nside,
+                lmax=self.lmax,
                 new=True,
-            )[1:]
+            )
+            del T
             
             # Check if rotation should be applied based on configuration
-            mode = self.__get_alpha_mode__(idx)
             if self.Acb != 0 and mode != 'null':
-                alpha = self.alpha_map(idx)
-                rQ = Q * np.cos(2 * alpha) - U * np.sin(2 * alpha)
-                rU = Q * np.sin(2 * alpha) + U * np.cos(2 * alpha)
-                del (Q, U, alpha)
-                elm, blm = hp.map2alm_spin([rQ, rU], 2)
+                alpha_alm = self.alpha_alm(idx)
+                alpha_map = hp.alm2map(alpha_alm, self.nside)
+                # Rotate in real space then convert to alms
+                Q_unrot, U_unrot = hp.alm2map_spin([E, B], self.nside, 2, lmax=self.lmax)
+                Q = Q_unrot * np.cos(2 * alpha_map) - U_unrot * np.sin(2 * alpha_map)
+                U = Q_unrot * np.sin(2 * alpha_map) + U_unrot * np.cos(2 * alpha_map)
+                del (Q_unrot, U_unrot, alpha_map)
+                elm, blm = hp.map2alm_spin([Q, U], 2, lmax=self.lmax)
             else:
-                elm, blm = hp.map2alm_spin([Q, U], 2)
+                elm, blm = E, B
+            
+            del (E, B)
             defl = self.grad_phi_alm(idx)
             geom_info = ('healpix', {'nside':self.nside})
-            Q, U = lenspyx.alm2lenmap_spin([elm,blm], defl, 2, geometry=geom_info, verbose=int(self.verbose))
+            Q, U = lenspyx.alm2lenmap_spin([elm, blm], defl, 2, geometry=geom_info, verbose=int(self.verbose))
             del (elm, blm, defl)
             hp.write_map(fname, [Q, U], dtype=np.float64)
             return [Q, U]
@@ -961,36 +1011,7 @@ class CMB:
                 ###### Anisotropic models ######
                 ###### Gaussian lensed ######
     def get_aniso_gauss_lensed_QU(self, idx: int) -> List[np.ndarray]:
-        fname = os.path.join(
-            self.cmbdir,
-            f"sims_g_nside{self.nside}_{idx:03d}.fits",
-        )
-        if os.path.isfile(fname):
-            return hp.read_map(fname, field=[0, 1])
-        else:
-            spectra = self.get_lensed_spectra(dl=False)
-            np.random.seed(self.__cseeds__[idx])
-            Q, U = hp.synfast(
-                [spectra["tt"], spectra["ee"], spectra["bb"], spectra["te"]],
-                nside=self.nside,
-                new=True,
-            )[1:]
-            
-            # Check if rotation should be applied based on configuration
-            mode = self.__get_alpha_mode__(idx)
-            if self.Acb != 0 and mode != 'null':
-                alpha = self.alpha_map(idx)
-                rQ = Q * np.cos(2 * alpha) - U * np.sin(2 * alpha)
-                rU = Q * np.sin(2 * alpha) + U * np.cos(2 * alpha)
-                del (Q, U, alpha)
-            else:
-                if mode == 'null':
-                    self.logger.log(f"Index {idx} in null_alpha range, no rotation applied", level="info")
-                else:
-                    self.logger.log("Acb is zero, no rotation applied", level="info")
-                rQ, rU = Q, U
-            hp.write_map(fname, [rQ, rU], dtype=np.float64)
-            return [rQ, rU]
+        raise NotImplementedError("Anisotropic Gaussian lensed CMB not implemented yet")
     
     ################ CMB map generation methods ###############
                 ###### Anisotropic models ######
@@ -1009,3 +1030,4 @@ class CMB:
             return self.get_aniso_model_cb_lensed_QU(idx)
         else:
             raise NotImplementedError("Model not implemented yet")
+        

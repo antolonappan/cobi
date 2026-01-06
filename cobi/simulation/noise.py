@@ -213,6 +213,7 @@ class Noise:
                  nsplits: int = 2,
                  aso: bool = False,
                  ext_sims: bool = False,
+                 sim_config: Optional[Dict[str, Any]] = None,
                  verbose: bool = True,
                  ) -> None:
         """
@@ -241,6 +242,7 @@ class Noise:
             assert telescope == 'LAT', "ext_sims is only available for LAT telescope."
 
         self.logger           = Logger(self.__class__.__name__, verbose)
+        self.sim_config = sim_config
         if self.sim == 'NC':
             if self.atm_noise:
                 self.logger.log(f"Noise Model:[{telescope}] White + 1/f noise v3.1.1")
@@ -248,13 +250,43 @@ class Noise:
                 self.logger.log(f"Noise Model:[{telescope}] White noise v3.1.1")
         elif self.sim == 'TOD':
             self.logger.log(f"Noise Model: [{telescope}] Based on TOD and Map based simulations, directly using SO products.")
+            if self.ext_sims:
+                self.logger.log("Extending simulations by treating each split as independent (only for LAT).")
         else:
             raise ValueError(f"Invalid simulation type: {self.sim}", "Choose from 'NC' or 'TOD'.")
         
         self.__nseeds__ = {
             1: np.arange(7777, 7777 + 1000),
             2: np.arange(9999, 9999 + 1000),
+            3: np.arange(5555, 5555 + 1000),
+            4: np.arange(8888, 8888 + 1000),
         }
+    
+    def __get_noise_seed_idx__(self, idx: int) -> int:
+        """
+        Map simulation index to the actual noise seed index.
+        
+        For indices < set1: use idx directly
+        For indices >= set1: map to last reuse_last indices of set1
+        
+        Parameters:
+        idx (int): The simulation realization index.
+        
+        Returns:
+        int: The seed index to use for noise generation.
+        """
+        if self.sim_config is None:
+            return idx
+        
+        set1 = self.sim_config['set1']
+        if idx < set1:
+            return idx
+        
+        # Map to last reuse_last simulations from set1
+        reuse_last = self.sim_config['reuse_last']
+        offset = idx - set1
+        base_idx = (set1 - reuse_last) + (offset % reuse_last)
+        return base_idx
         
 
 
@@ -359,6 +391,8 @@ class Noise:
         f = freq.split('-')[0]
         split = int(freq.split('-')[-1])
 
+        seed_idx = self.__get_noise_seed_idx__(idx)
+
         def noise_map(Alm,L):
             nlm = hp.almxfl(Alm, L)
             n = hp.alm2map(nlm, self.nside, pixwin=False)
@@ -369,33 +403,33 @@ class Noise:
             return n
         
         if f == '27':
-            np.random.seed(self.__nseeds__[split][idx])
+            np.random.seed(self.__nseeds__[split][seed_idx])
             alm = self.rand_alm
             return noise_map(alm, L11)*np.sqrt(self.nsplits)
         elif f == '39':
-            np.random.seed(self.__nseeds__[split][idx])
+            np.random.seed(self.__nseeds__[split][seed_idx])
             alm = self.rand_alm
-            np.random.seed(self.__nseeds__[split][idx]+1)
+            np.random.seed(self.__nseeds__[split][seed_idx]+1)
             blm = self.rand_alm
             return noise_map_cross(alm,blm,L21,L22)*np.sqrt(self.nsplits)
         elif f == '93':
-            np.random.seed(self.__nseeds__[split][idx]+2)
+            np.random.seed(self.__nseeds__[split][seed_idx]+2)
             clm = self.rand_alm
             return noise_map(clm,L33)*np.sqrt(self.nsplits)
         elif f == '145':
-            np.random.seed(self.__nseeds__[split][idx]+2)
+            np.random.seed(self.__nseeds__[split][seed_idx]+2)
             clm = self.rand_alm
-            np.random.seed(self.__nseeds__[split][idx]+3)
+            np.random.seed(self.__nseeds__[split][seed_idx]+3)
             dlm = self.rand_alm
             return noise_map_cross(clm,dlm,L43,L44)*np.sqrt(self.nsplits)
         elif f == '225':
-            np.random.seed(self.__nseeds__[split][idx]+4)
+            np.random.seed(self.__nseeds__[split][seed_idx]+4)
             elm = self.rand_alm
             return noise_map(elm,L55)*np.sqrt(self.nsplits)
         elif f == '280':
-            np.random.seed(self.__nseeds__[split][idx]+4)
+            np.random.seed(self.__nseeds__[split][seed_idx]+4)
             elm = self.rand_alm
-            np.random.seed(self.__nseeds__[split][idx]+5)
+            np.random.seed(self.__nseeds__[split][seed_idx]+5)
             flm = self.rand_alm
             return noise_map_cross(elm,flm,L65,L66)*np.sqrt(self.nsplits)
         else:
@@ -412,27 +446,29 @@ class Noise:
         """
         L11, L21, L22, L33, L43, L44, L55, L65, L66 = self.cholesky_matrix_elements
         
-        np.random.seed(self.__nseeds__[split][idx])
+        seed_idx = self.__get_noise_seed_idx__(idx)
+        
+        np.random.seed(self.__nseeds__[split][seed_idx])
         alm    = self.rand_alm
-        np.random.seed(self.__nseeds__[split][idx]+1)
+        np.random.seed(self.__nseeds__[split][seed_idx]+1)
         blm    = self.rand_alm
         nlm_27 = hp.almxfl(alm, L11)
         nlm_39 = hp.almxfl(alm, L21) + hp.almxfl(blm, L22)
         n_27   = hp.alm2map(nlm_27, self.nside, pixwin=False)
         n_39   = hp.alm2map(nlm_39, self.nside, pixwin=False)
         
-        np.random.seed(self.__nseeds__[split][idx]+2)
+        np.random.seed(self.__nseeds__[split][seed_idx]+2)
         clm     = self.rand_alm
-        np.random.seed(self.__nseeds__[split][idx]+3)
+        np.random.seed(self.__nseeds__[split][seed_idx]+3)
         dlm     = self.rand_alm
         nlm_93  = hp.almxfl(clm, L33)
         nlm_145 = hp.almxfl(clm, L43) + hp.almxfl(dlm, L44)
         n_93    = hp.alm2map(nlm_93, self.nside, pixwin=False)
         n_145   = hp.alm2map(nlm_145, self.nside, pixwin=False)
         
-        np.random.seed(self.__nseeds__[split][idx]+4)
+        np.random.seed(self.__nseeds__[split][seed_idx]+4)
         elm     = self.rand_alm
-        np.random.seed(self.__nseeds__[split][idx]+5)
+        np.random.seed(self.__nseeds__[split][seed_idx]+5)
         flm     = self.rand_alm
         nlm_225 = hp.almxfl(elm, L55)
         nlm_280 = hp.almxfl(elm, L65) + hp.almxfl(flm, L66)
@@ -521,7 +557,7 @@ class Noise:
             
             N = []
             for split in range(self.nsplits):
-                actual_split = split_group * self.nsplits + split + 1  # 1-indexed
+                actual_split = split_group * self.nsplits + split  # 0-indexed (set0, set1, set2, set3)
                 for i in range(len(bands)):
                     fbase = fbase_template.format(model=models[i], band=bands[i], split_num=actual_split, sim_num=sim_num)
                     fpath = f'{fdir}/{fbase}'
@@ -536,7 +572,7 @@ class Noise:
             N = []
             for split in range(self.nsplits):
                 for i in range(len(bands)):
-                    fbase = fbase_template.format(model=models[i], band=bands[i], split_num=split+1, sim_num=idx)
+                    fbase = fbase_template.format(model=models[i], band=bands[i], split_num=split, sim_num=idx)
                     fpath = f'{fdir}/{fbase}'
                     for j in range(2):
                         n = enmap.read_map(fpath,sel=np.s_[j, 0, 1:]) # the 1: will select the QU fields
@@ -560,23 +596,53 @@ class Noise:
         N = np.array([mm[0],mm[1]])
         return N*fac
     
-    def noiseQU_TOD_lat_band(self, idx: int, freq: str) -> np.ndarray:
+    def noiseQU_TOD_lat_band(self, idx: int, freq: str, debug: bool = False) -> np.ndarray:
         band = freq.split('-')[0]
-        split = int(freq.split('-')[-1])
+        split = int(freq.split('-')[-1])  # 1-indexed from user input
         sim_nsplits = 4
-        fac = np.sqrt(self.nsplits) / np.sqrt(sim_nsplits)
         fdir = '/global/cfs/cdirs/sobs/v4_sims/mbs/mbs_s0015_20240504/sims'
+        
+        # Validate split number
+        if split < 1 or split > self.nsplits:
+            raise ValueError(f"Invalid split={split}. Must be between 1 and {self.nsplits} for nsplits={self.nsplits}")
 
-        model, band, j = {"27":['fdw_lf', 'lf_f030_lf_f040',0], 
-                          "39":['fdw_lf', 'lf_f030_lf_f040',1], 
-                          "93":['fdw_mf', 'mf_f090_mf_f150',0], 
-                          "145":['fdw_mf', 'mf_f090_mf_f150',1], 
-                          "225":['fdw_uhf', 'uhf_f230_uhf_f290',0], 
-                          "280":['fdw_uhf', 'uhf_f230_uhf_f290',1]}[band]
-        if self.nsplits > 2: # This is only to preserve previous runs and results, changed on 25th Sep 2025 for checking with 4 splits
-            fbase = f'so_lat_mbs_mss0002_{model}_{band}_lmax5400_4way_set{split-1}_noise_sim_map{idx:04}.fits'
+        model, band_name, j = {"27":['fdw_lf', 'lf_f030_lf_f040',0], 
+                               "39":['fdw_lf', 'lf_f030_lf_f040',1], 
+                               "93":['fdw_mf', 'mf_f090_mf_f150',0], 
+                               "145":['fdw_mf', 'mf_f090_mf_f150',1], 
+                               "225":['fdw_uhf', 'uhf_f230_uhf_f290',0], 
+                               "280":['fdw_uhf', 'uhf_f230_uhf_f290',1]}[band]
+        
+        if self.ext_sims:
+            # Apply ext_sims logic: treat each split as independent
+            # For nsplits=1: each idx gets one split from the 4 available
+            # For nsplits=2: each idx gets two consecutive splits
+            sims_per_original = sim_nsplits // self.nsplits
+            sim_num = idx // sims_per_original
+            split_group = idx % sims_per_original
+            
+            # Map the requested split (1-indexed from freq like '93-1') to the actual file split
+            # The user's split number refers to which of the nsplits they want (1 to nsplits)
+            # We need to map this to the actual file split based on split_group
+            # Files use 0-indexed naming (set0, set1, set2, set3)
+            actual_split = split_group * self.nsplits + (split - 1)  # Convert to 0-indexed
+            
+            fac = np.sqrt(self.nsplits) / np.sqrt(sim_nsplits)
+            fbase = f'so_lat_mbs_mss0002_{model}_{band_name}_lmax5400_4way_set{actual_split}_noise_sim_map{sim_num:04}.fits'
+            
+            if debug:
+                self.logger.log(f"[EXT_SIMS] idx={idx}, freq={freq} -> file_idx={sim_num:04}, file_split={actual_split}")
+                return None
         else:
-            fbase = f'so_lat_mbs_mss0002_{model}_{band}_lmax5400_2way_set{split}_noise_sim_map{idx:04}.fits'
+            # Original behavior with sim_config support
+            seed_idx = self.__get_noise_seed_idx__(idx)
+            fac = np.sqrt(self.nsplits) / np.sqrt(sim_nsplits)
+            
+            if self.nsplits > 2:
+                fbase = f'so_lat_mbs_mss0002_{model}_{band_name}_lmax5400_4way_set{split-1}_noise_sim_map{seed_idx:04}.fits'
+            else:
+                fbase = f'so_lat_mbs_mss0002_{model}_{band_name}_lmax5400_2way_set{split}_noise_sim_map{seed_idx:04}.fits'
+        
         fpath = f'{fdir}/{fbase}'
 
         n = enmap.read_map(fpath,sel=np.s_[j, 0])
