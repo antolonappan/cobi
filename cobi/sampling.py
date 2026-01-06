@@ -13,103 +13,201 @@ def sci_str(x):
     return f"{mantissa}e{int(exp)}"
 
 
-class AcbLikelihood:
-    def __init__(self, libdir, binner, qcl: np.ndarray,
-                 lmin=2, lmax=50, mp=1.0,
-                 fiducial=None):
-        """
-        Implements Hamimeche-Lewis (HL) likelihood for anisotropic birefringence.
-        fiducial: fiducial bandpowers (default: MC mean)
-        """
-        self.libdir = libdir
-        os.makedirs(libdir, exist_ok=True)
-        self.lmin = lmin
-        self.lmax = lmax
-        self.qcl = qcl
+class Likelihood:
+    def __init__(
+        self, qe, binner, lmin=2, lmax=1024,
+        rdn0: bool = False, fid: float = 1e-6, use_fid: bool = True,
+        null: bool = False,
+    ):
+        basedir = os.path.join(qe.basedir, "likelihood")
+        os.makedirs(basedir, exist_ok=True)
+
         self.binner = binner
-        self.b = binner.b
-        self.sel = np.where((self.b >= lmin) & (self.b <= lmax))[0]
-        # "Data" vector and MC stats on selected bins
-        self.mean = qcl.mean(axis=0)[self.sel]
-        self.cov = np.cov(qcl.T)[self.sel][:, self.sel]
-        self.std = qcl.std(axis=0)[self.sel]
-        self.icov = np.linalg.inv(self.cov)
-        self.mp = mp
-        # HL fiducial
-        self.fiducial = fiducial[self.sel] if fiducial is not None else self.mean
+        self.sel = (binner.b >= lmin) & (binner.b <= lmax)
 
-    def theory(self, Acb):
-        l = np.arange(1024 + 1)
-        cl = Acb * 2 * np.pi / (l**2 + l + 1e-30) * self.mp
-        cl[0], cl[1] = 0.0, 0.0
-        return self.binner.bin_cell(cl)[self.sel]
-
-    def plot(self, Acb):
-        plt.figure(figsize=(6, 6))
-        plt.errorbar(self.b[self.sel], self.mean, yerr=self.std, fmt='o')
-        plt.loglog(self.b[self.sel], self.theory(Acb), label='Theory')
-        plt.xlabel(r'$L$')
-        plt.ylabel(r'$C_L^{\alpha\alpha}$')
-        plt.grid()
-        plt.legend()
-        plt.show()
-
-    def ln_prior(self, Acb):
-        return 0.0 if (0 < Acb < 1e-5) else -np.inf
-
-    # ---------- Likelihood ----------
-    def _hl_transform(self, x):
-        """
-        HL g-function: sign(x-1) * sqrt(2*(x - ln x - 1)) for x > 0.
-        Handles arrays; ignores invalid for x=1 (g=0).
-        """
-        with np.errstate(invalid='ignore'):
-            return np.sign(x - 1) * np.sqrt(2 * (x - np.log(x) - 1))
-
-    def ln_likelihood(self, Acb):
-        model = self.theory(Acb)
-        if np.any(model <= 0) or np.any(self.mean <= 0) or np.any(self.fiducial <= 0):
-            return -np.inf
-        # Ratios relative to fiducial
-        ratio_data = self.mean / self.fiducial
-        ratio_model = model / self.fiducial
-        g_data = self._hl_transform(ratio_data)
-        g_model = self._hl_transform(ratio_model)
-        # Handle any NaNs (e.g., at x=1)
-        g_data = np.nan_to_num(g_data, nan=0.0)
-        g_model = np.nan_to_num(g_model, nan=0.0)
-        delta = g_data - g_model
-        return -0.5 * (delta @ self.icov @ delta)
-
-    def ln_posterior(self, Acb):
-        lp = self.ln_prior(Acb)
-        if not np.isfinite(lp):
-            return -np.inf
-        ll = self.ln_likelihood(Acb)
-        return lp + ll
-
-    def sampler(self, nwalkers=32, nsamples=1000, rerun=False):
-        fname = os.path.join(
-            self.libdir,
-            f'samples_hl_nw{nwalkers}_ns{nsamples}_'
-            f'lmin{self.lmin}_lmax{self.lmax}_bn{self.binner.n}_m{self.binner.method}.h5'
+        lhdir = (
+            f"bn{binner.n}_bm{binner.method}_lmin{lmin}_lmax{lmax}_"
+            f"{'rdn0' if rdn0 else 'mcn0'}"
+            f"{'_null' if null else ''}"
         )
-        backend = emcee.backends.HDFBackend(fname)
-        if os.path.isfile(fname):
-            if rerun:
-                backend.reset(nwalkers, 1)
-            else:
-                return backend
-        pos = np.array([3.5e-6]) * (1 + 0.1 * np.random.randn(nwalkers, 1))
-        sampler = emcee.EnsembleSampler(nwalkers, 1, self.ln_posterior, backend=backend)
-        sampler.run_mcmc(pos, nsamples, progress=True)
-        return sampler
+        self.basedir = os.path.join(basedir, lhdir)
+        os.makedirs(self.basedir, exist_ok=True)
 
-    def samples(self, nwalkers=32, nsamples=1000, discard=200, getdist=False, rerun=False):
-        sampler = self.sampler(nwalkers=nwalkers, nsamples=nsamples, rerun=rerun)
-        samples = sampler.get_chain(discard=discard, thin=15, flat=True)
-        samples = samples[samples > 0.0]
-        if getdist:
-            gdsamples = MCSamples(samples=samples, names=['acb'], labels=['acb'])
-            return gdsamples
-        return samples
+        self.lmax = int(qe.recon_lmax)
+        self.rdn0 = bool(rdn0)
+        self.use_fid = bool(use_fid)
+        self.fid = float(fid)
+        self.null = bool(null)
+
+        # physically meaningful priors
+        self.Amax = 1e-5
+
+        # precompute theory shape in ell-space
+        l = np.arange(self.lmax + 1, dtype=float)
+        self._th_shape = 2.0 * np.pi / (l**2 + l + 1e-30)
+
+        # "without bias" raw QE bandpowers (nsims, ell)
+        qcl_wb = qe.qcl_stat(n0=None, mf=False, n1=False, nlens=False, binned=False)
+
+        # "with all bias corrections" output directly from qe.qcl_stat
+        if rdn0:
+            qcl_wob = qe.qcl_stat(n0="rdn0", mf=True, n1=True, nlens=True, binned=False)
+        else:
+            qcl_wob = qe.qcl_stat(n0="mcn0", mf=True, n1=True, nlens=True, binned=False)
+
+        # keep bias curve (ell-space) for theory-with-bias
+        n0 = qe.MCN0("stat")
+        n1 = qe.N1()
+        nlens = qe.Nlens()
+        mf = qe.mean_field_cl()
+        self.bias = n0 + n1 + nlens + mf
+
+        # precompute binned bias in selected bins
+        self.bias_binned_sel = self.binner.bin(self.bias[: self.lmax + 1])[self.sel]
+
+        # ---- helpers to build theory vectors in selected bins ----
+        def _theory_sel(A):
+            return self.binner.bin(float(A) * self._th_shape)[self.sel]
+
+        def _theorywbias_sel(A):
+            return _theory_sel(A) + self.bias_binned_sel
+
+        # bin simulations (restrict to selected bins immediately)
+        qcl_wb_binned_sel = binner.bin(qcl_wb)[:, self.sel]
+        qcl_wob_binned_sel = binner.bin(qcl_wob)[:, self.sel]
+
+        # choose "observed" vector (default: mean for pipeline tests)
+        cl_obs_wb = qcl_wb_binned_sel.mean(axis=0)
+        cl_obs_wob = qcl_wob_binned_sel.mean(axis=0)
+
+        if self.null:
+            # subtract fiducial theory from BOTH sims and obs before mean/cov
+            thfid_wb = _theorywbias_sel(self.fid)
+            thfid_wob = _theory_sel(self.fid)
+
+            d_wb = qcl_wb_binned_sel - thfid_wb[None, :]
+            d_wob = qcl_wob_binned_sel - thfid_wob[None, :]
+
+            self.cl_obs_wb = cl_obs_wb - thfid_wb
+            self.cl_obs_wob = cl_obs_wob - thfid_wob
+
+            # mean/cov in residual space
+            self.cl_fid_wb = d_wb.mean(axis=0)
+            self.cl_fid_wob = d_wob.mean(axis=0)
+
+            cov_wb = np.cov(d_wb.T)
+            cov_wob = np.cov(d_wob.T)
+
+            # store fid vectors for fast residual theory evaluation
+            self._thfid_wb = thfid_wb
+            self._thfid_wob = thfid_wob
+        else:
+            # standard (non-null) pipeline
+            self.cl_obs_wb = cl_obs_wb.copy()
+            self.cl_obs_wob = cl_obs_wob.copy()
+
+            self.cl_fid_wb = qcl_wb_binned_sel.mean(axis=0)
+            self.cl_fid_wob = qcl_wob_binned_sel.mean(axis=0)
+
+            cov_wb = np.cov(qcl_wb_binned_sel.T)
+            cov_wob = np.cov(qcl_wob_binned_sel.T)
+
+            self._thfid_wb = None
+            self._thfid_wob = None
+
+        self.icov_wb = np.linalg.inv(cov_wb)
+        self.icov_wob = np.linalg.inv(cov_wob)
+
+    # --- theory vectors in selected bins ---
+    def theory(self, Acb):
+        return self.binner.bin(float(Acb) * self._th_shape)[self.sel]
+
+    def theorywbias(self, Acb):
+        th_binned_sel = self.binner.bin(float(Acb) * self._th_shape)[self.sel]
+        return th_binned_sel + self.bias_binned_sel
+
+    # --- residual theories used in null mode ---
+    def _dtheory_wob(self, Acb):
+        # theory(A) - theory(fid)
+        return self.theory(Acb) - self._thfid_wob
+
+    def _dtheory_wb(self, Acb):
+        return self.theorywbias(Acb) - self._thfid_wb
+
+    # -------- Gaussian bandpower likelihoods --------
+    def log_likelihood_wb(self, theta):
+        if self.null:
+            dA = float(theta[0])
+            Acb = self.fid + dA
+            if (Acb < 0.0) or (Acb > self.Amax):
+                return -np.inf
+            cl_th = self._dtheory_wb(Acb)
+        else:
+            Acb = float(theta[0])
+            if (Acb < 0.0) or (Acb > self.Amax):
+                return -np.inf
+            cl_th = self.theorywbias(Acb)
+
+        r = self.cl_obs_wb - cl_th
+        chi2 = r @ self.icov_wb @ r
+        return -0.5 * chi2 if np.isfinite(chi2) else -np.inf
+
+    def log_likelihood_wob(self, theta):
+        if self.null:
+            dA = float(theta[0])
+            Acb = self.fid + dA
+            if (Acb < 0.0) or (Acb > self.Amax):
+                return -np.inf
+            cl_th = self._dtheory_wob(Acb)
+        else:
+            Acb = float(theta[0])
+            if (Acb < 0.0) or (Acb > self.Amax):
+                return -np.inf
+            cl_th = self.theory(Acb)
+
+        r = self.cl_obs_wob - cl_th
+        chi2 = r @ self.icov_wob @ r
+        return -0.5 * chi2 if np.isfinite(chi2) else -np.inf
+
+    def log_probability_wb(self, theta):
+        return self.log_likelihood_wb(theta)
+
+    def log_probability_wob(self, theta):
+        return self.log_likelihood_wob(theta)
+
+    def samples_wb(self, n_walkers, nsteps=2000, discard=200, thin=15):
+        fname = os.path.join(self.basedir, f"samples_wb_{n_walkers}_{nsteps}.h5")
+        if os.path.exists(fname):
+            sampler = emcee.backends.HDFBackend(fname)
+            return sampler.get_chain(discard=discard, thin=thin, flat=True)
+        else:
+            backend = emcee.backends.HDFBackend(fname)
+            ndim = 1
+            if self.null:
+                # ΔA centered at 0
+                scale = 0.1 * self.fid if self.fid != 0 else 1e-7
+                initial = 0.0 + scale * np.random.randn(n_walkers, ndim)
+            else:
+                initial = np.abs(self.fid + 0.1 * self.fid * np.random.randn(n_walkers, ndim))
+
+            sampler = emcee.EnsembleSampler(n_walkers, ndim, self.log_probability_wb, backend=backend)
+            sampler.run_mcmc(initial, nsteps, progress=True)
+            return sampler.get_chain(discard=discard, thin=thin, flat=True)
+
+    def samples_wob(self, n_walkers, nsteps=2000, discard=200, thin=15):
+        fname = os.path.join(self.basedir, f"samples_wob_{n_walkers}_{nsteps}.h5")
+        if os.path.exists(fname):
+            sampler = emcee.backends.HDFBackend(fname)
+            return sampler.get_chain(discard=discard, thin=thin, flat=True)
+        else:
+            backend = emcee.backends.HDFBackend(fname)
+            ndim = 1
+            if self.null:
+                scale = 0.1 * self.fid if self.fid != 0 else 1e-7
+                initial = 0.0 + scale * np.random.randn(n_walkers, ndim)
+            else:
+                initial = np.abs(self.fid + 0.1 * self.fid * np.random.randn(n_walkers, ndim))
+
+            sampler = emcee.EnsembleSampler(n_walkers, ndim, self.log_probability_wob, backend=backend)
+            sampler.run_mcmc(initial, nsteps, progress=True)
+            return sampler.get_chain(discard=discard, thin=thin, flat=True)
