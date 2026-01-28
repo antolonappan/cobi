@@ -1,0 +1,1274 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cobi.simulation.noise &mdash; COBI: Cosmic Birefringence Analysis Pipeline 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            COBI: Cosmic Birefringence Analysis Pipeline
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/calibration.html">Calibration Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.spec_cross"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.spec_cross</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.sat_err"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.sat_err</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.sat_lrange"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.sat_lrange</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.lat_lrange"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.lat_lrange</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.fit_per_split"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.fit_per_split</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.spectra_selection"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.spectra_selection</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.libdir"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.libdir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.binner"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.binner</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.Lmax"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.Lmax</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.maptags"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.maptags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.freq_groups"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.freq_groups</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.freq_bases"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.freq_bases</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.mean_spec"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.mean_spec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.std_spec"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.std_spec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.beam_arr"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.beam_arr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.__init__"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.theory"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.lnprior"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.lnprior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.__all_spectra__"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.__all_spectra__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.chisq"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.chisq()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.ln_likelihood"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.ln_likelihood()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.ln_prob"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.ln_prob()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.run_mcmc"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.run_mcmc()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.getdist_samples"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.getdist_samples()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.plot_posteriors"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.plot_posteriors()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.plot_spectra_matrix"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.plot_spectra_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.mle"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.mle()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross.cl_len"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.cl_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross.__init__"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross.theory"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross.lnprior"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.lnprior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross.dof"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.dof</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.eb_template_unbinned"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.eb_template_unbinned</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.binned_template"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.binned_template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.cl_len"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.cl_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.cl_diff_unbinned"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.cl_diff_unbinned</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.__init__"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.theory"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.lnprior"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.lnprior()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.LatCross"><code class="docutils literal notranslate"><span class="pre">LatCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.LatCross.cl_len"><code class="docutils literal notranslate"><span class="pre">LatCross.cl_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.LatCross.lat_err"><code class="docutils literal notranslate"><span class="pre">LatCross.lat_err</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.LatCross.__init__"><code class="docutils literal notranslate"><span class="pre">LatCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.LatCross.theory"><code class="docutils literal notranslate"><span class="pre">LatCross.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.LatCross.lnprior"><code class="docutils literal notranslate"><span class="pre">LatCross.lnprior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.LatCross.dof"><code class="docutils literal notranslate"><span class="pre">LatCross.dof</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/calibration.html#helper-functions">Helper Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration._format_alpha_label"><code class="docutils literal notranslate"><span class="pre">_format_alpha_label()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/calibration.html#base-classes">Base Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#id0"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/calibration.html#calibration-classes">Calibration Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#id28"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#id34"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/data.html">Data Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/data.html#data-loading-and-management-module">Data Loading and Management Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#data-objects">Data Objects</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/data.html#cobi.data.Data"><code class="docutils literal notranslate"><span class="pre">Data</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.Data.filename"><code class="docutils literal notranslate"><span class="pre">Data.filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.Data.directory"><code class="docutils literal notranslate"><span class="pre">Data.directory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.Data.galcut"><code class="docutils literal notranslate"><span class="pre">Data.galcut</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.Data.fname"><code class="docutils literal notranslate"><span class="pre">Data.fname</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.Data.url"><code class="docutils literal notranslate"><span class="pre">Data.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.Data.data"><code class="docutils literal notranslate"><span class="pre">Data.data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.Data.__init__"><code class="docutils literal notranslate"><span class="pre">Data.__init__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/data.html#data-class">Data Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#id0"><code class="docutils literal notranslate"><span class="pre">Data</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/data.html#pre-defined-data-objects">Pre-defined Data Objects</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.SAT_MASK"><code class="docutils literal notranslate"><span class="pre">SAT_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.LAT_MASK"><code class="docutils literal notranslate"><span class="pre">LAT_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.CO_MASK"><code class="docutils literal notranslate"><span class="pre">CO_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.GAL_MASK"><code class="docutils literal notranslate"><span class="pre">GAL_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.PS_MASK"><code class="docutils literal notranslate"><span class="pre">PS_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.BP_PROFILE"><code class="docutils literal notranslate"><span class="pre">BP_PROFILE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.CAMB_INI"><code class="docutils literal notranslate"><span class="pre">CAMB_INI</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.SPECTRA"><code class="docutils literal notranslate"><span class="pre">SPECTRA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.ISO_TD_SPECTRA"><code class="docutils literal notranslate"><span class="pre">ISO_TD_SPECTRA</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/mle.html">Maximum Likelihood Estimation Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mle.html#cobi.mle.bin_from_edges"><code class="docutils literal notranslate"><span class="pre">bin_from_edges()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mle.html#cobi.mle.bin_configuration"><code class="docutils literal notranslate"><span class="pre">bin_configuration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mle.html#cobi.mle.bin_spec_matrix"><code class="docutils literal notranslate"><span class="pre">bin_spec_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mle.html#cobi.mle.bin_cov_matrix"><code class="docutils literal notranslate"><span class="pre">bin_cov_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mle.html#cobi.mle.MLE"><code class="docutils literal notranslate"><span class="pre">MLE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#cobi.mle.MLE.FIT_OPTIONS"><code class="docutils literal notranslate"><span class="pre">MLE.FIT_OPTIONS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#cobi.mle.MLE.__init__"><code class="docutils literal notranslate"><span class="pre">MLE.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#cobi.mle.MLE.calculate"><code class="docutils literal notranslate"><span class="pre">MLE.calculate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#cobi.mle.MLE.estimate_angles"><code class="docutils literal notranslate"><span class="pre">MLE.estimate_angles()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#cobi.mle.MLE.result_name"><code class="docutils literal notranslate"><span class="pre">MLE.result_name()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mle.html#binning-functions">Binning Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#id0"><code class="docutils literal notranslate"><span class="pre">bin_from_edges()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#id1"><code class="docutils literal notranslate"><span class="pre">bin_configuration()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#id2"><code class="docutils literal notranslate"><span class="pre">bin_spec_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#id3"><code class="docutils literal notranslate"><span class="pre">bin_cov_matrix()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mle.html#result-class">Result Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#cobi.mle._Result"><code class="docutils literal notranslate"><span class="pre">_Result</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mle.html#mle-class">MLE Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#id4"><code class="docutils literal notranslate"><span class="pre">MLE</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/quest.html">Quadratic Estimator Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/quest.html#quadratic-estimator-for-cosmic-birefringence-module">Quadratic Estimator for Cosmic Birefringence Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#algorithm">Algorithm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#requirements">Requirements</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB"><code class="docutils literal notranslate"><span class="pre">FilterEB</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB.__init__"><code class="docutils literal notranslate"><span class="pre">FilterEB.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB.Bl"><code class="docutils literal notranslate"><span class="pre">FilterEB.Bl</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB.convolved_EB"><code class="docutils literal notranslate"><span class="pre">FilterEB.convolved_EB()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB.NL"><code class="docutils literal notranslate"><span class="pre">FilterEB.NL()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB.QU"><code class="docutils literal notranslate"><span class="pre">FilterEB.QU()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB.cinv_EB"><code class="docutils literal notranslate"><span class="pre">FilterEB.cinv_EB()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB.check_file_exist"><code class="docutils literal notranslate"><span class="pre">FilterEB.check_file_exist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB.plot_cinv"><code class="docutils literal notranslate"><span class="pre">FilterEB.plot_cinv()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE"><code class="docutils literal notranslate"><span class="pre">QE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.__init__"><code class="docutils literal notranslate"><span class="pre">QE.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.cl_aa"><code class="docutils literal notranslate"><span class="pre">QE.cl_aa</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.qlm"><code class="docutils literal notranslate"><span class="pre">QE.qlm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.check_file_exist"><code class="docutils literal notranslate"><span class="pre">QE.check_file_exist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.qcl"><code class="docutils literal notranslate"><span class="pre">QE.qcl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.mean_field"><code class="docutils literal notranslate"><span class="pre">QE.mean_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.mean_field_cl"><code class="docutils literal notranslate"><span class="pre">QE.mean_field_cl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.RDN0"><code class="docutils literal notranslate"><span class="pre">QE.RDN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.RDN0_mpi"><code class="docutils literal notranslate"><span class="pre">QE.RDN0_mpi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.N0_sim"><code class="docutils literal notranslate"><span class="pre">QE.N0_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.MCN0"><code class="docutils literal notranslate"><span class="pre">QE.MCN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.N1"><code class="docutils literal notranslate"><span class="pre">QE.N1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.Nlens"><code class="docutils literal notranslate"><span class="pre">QE.Nlens()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.RDN0_stat"><code class="docutils literal notranslate"><span class="pre">QE.RDN0_stat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.qcl_stat"><code class="docutils literal notranslate"><span class="pre">QE.qcl_stat()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE"><code class="docutils literal notranslate"><span class="pre">CrossQE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.__init__"><code class="docutils literal notranslate"><span class="pre">CrossQE.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.cl_aa"><code class="docutils literal notranslate"><span class="pre">CrossQE.cl_aa</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.precompute_split_ocl"><code class="docutils literal notranslate"><span class="pre">CrossQE.precompute_split_ocl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.precompute_pair_norms"><code class="docutils literal notranslate"><span class="pre">CrossQE.precompute_pair_norms()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.qlm_pair"><code class="docutils literal notranslate"><span class="pre">CrossQE.qlm_pair()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.mean_field_sim"><code class="docutils literal notranslate"><span class="pre">CrossQE.mean_field_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.mean_field"><code class="docutils literal notranslate"><span class="pre">CrossQE.mean_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.mean_field_cl"><code class="docutils literal notranslate"><span class="pre">CrossQE.mean_field_cl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.qcl_cross_only"><code class="docutils literal notranslate"><span class="pre">CrossQE.qcl_cross_only()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.Nlens"><code class="docutils literal notranslate"><span class="pre">CrossQE.Nlens()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.N1"><code class="docutils literal notranslate"><span class="pre">CrossQE.N1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.qcl_stat"><code class="docutils literal notranslate"><span class="pre">CrossQE.qcl_stat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.N0_sim"><code class="docutils literal notranslate"><span class="pre">CrossQE.N0_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.MCN0"><code class="docutils literal notranslate"><span class="pre">CrossQE.MCN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.RDN0"><code class="docutils literal notranslate"><span class="pre">CrossQE.RDN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.RDN0_mpi"><code class="docutils literal notranslate"><span class="pre">CrossQE.RDN0_mpi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.RDN0_stat"><code class="docutils literal notranslate"><span class="pre">CrossQE.RDN0_stat()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/quest.html#filtering-class">Filtering Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#id0"><code class="docutils literal notranslate"><span class="pre">FilterEB</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/quest.html#quadratic-estimator-class">Quadratic Estimator Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#id9"><code class="docutils literal notranslate"><span class="pre">QE</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/quest.html#likelihood-class">Likelihood Class</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/spectra.html">Spectra Computation Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/spectra.html#power-spectra-computation-module">Power Spectra Computation Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra"><code class="docutils literal notranslate"><span class="pre">Spectra</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__init__"><code class="docutils literal notranslate"><span class="pre">Spectra.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.get_apodised_mask"><code class="docutils literal notranslate"><span class="pre">Spectra.get_apodised_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.get_coupling_matrix"><code class="docutils literal notranslate"><span class="pre">Spectra.get_coupling_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.compute_master"><code class="docutils literal notranslate"><span class="pre">Spectra.compute_master()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__set_dir__"><code class="docutils literal notranslate"><span class="pre">Spectra.__set_dir__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.load_obsQUmaps"><code class="docutils literal notranslate"><span class="pre">Spectra.load_obsQUmaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.Obs_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.Obs_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__get_fg_QUmap__"><code class="docutils literal notranslate"><span class="pre">Spectra.__get_fg_QUmap__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.load_dustQUmaps"><code class="docutils literal notranslate"><span class="pre">Spectra.load_dustQUmaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.Dust_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.Dust_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.load_syncQUmaps"><code class="docutils literal notranslate"><span class="pre">Spectra.load_syncQUmaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.Sync_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.Sync_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.obs_x_obs_check"><code class="docutils literal notranslate"><span class="pre">Spectra.obs_x_obs_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__obs_x_obs_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__obs_x_obs_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__obs_x_obs_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__obs_x_obs_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.obs_x_obs"><code class="docutils literal notranslate"><span class="pre">Spectra.obs_x_obs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__fg_x_obs_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_obs_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__fg_x_obs_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_obs_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.dust_x_obs"><code class="docutils literal notranslate"><span class="pre">Spectra.dust_x_obs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.dust_x_obs_check"><code class="docutils literal notranslate"><span class="pre">Spectra.dust_x_obs_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.sync_x_obs_check"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_obs_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.sync_x_obs"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_obs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__fg_x_fg_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_fg_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__fg_x_fg_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_fg_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.sync_x_sync"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_sync()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.dust_x_dust"><code class="docutils literal notranslate"><span class="pre">Spectra.dust_x_dust()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__sync_x_dust_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__sync_x_dust_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__sync_x_dust_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__sync_x_dust_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.sync_x_dust"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_dust()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.clear_obs_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.clear_obs_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.clear_dust_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.clear_dust_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.clear_sync_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.clear_sync_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.compute"><code class="docutils literal notranslate"><span class="pre">Spectra.compute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.Compute"><code class="docutils literal notranslate"><span class="pre">Spectra.Compute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.get_spectra"><code class="docutils literal notranslate"><span class="pre">Spectra.get_spectra()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.SpectraCross"><code class="docutils literal notranslate"><span class="pre">SpectraCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.SpectraCross.__init__"><code class="docutils literal notranslate"><span class="pre">SpectraCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.SpectraCross.get_mask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.get_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.SpectraCross.satmask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.satmask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.SpectraCross.latmask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.latmask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.SpectraCross.satlatmask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.satlatmask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.SpectraCross.compute_master"><code class="docutils literal notranslate"><span class="pre">SpectraCross.compute_master()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.SpectraCross.data_matrix"><code class="docutils literal notranslate"><span class="pre">SpectraCross.data_matrix()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/spectra.html#spectra-class">Spectra Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#id0"><code class="docutils literal notranslate"><span class="pre">Spectra</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/spectra.html#cross-spectra-class">Cross-Spectra Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#id36"><code class="docutils literal notranslate"><span class="pre">SpectraCross</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/sht.html">Spherical Harmonic Transforms Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/sht.html#id1">Spherical Harmonic Transforms Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#classes">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.__init__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.getsize"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.getsize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.__tomap__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__tomap__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.__toalm__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__toalm__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.__alm2map_spin2__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__alm2map_spin2__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.__map2alm_spin2__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__map2alm_spin2__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.__alm2map_spin0__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__alm2map_spin0__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.__map2alm_spin0__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__map2alm_spin0__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.alm2map"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.alm2map()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.map2alm"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.map2alm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.smoothing_alms"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.smoothing_alms()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.smoothing_maps"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.smoothing_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.smoothing"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.smoothing()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/sht.html#healpixducc-class">HealpixDUCC Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#id0"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/utils.html">Utilities Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#utility-functions-module">Utility Functions Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#functions">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#cobi.utils.Logger"><code class="docutils literal notranslate"><span class="pre">Logger</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#cobi.utils.Logger.__init__"><code class="docutils literal notranslate"><span class="pre">Logger.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#cobi.utils.Logger.log"><code class="docutils literal notranslate"><span class="pre">Logger.log()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#cobi.utils.inrad"><code class="docutils literal notranslate"><span class="pre">inrad()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#cobi.utils.cli"><code class="docutils literal notranslate"><span class="pre">cli()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#cobi.utils.download_file"><code class="docutils literal notranslate"><span class="pre">download_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#cobi.utils.deconvolveQU"><code class="docutils literal notranslate"><span class="pre">deconvolveQU()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#cobi.utils.change_coord"><code class="docutils literal notranslate"><span class="pre">change_coord()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#cobi.utils.slice_alms"><code class="docutils literal notranslate"><span class="pre">slice_alms()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#cobi.utils.Binner"><code class="docutils literal notranslate"><span class="pre">Binner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#cobi.utils.Binner.__init__"><code class="docutils literal notranslate"><span class="pre">Binner.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#cobi.utils.Binner.bin"><code class="docutils literal notranslate"><span class="pre">Binner.bin()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#logger-class">Logger Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#id0"><code class="docutils literal notranslate"><span class="pre">Logger</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#utility-functions">Utility Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#id3"><code class="docutils literal notranslate"><span class="pre">inrad()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#id4"><code class="docutils literal notranslate"><span class="pre">cli()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#id5"><code class="docutils literal notranslate"><span class="pre">download_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#id6"><code class="docutils literal notranslate"><span class="pre">deconvolveQU()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#id7"><code class="docutils literal notranslate"><span class="pre">change_coord()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#id8"><code class="docutils literal notranslate"><span class="pre">slice_alms()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/mpi.html">MPI Support Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mpi.html#id1">MPI Support Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#cobi.mpi.mpi"><code class="docutils literal notranslate"><span class="pre">mpi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#cobi.mpi.com"><code class="docutils literal notranslate"><span class="pre">com</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#cobi.mpi.rank"><code class="docutils literal notranslate"><span class="pre">rank</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#cobi.mpi.size"><code class="docutils literal notranslate"><span class="pre">size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#cobi.mpi.barrier"><code class="docutils literal notranslate"><span class="pre">barrier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#cobi.mpi.finalize"><code class="docutils literal notranslate"><span class="pre">finalize</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mpi.html#module-attributes">Module Attributes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#id0"><code class="docutils literal notranslate"><span class="pre">mpi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#id2"><code class="docutils literal notranslate"><span class="pre">com</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#id3"><code class="docutils literal notranslate"><span class="pre">rank</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#id4"><code class="docutils literal notranslate"><span class="pre">size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#id5"><code class="docutils literal notranslate"><span class="pre">barrier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#id6"><code class="docutils literal notranslate"><span class="pre">finalize</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/simulation.html">Simulation Subpackage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/simulation.html#id1">Simulation Subpackage</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#modules">Modules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#classes">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/simulation.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/simulation.html#main-classes">Main Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/generated/cobi.simulation.CMB.html">cobi.simulation.CMB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/generated/cobi.simulation.Foreground.html">cobi.simulation.Foreground</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/generated/cobi.simulation.Mask.html">cobi.simulation.Mask</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/generated/cobi.simulation.Noise.html">cobi.simulation.Noise</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/generated/cobi.simulation.LATsky.html">cobi.simulation.LATsky</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/generated/cobi.simulation.SATsky.html">cobi.simulation.SATsky</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/generated/cobi.simulation.LATskyC.html">cobi.simulation.LATskyC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/generated/cobi.simulation.SATskyC.html">cobi.simulation.SATskyC</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/simulation.html#module-cobi.simulation.cmb">CMB Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cmb-simulation-module">CMB Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.cmb.synfast_pol"><code class="docutils literal notranslate"><span class="pre">synfast_pol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.cmb.CMB"><code class="docutils literal notranslate"><span class="pre">CMB</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#id3">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#id44">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/simulation.html#module-cobi.simulation.fg">Foreground Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#foreground-simulation-module">Foreground Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.fg.BandpassInt"><code class="docutils literal notranslate"><span class="pre">BandpassInt</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.fg.Foreground"><code class="docutils literal notranslate"><span class="pre">Foreground</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.fg.HILC"><code class="docutils literal notranslate"><span class="pre">HILC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#id49">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/simulation.html#module-cobi.simulation.mask">Mask Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#mask-generation-module">Mask Generation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.mask.Mask"><code class="docutils literal notranslate"><span class="pre">Mask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#id73">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/simulation.html#module-cobi.simulation.noise">Noise Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#noise-simulation-module">Noise Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.noise.NoiseSpectra"><code class="docutils literal notranslate"><span class="pre">NoiseSpectra()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.noise.Noise"><code class="docutils literal notranslate"><span class="pre">Noise</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#id87">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#id115">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/simulation.html#module-cobi.simulation.sky">Sky Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#sky-simulation-module">Sky Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.sky.SkySimulation"><code class="docutils literal notranslate"><span class="pre">SkySimulation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.sky.LATsky"><code class="docutils literal notranslate"><span class="pre">LATsky</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.sky.SATsky"><code class="docutils literal notranslate"><span class="pre">SATsky</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.sky.LATskyC"><code class="docutils literal notranslate"><span class="pre">LATskyC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.sky.SATskyC"><code class="docutils literal notranslate"><span class="pre">SATskyC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#id118">Classes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">COBI: Cosmic Birefringence Analysis Pipeline</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">cobi.simulation.noise</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for cobi.simulation.noise</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Noise Simulation Module</span>
+<span class="sd">=======================</span>
+
+<span class="sd">This module simulates realistic instrumental noise for Simons Observatory</span>
+<span class="sd">observations, including white noise, atmospheric noise, and correlated noise</span>
+<span class="sd">between detector pairs.</span>
+
+<span class="sd">Features:</span>
+
+<span class="sd">- SO LAT and SAT noise models (v3.1.1)</span>
+<span class="sd">- Sensitivity modes (baseline, goal)</span>
+<span class="sd">- Atmospheric and 1/f noise components</span>
+<span class="sd">- Cross-frequency correlations</span>
+<span class="sd">- Map-based and harmonic-space realizations</span>
+<span class="sd">- Anisotropic noise from hit maps</span>
+
+<span class="sd">Classes</span>
+<span class="sd">-------</span>
+<span class="sd">Noise</span>
+<span class="sd">    Main class for generating noise realizations and spectra.</span>
+
+<span class="sd">Functions</span>
+<span class="sd">---------</span>
+<span class="sd">NoiseSpectra</span>
+<span class="sd">    Compute noise power spectra for SO telescopes.</span>
+
+<span class="sd">Example</span>
+<span class="sd">-------</span>
+<span class="sd">Generate noise maps for LAT baseline sensitivity::</span>
+
+<span class="sd">    from cobi.simulation import Noise</span>
+<span class="sd">    import numpy as np</span>
+<span class="sd">    </span>
+<span class="sd">    noise = Noise(</span>
+<span class="sd">        libdir=&#39;./noise_sims&#39;,</span>
+<span class="sd">        nside=512,</span>
+<span class="sd">        lmax=3000,</span>
+<span class="sd">        freqs=np.array([27, 39, 93, 145, 225, 280]),</span>
+<span class="sd">        fwhm=np.array([7.4, 5.1, 2.2, 1.4, 1.0, 0.9]),</span>
+<span class="sd">        telescope=&#39;LAT&#39;,</span>
+<span class="sd">        sensitivity_mode=&#39;baseline&#39;,</span>
+<span class="sd">        fsky=0.4,</span>
+<span class="sd">        atm_noise=True</span>
+<span class="sd">    )</span>
+<span class="sd">    </span>
+<span class="sd">    # Get noise realization</span>
+<span class="sd">    noise_maps = noise.get_map(idx=0)  # Shape: (nfreqs, 3, npix)</span>
+
+<span class="sd">Anisotropic noise from hit maps::</span>
+
+<span class="sd">    noise_aniso = Noise(</span>
+<span class="sd">        libdir=&#39;./noise_sims&#39;,</span>
+<span class="sd">        nside=512,</span>
+<span class="sd">        nside_aniso=4096,  # high-res for hit maps</span>
+<span class="sd">        isotropic=False,</span>
+<span class="sd">        hitmap_file=&#39;hitmaps.h5&#39;</span>
+<span class="sd">    )</span>
+
+<span class="sd">Notes</span>
+<span class="sd">-----</span>
+<span class="sd">Uses SO noise models v3.1.1 for realistic noise properties. Supports both</span>
+<span class="sd">isotropic and anisotropic noise based on actual survey hit maps.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">healpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">hp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pixell</span><span class="w"> </span><span class="kn">import</span> <span class="n">enmap</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pixell.reproject</span><span class="w"> </span><span class="kn">import</span> <span class="n">map2healpix</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">so_models_v3</span><span class="w"> </span><span class="kn">import</span> <span class="n">SO_Noise_Calculator_Public_v3_1_1</span> <span class="k">as</span> <span class="n">so_models</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">cobi</span><span class="w"> </span><span class="kn">import</span> <span class="n">mpi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cobi.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Logger</span><span class="p">,</span> <span class="n">change_coord</span>
+
+<span class="c1">#atm_noise or atm_corr, same for the noise map as well</span>
+
+<div class="viewcode-block" id="NoiseSpectra">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.NoiseSpectra">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">NoiseSpectra</span><span class="p">(</span><span class="n">sensitivity_mode</span><span class="p">,</span> <span class="n">fsky</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">atm_noise</span><span class="p">,</span> <span class="n">telescope</span><span class="p">,</span> <span class="n">aso</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">aso</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">telescope</span> <span class="o">==</span> <span class="s2">&quot;LAT&quot;</span><span class="p">,</span> <span class="s2">&quot;ASO noise model is only available for LAT telescope.&quot;</span>
+    <span class="k">match</span> <span class="n">telescope</span><span class="p">:</span>
+        <span class="k">case</span> <span class="s2">&quot;LAT&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">aso</span><span class="p">:</span>
+                <span class="n">teles</span> <span class="o">=</span> <span class="n">so_models</span><span class="o">.</span><span class="n">SOLatV3point1</span><span class="p">(</span><span class="n">sensitivity_mode</span><span class="p">,</span><span class="n">N_tubes</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span><span class="n">survey_years</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">el</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">teles</span> <span class="o">=</span> <span class="n">so_models</span><span class="o">.</span><span class="n">SOLatV3point1</span><span class="p">(</span><span class="n">sensitivity_mode</span><span class="p">,</span> <span class="n">el</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+        <span class="k">case</span> <span class="s2">&quot;SAT&quot;</span><span class="p">:</span>
+            <span class="n">teles</span> <span class="o">=</span> <span class="n">so_models</span><span class="o">.</span><span class="n">SOSatV3point1</span><span class="p">(</span><span class="n">sensitivity_mode</span><span class="p">)</span>
+    
+    <span class="n">corr_pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">)]</span>
+    
+    <span class="n">ell</span><span class="p">,</span> <span class="n">N_ell_LA_T_full</span><span class="p">,</span><span class="n">N_ell_LA_P_full</span> <span class="o">=</span> <span class="n">teles</span><span class="o">.</span><span class="n">get_noise_curves</span><span class="p">(</span><span class="n">fsky</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">full_covar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">deconv_beam</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">N_ell_LA_T_full</span>
+    <span class="n">bands</span> <span class="o">=</span> <span class="n">teles</span><span class="o">.</span><span class="n">get_bands</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">Nbands</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bands</span><span class="p">)</span>
+    <span class="n">N_ell_LA_P</span>  <span class="o">=</span> <span class="n">N_ell_LA_P_full</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">Nbands</span><span class="p">),</span><span class="nb">range</span><span class="p">(</span><span class="n">Nbands</span><span class="p">)]</span> <span class="c1">#type: ignore</span>
+    <span class="n">N_ell_LA_Px</span> <span class="o">=</span> <span class="p">[</span><span class="n">N_ell_LA_P_full</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span> <span class="ow">in</span> <span class="n">corr_pairs</span><span class="p">]</span> <span class="c1">#type: ignore</span>
+    <span class="n">Nell_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">Nell_dict</span><span class="p">[</span><span class="s2">&quot;ell&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ell</span>
+    <span class="k">if</span> <span class="n">atm_noise</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">Nell_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bands</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">j</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">N_ell_LA_P</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">j</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">k</span> <span class="o">=</span> <span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">j</span>
+                    <span class="n">Nell_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bands</span><span class="p">[</span><span class="n">k</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">bands</span><span class="p">[</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">N_ell_LA_Px</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">WN</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">teles</span><span class="o">.</span><span class="n">get_white_noise</span><span class="p">(</span><span class="n">fsky</span><span class="p">)</span><span class="o">**</span><span class="mf">.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Nbands</span><span class="p">):</span>
+            <span class="n">Nell_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bands</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">WN</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">ell</span><span class="p">)</span>
+
+
+    <span class="k">return</span> <span class="n">Nell_dict</span></div>
+
+
+
+<div class="viewcode-block" id="Noise">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Noise</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Instrumental noise simulator for Simons Observatory telescopes.</span>
+<span class="sd">    </span>
+<span class="sd">    This class generates realistic noise realizations for SO LAT and SAT observations</span>
+<span class="sd">    based on the v3.1.1 noise models. Supports white noise, atmospheric/1f noise,</span>
+<span class="sd">    and correlated noise between detector pairs within the same optical tube.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nside : int</span>
+<span class="sd">        HEALPix resolution parameter.</span>
+<span class="sd">    fsky : float</span>
+<span class="sd">        Sky fraction for noise power calculation (0 &lt; fsky ≤ 1).</span>
+<span class="sd">    telescope : {&#39;LAT&#39;, &#39;SAT&#39;}</span>
+<span class="sd">        Telescope identifier (Large Aperture or Small Aperture).</span>
+<span class="sd">    sim : {&#39;NC&#39;, &#39;TOD&#39;}, default=&#39;NC&#39;</span>
+<span class="sd">        Simulation type:</span>
+<span class="sd">        - &#39;NC&#39;: Noise curves from SO models (analytic)</span>
+<span class="sd">        - &#39;TOD&#39;: Time-ordered data based simulations (uses SO products)</span>
+<span class="sd">    atm_noise : bool, default=False</span>
+<span class="sd">        Include atmospheric and 1/f noise components.</span>
+<span class="sd">    nsplits : int, default=2</span>
+<span class="sd">        Number of data splits (for split-based null tests).</span>
+<span class="sd">    verbose : bool, default=True</span>
+<span class="sd">        Enable logging output.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nside : int</span>
+<span class="sd">        HEALPix resolution.</span>
+<span class="sd">    lmax : int</span>
+<span class="sd">        Maximum multipole (3*nside - 1).</span>
+<span class="sd">    sensitivity_mode : int</span>
+<span class="sd">        SO sensitivity mode (2 = baseline).</span>
+<span class="sd">    atm_noise : bool</span>
+<span class="sd">        Whether atmospheric noise is included.</span>
+<span class="sd">    Nell : dict</span>
+<span class="sd">        Noise power spectra for each frequency and cross-frequency.</span>
+<span class="sd">    telescope : str</span>
+<span class="sd">        Telescope identifier.</span>
+<span class="sd">    </span>
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    get_map(idx, freqs, fwhm, tube)</span>
+<span class="sd">        Generate noise map realization for given configuration.</span>
+<span class="sd">    get_spectra(idx, freqs, fwhm, tube)</span>
+<span class="sd">        Get noise power spectra for given configuration.</span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    LAT baseline noise with atmosphere::</span>
+<span class="sd">    </span>
+<span class="sd">        noise = Noise(</span>
+<span class="sd">            nside=512,</span>
+<span class="sd">            fsky=0.4,</span>
+<span class="sd">            telescope=&#39;LAT&#39;,</span>
+<span class="sd">            sim=&#39;NC&#39;,</span>
+<span class="sd">            atm_noise=True,</span>
+<span class="sd">            nsplits=2</span>
+<span class="sd">        )</span>
+<span class="sd">        </span>
+<span class="sd">        # Generate noise for 6 LAT frequencies</span>
+<span class="sd">        freqs = np.array([27, 39, 93, 145, 225, 280])</span>
+<span class="sd">        fwhm = np.array([7.4, 5.1, 2.2, 1.4, 1.0, 0.9])</span>
+<span class="sd">        tube = np.array([0, 0, 1, 1, 2, 2])</span>
+<span class="sd">        </span>
+<span class="sd">        noise_maps = noise.get_map(idx=0, freqs=freqs, fwhm=fwhm, tube=tube)</span>
+<span class="sd">    </span>
+<span class="sd">    SAT white noise only::</span>
+<span class="sd">    </span>
+<span class="sd">        noise_sat = Noise(</span>
+<span class="sd">            nside=512,</span>
+<span class="sd">            fsky=0.1,</span>
+<span class="sd">            telescope=&#39;SAT&#39;,</span>
+<span class="sd">            sim=&#39;NC&#39;,</span>
+<span class="sd">            atm_noise=False</span>
+<span class="sd">        )</span>
+<span class="sd">        </span>
+<span class="sd">        freqs = np.array([27, 39, 93, 145, 225, 280])</span>
+<span class="sd">        noise_maps = noise_sat.get_map(idx=0, freqs=freqs, fwhm=None, tube=None)</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - Uses SO v3.1.1 noise models (baseline sensitivity)</span>
+<span class="sd">    - Correlated noise between frequency pairs in same tube</span>
+<span class="sd">    - Supports independent realizations via idx parameter</span>
+<span class="sd">    - MPI-aware for parallel generation</span>
+<span class="sd">    - Output in μK_CMB units</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Noise.__init__">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                 <span class="n">nside</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> 
+                 <span class="n">fsky</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                 <span class="n">telescope</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">sim</span> <span class="o">=</span> <span class="s1">&#39;NC&#39;</span><span class="p">,</span>
+                 <span class="n">atm_noise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
+                 <span class="n">nsplits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+                 <span class="n">aso</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">ext_sims</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">sim_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the Noise class for generating noise maps with or without atmospheric noise.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        nside (int): HEALPix resolution parameter.</span>
+<span class="sd">        atm_noise (bool, optional): If True, includes atmospheric noise. Defaults to False.</span>
+<span class="sd">        nhits (bool, optional): If True, includes hit count map. Defaults to False.</span>
+<span class="sd">        nsplits (int, optional): Number of data splits to consider. Defaults to 2.</span>
+<span class="sd">        ext_sims (bool, optional): If True, extends simulations by treating each split as independent (only for TOD LAT). Defaults to False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nside</span>            <span class="o">=</span> <span class="n">nside</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lmax</span>             <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">nside</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sensitivity_mode</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atm_noise</span>        <span class="o">=</span> <span class="n">atm_noise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span>          <span class="o">=</span> <span class="n">nsplits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">telescope</span> <span class="o">=</span> <span class="n">telescope</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ext_sims</span>         <span class="o">=</span> <span class="n">ext_sims</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nell</span>             <span class="o">=</span> <span class="n">NoiseSpectra</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sensitivity_mode</span><span class="p">,</span> <span class="n">fsky</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atm_noise</span><span class="p">,</span> <span class="n">telescope</span><span class="p">,</span> <span class="n">aso</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sim</span> <span class="o">=</span> <span class="n">sim</span>
+        <span class="k">assert</span> <span class="n">sim</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;NC&#39;</span><span class="p">,</span> <span class="s1">&#39;TOD&#39;</span><span class="p">],</span> <span class="s2">&quot;Invalid simulation type. Choose from &#39;NC&#39; or &#39;TOD&#39;.&quot;</span>
+        
+        <span class="k">if</span> <span class="n">ext_sims</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">sim</span> <span class="o">==</span> <span class="s1">&#39;TOD&#39;</span><span class="p">,</span> <span class="s2">&quot;ext_sims can only be True when sim=&#39;TOD&#39;.&quot;</span>
+            <span class="k">assert</span> <span class="n">telescope</span> <span class="o">==</span> <span class="s1">&#39;LAT&#39;</span><span class="p">,</span> <span class="s2">&quot;ext_sims is only available for LAT telescope.&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span>           <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sim_config</span> <span class="o">=</span> <span class="n">sim_config</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span> <span class="o">==</span> <span class="s1">&#39;NC&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atm_noise</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Noise Model:[</span><span class="si">{</span><span class="n">telescope</span><span class="si">}</span><span class="s2">] White + 1/f noise v3.1.1&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Noise Model:[</span><span class="si">{</span><span class="n">telescope</span><span class="si">}</span><span class="s2">] White noise v3.1.1&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span> <span class="o">==</span> <span class="s1">&#39;TOD&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Noise Model: [</span><span class="si">{</span><span class="n">telescope</span><span class="si">}</span><span class="s2">] Based on TOD and Map based simulations, directly using SO products.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ext_sims</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Extending simulations by treating each split as independent (only for LAT).&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid simulation type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;Choose from &#39;NC&#39; or &#39;TOD&#39;.&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">__nseeds__</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="mi">1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">7777</span><span class="p">,</span> <span class="mi">7777</span> <span class="o">+</span> <span class="mi">1000</span><span class="p">),</span>
+            <span class="mi">2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">9999</span><span class="p">,</span> <span class="mi">9999</span> <span class="o">+</span> <span class="mi">1000</span><span class="p">),</span>
+            <span class="mi">3</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5555</span><span class="p">,</span> <span class="mi">5555</span> <span class="o">+</span> <span class="mi">1000</span><span class="p">),</span>
+            <span class="mi">4</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">8888</span><span class="p">,</span> <span class="mi">8888</span> <span class="o">+</span> <span class="mi">1000</span><span class="p">),</span>
+        <span class="p">}</span></div>
+
+    
+<div class="viewcode-block" id="Noise.__get_noise_seed_idx__">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise.__get_noise_seed_idx__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__get_noise_seed_idx__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Map simulation index to the actual noise seed index.</span>
+<span class="sd">        </span>
+<span class="sd">        For indices &lt; set1: use idx directly</span>
+<span class="sd">        For indices &gt;= set1: map to last reuse_last indices of set1</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        idx (int): The simulation realization index.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">        int: The seed index to use for noise generation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">idx</span>
+        
+        <span class="n">set1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_config</span><span class="p">[</span><span class="s1">&#39;set1&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="n">set1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">idx</span>
+        
+        <span class="c1"># Map to last reuse_last simulations from set1</span>
+        <span class="n">reuse_last</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_config</span><span class="p">[</span><span class="s1">&#39;reuse_last&#39;</span><span class="p">]</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">-</span> <span class="n">set1</span>
+        <span class="n">base_idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">set1</span> <span class="o">-</span> <span class="n">reuse_last</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">offset</span> <span class="o">%</span> <span class="n">reuse_last</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">base_idx</span></div>
+
+        
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rand_alm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates random spherical harmonic coefficients (alm) with a specified power spectrum.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        np.ndarray: A complex array of spherical harmonic coefficients.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mf">1.0e3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">hp</span><span class="o">.</span><span class="n">almxfl</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">synalm</span><span class="p">(</span><span class="n">cl</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">cl</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cholesky_matrix_elements</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the Cholesky matrix elements for the noise model.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        Tuple of nine np.ndarray elements representing the Cholesky matrix components.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">L11</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">L11</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;27&quot;</span><span class="p">])</span>
+        <span class="n">L21</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">L21</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;27x39&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;27&quot;</span><span class="p">])</span>
+        <span class="n">L22</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">L22</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;27&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;39&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;27x39&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;27&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">L33</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">L33</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;93&quot;</span><span class="p">])</span>
+        <span class="n">L43</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">L43</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;93x145&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;93&quot;</span><span class="p">])</span>
+        <span class="n">L44</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">L44</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;93&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;145&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;93x145&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;93&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">L55</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">L55</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;225&quot;</span><span class="p">])</span>
+        <span class="n">L65</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">L65</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;225x280&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;225&quot;</span><span class="p">])</span>
+        <span class="n">L66</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">L66</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;225&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;280&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;225x280&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="s2">&quot;225&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">L11</span><span class="p">,</span> <span class="n">L21</span><span class="p">,</span> <span class="n">L22</span><span class="p">,</span> <span class="n">L33</span><span class="p">,</span> <span class="n">L43</span><span class="p">,</span> <span class="n">L44</span><span class="p">,</span> <span class="n">L55</span><span class="p">,</span> <span class="n">L65</span><span class="p">,</span> <span class="n">L66</span>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__white_noise__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">band</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">synfast</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nell</span><span class="p">[</span><span class="n">band</span><span class="p">])),</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">pixwin</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">n</span>
+        
+    
+<div class="viewcode-block" id="Noise.white_noise_maps">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise.white_noise_maps">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">white_noise_maps</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span> 
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__white_noise__</span><span class="p">(</span><span class="s1">&#39;27&#39;</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__white_noise__</span><span class="p">(</span><span class="s1">&#39;39&#39;</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__white_noise__</span><span class="p">(</span><span class="s1">&#39;93&#39;</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__white_noise__</span><span class="p">(</span><span class="s1">&#39;145&#39;</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__white_noise__</span><span class="p">(</span><span class="s1">&#39;225&#39;</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__white_noise__</span><span class="p">(</span><span class="s1">&#39;280&#39;</span><span class="p">)])</span></div>
+
+    
+<div class="viewcode-block" id="Noise.white_noise_maps_freq">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise.white_noise_maps_freq">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">white_noise_maps_freq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freq</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates white noise maps for a specific frequency band.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        np.ndarray: An array of white noise maps for the specified frequency band.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">band</span> <span class="o">=</span> <span class="n">freq</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__white_noise__</span><span class="p">(</span><span class="n">band</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">n</span></div>
+
+    
+<div class="viewcode-block" id="Noise.atm_noise_maps_freq">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise.atm_noise_maps_freq">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">atm_noise_maps_freq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">freq</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates atmospheric noise maps using Cholesky decomposition.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        np.ndarray: An array of atmospheric noise maps for different frequency bands.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">L11</span><span class="p">,</span> <span class="n">L21</span><span class="p">,</span> <span class="n">L22</span><span class="p">,</span> <span class="n">L33</span><span class="p">,</span> <span class="n">L43</span><span class="p">,</span> <span class="n">L44</span><span class="p">,</span> <span class="n">L55</span><span class="p">,</span> <span class="n">L65</span><span class="p">,</span> <span class="n">L66</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cholesky_matrix_elements</span> 
+
+        <span class="n">f</span> <span class="o">=</span> <span class="n">freq</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">split</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">freq</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">seed_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_noise_seed_idx__</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">noise_map</span><span class="p">(</span><span class="n">Alm</span><span class="p">,</span><span class="n">L</span><span class="p">):</span>
+            <span class="n">nlm</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">almxfl</span><span class="p">(</span><span class="n">Alm</span><span class="p">,</span> <span class="n">L</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">alm2map</span><span class="p">(</span><span class="n">nlm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span> <span class="n">pixwin</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">noise_map_cross</span><span class="p">(</span><span class="n">Alm1</span><span class="p">,</span><span class="n">Alm2</span><span class="p">,</span><span class="n">L1</span><span class="p">,</span><span class="n">L2</span><span class="p">):</span>
+            <span class="n">nlm</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">almxfl</span><span class="p">(</span><span class="n">Alm1</span><span class="p">,</span> <span class="n">L1</span><span class="p">)</span> <span class="o">+</span> <span class="n">hp</span><span class="o">.</span><span class="n">almxfl</span><span class="p">(</span><span class="n">Alm2</span><span class="p">,</span> <span class="n">L2</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">alm2map</span><span class="p">(</span><span class="n">nlm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span> <span class="n">pixwin</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">n</span>
+        
+        <span class="k">if</span> <span class="n">f</span> <span class="o">==</span> <span class="s1">&#39;27&#39;</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nseeds__</span><span class="p">[</span><span class="n">split</span><span class="p">][</span><span class="n">seed_idx</span><span class="p">])</span>
+            <span class="n">alm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_alm</span>
+            <span class="k">return</span> <span class="n">noise_map</span><span class="p">(</span><span class="n">alm</span><span class="p">,</span> <span class="n">L11</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">f</span> <span class="o">==</span> <span class="s1">&#39;39&#39;</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nseeds__</span><span class="p">[</span><span class="n">split</span><span class="p">][</span><span class="n">seed_idx</span><span class="p">])</span>
+            <span class="n">alm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_alm</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nseeds__</span><span class="p">[</span><span class="n">split</span><span class="p">][</span><span class="n">seed_idx</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">blm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_alm</span>
+            <span class="k">return</span> <span class="n">noise_map_cross</span><span class="p">(</span><span class="n">alm</span><span class="p">,</span><span class="n">blm</span><span class="p">,</span><span class="n">L21</span><span class="p">,</span><span class="n">L22</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">f</span> <span class="o">==</span> <span class="s1">&#39;93&#39;</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nseeds__</span><span class="p">[</span><span class="n">split</span><span class="p">][</span><span class="n">seed_idx</span><span class="p">]</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">clm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_alm</span>
+            <span class="k">return</span> <span class="n">noise_map</span><span class="p">(</span><span class="n">clm</span><span class="p">,</span><span class="n">L33</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">f</span> <span class="o">==</span> <span class="s1">&#39;145&#39;</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nseeds__</span><span class="p">[</span><span class="n">split</span><span class="p">][</span><span class="n">seed_idx</span><span class="p">]</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">clm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_alm</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nseeds__</span><span class="p">[</span><span class="n">split</span><span class="p">][</span><span class="n">seed_idx</span><span class="p">]</span><span class="o">+</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">dlm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_alm</span>
+            <span class="k">return</span> <span class="n">noise_map_cross</span><span class="p">(</span><span class="n">clm</span><span class="p">,</span><span class="n">dlm</span><span class="p">,</span><span class="n">L43</span><span class="p">,</span><span class="n">L44</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">f</span> <span class="o">==</span> <span class="s1">&#39;225&#39;</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nseeds__</span><span class="p">[</span><span class="n">split</span><span class="p">][</span><span class="n">seed_idx</span><span class="p">]</span><span class="o">+</span><span class="mi">4</span><span class="p">)</span>
+            <span class="n">elm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_alm</span>
+            <span class="k">return</span> <span class="n">noise_map</span><span class="p">(</span><span class="n">elm</span><span class="p">,</span><span class="n">L55</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">f</span> <span class="o">==</span> <span class="s1">&#39;280&#39;</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nseeds__</span><span class="p">[</span><span class="n">split</span><span class="p">][</span><span class="n">seed_idx</span><span class="p">]</span><span class="o">+</span><span class="mi">4</span><span class="p">)</span>
+            <span class="n">elm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_alm</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nseeds__</span><span class="p">[</span><span class="n">split</span><span class="p">][</span><span class="n">seed_idx</span><span class="p">]</span><span class="o">+</span><span class="mi">5</span><span class="p">)</span>
+            <span class="n">flm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_alm</span>
+            <span class="k">return</span> <span class="n">noise_map_cross</span><span class="p">(</span><span class="n">elm</span><span class="p">,</span><span class="n">flm</span><span class="p">,</span><span class="n">L65</span><span class="p">,</span><span class="n">L66</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid frequency band: </span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;Choose from &#39;27&#39;, &#39;39&#39;, &#39;93&#39;, &#39;145&#39;, &#39;225&#39;, &#39;280&#39;.&quot;</span><span class="p">)</span></div>
+
+            
+
+
+<div class="viewcode-block" id="Noise.atm_noise_maps">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise.atm_noise_maps">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">atm_noise_maps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">split</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates atmospheric noise maps using Cholesky decomposition.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        np.ndarray: An array of atmospheric noise maps for different frequency bands.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">L11</span><span class="p">,</span> <span class="n">L21</span><span class="p">,</span> <span class="n">L22</span><span class="p">,</span> <span class="n">L33</span><span class="p">,</span> <span class="n">L43</span><span class="p">,</span> <span class="n">L44</span><span class="p">,</span> <span class="n">L55</span><span class="p">,</span> <span class="n">L65</span><span class="p">,</span> <span class="n">L66</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cholesky_matrix_elements</span>
+        
+        <span class="n">seed_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_noise_seed_idx__</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nseeds__</span><span class="p">[</span><span class="n">split</span><span class="p">][</span><span class="n">seed_idx</span><span class="p">])</span>
+        <span class="n">alm</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_alm</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nseeds__</span><span class="p">[</span><span class="n">split</span><span class="p">][</span><span class="n">seed_idx</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">blm</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_alm</span>
+        <span class="n">nlm_27</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">almxfl</span><span class="p">(</span><span class="n">alm</span><span class="p">,</span> <span class="n">L11</span><span class="p">)</span>
+        <span class="n">nlm_39</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">almxfl</span><span class="p">(</span><span class="n">alm</span><span class="p">,</span> <span class="n">L21</span><span class="p">)</span> <span class="o">+</span> <span class="n">hp</span><span class="o">.</span><span class="n">almxfl</span><span class="p">(</span><span class="n">blm</span><span class="p">,</span> <span class="n">L22</span><span class="p">)</span>
+        <span class="n">n_27</span>   <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">alm2map</span><span class="p">(</span><span class="n">nlm_27</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span> <span class="n">pixwin</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">n_39</span>   <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">alm2map</span><span class="p">(</span><span class="n">nlm_39</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span> <span class="n">pixwin</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nseeds__</span><span class="p">[</span><span class="n">split</span><span class="p">][</span><span class="n">seed_idx</span><span class="p">]</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">clm</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_alm</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nseeds__</span><span class="p">[</span><span class="n">split</span><span class="p">][</span><span class="n">seed_idx</span><span class="p">]</span><span class="o">+</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">dlm</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_alm</span>
+        <span class="n">nlm_93</span>  <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">almxfl</span><span class="p">(</span><span class="n">clm</span><span class="p">,</span> <span class="n">L33</span><span class="p">)</span>
+        <span class="n">nlm_145</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">almxfl</span><span class="p">(</span><span class="n">clm</span><span class="p">,</span> <span class="n">L43</span><span class="p">)</span> <span class="o">+</span> <span class="n">hp</span><span class="o">.</span><span class="n">almxfl</span><span class="p">(</span><span class="n">dlm</span><span class="p">,</span> <span class="n">L44</span><span class="p">)</span>
+        <span class="n">n_93</span>    <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">alm2map</span><span class="p">(</span><span class="n">nlm_93</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span> <span class="n">pixwin</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">n_145</span>   <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">alm2map</span><span class="p">(</span><span class="n">nlm_145</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span> <span class="n">pixwin</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nseeds__</span><span class="p">[</span><span class="n">split</span><span class="p">][</span><span class="n">seed_idx</span><span class="p">]</span><span class="o">+</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">elm</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_alm</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nseeds__</span><span class="p">[</span><span class="n">split</span><span class="p">][</span><span class="n">seed_idx</span><span class="p">]</span><span class="o">+</span><span class="mi">5</span><span class="p">)</span>
+        <span class="n">flm</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_alm</span>
+        <span class="n">nlm_225</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">almxfl</span><span class="p">(</span><span class="n">elm</span><span class="p">,</span> <span class="n">L55</span><span class="p">)</span>
+        <span class="n">nlm_280</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">almxfl</span><span class="p">(</span><span class="n">elm</span><span class="p">,</span> <span class="n">L65</span><span class="p">)</span> <span class="o">+</span> <span class="n">hp</span><span class="o">.</span><span class="n">almxfl</span><span class="p">(</span><span class="n">flm</span><span class="p">,</span> <span class="n">L66</span><span class="p">)</span>
+        <span class="n">n_225</span>   <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">alm2map</span><span class="p">(</span><span class="n">nlm_225</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span> <span class="n">pixwin</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">n_280</span>   <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">alm2map</span><span class="p">(</span><span class="n">nlm_280</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">,</span> <span class="n">pixwin</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">n_27</span><span class="p">,</span> <span class="n">n_39</span><span class="p">,</span> <span class="n">n_93</span><span class="p">,</span> <span class="n">n_145</span><span class="p">,</span> <span class="n">n_225</span><span class="p">,</span> <span class="n">n_280</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">n</span></div>
+
+
+<div class="viewcode-block" id="Noise.noiseQU_NC">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise.noiseQU_NC">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">noiseQU_NC</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">idx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates Q and U polarization noise maps based on the noise model.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        np.ndarray: An array of Q and U noise maps.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">split</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atm_noise</span><span class="p">:</span>
+                <span class="c1"># TODO: q and u are the same atm noise maps</span>
+                <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atm_noise_maps</span><span class="p">(</span><span class="n">split</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+                <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atm_noise_maps</span><span class="p">(</span><span class="n">split</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">white_noise_maps</span><span class="p">()</span>
+                <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">white_noise_maps</span><span class="p">()</span>            
+              
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)):</span>
+                <span class="n">N</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">q</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="Noise.noiseQU_NC_freq">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise.noiseQU_NC_freq">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">noiseQU_NC_freq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">freq</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates Q and U polarization noise maps for a specific frequency band.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        np.ndarray: An array of Q and U noise maps for the specified frequency band.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atm_noise</span><span class="p">:</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atm_noise_maps_freq</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="n">q</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">white_noise_maps_freq</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="n">q</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">q</span><span class="p">,</span> <span class="n">u</span><span class="p">])</span></div>
+
+    
+<div class="viewcode-block" id="Noise.noiseQU_TOD_sat">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise.noiseQU_TOD_sat">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">noiseQU_TOD_sat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">sim_nsplits</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="n">fac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sim_nsplits</span><span class="p">)</span>
+        <span class="n">sim_no</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">idx</span><span class="si">:</span><span class="s1">04</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">fdir</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;/global/cfs/cdirs/sobs/awg_bb/sims/BBSims/NOISE_20230531/goal_optimistic/</span><span class="si">{</span><span class="n">sim_no</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">fbase_template</span> <span class="o">=</span> <span class="s1">&#39;SO_SAT_</span><span class="si">{band}</span><span class="s1">_noise_split_</span><span class="si">{split}</span><span class="s1">of4_</span><span class="si">{sim_no}</span><span class="s1">_goal_optimistic_20230531.fits&#39;</span>
+
+        <span class="n">bands</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;27&#39;</span><span class="p">,</span> <span class="s1">&#39;39&#39;</span><span class="p">,</span> <span class="s1">&#39;93&#39;</span><span class="p">,</span> <span class="s1">&#39;145&#39;</span><span class="p">,</span> <span class="s1">&#39;225&#39;</span><span class="p">,</span> <span class="s1">&#39;280&#39;</span><span class="p">]</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">split</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bands</span><span class="p">:</span>
+                <span class="n">fbase</span> <span class="o">=</span> <span class="n">fbase_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="n">split</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">sim_no</span><span class="o">=</span><span class="n">sim_no</span><span class="p">)</span>
+                <span class="n">fpath</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fdir</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">fbase</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="n">mm</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">read_map</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+                <span class="n">mm</span> <span class="o">=</span> <span class="n">change_coord</span><span class="p">(</span><span class="n">mm</span><span class="p">)</span>
+                <span class="n">N</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">mm</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">mm</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">*</span><span class="n">fac</span></div>
+
+
+<div class="viewcode-block" id="Noise.noiseQU_TOD_lat">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise.noiseQU_TOD_lat">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">noiseQU_TOD_lat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">sim_nsplits</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="n">fdir</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/sobs/v4_sims/mbs/mbs_s0015_20240504/sims&#39;</span>
+        <span class="n">fbase_template</span> <span class="o">=</span> <span class="s1">&#39;so_lat_mbs_mss0002_</span><span class="si">{model}</span><span class="s1">_</span><span class="si">{band}</span><span class="s1">_lmax5400_4way_set</span><span class="si">{split_num}</span><span class="s1">_noise_sim_map</span><span class="si">{sim_num:04}</span><span class="s1">.fits&#39;</span>
+
+        <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;fdw_lf&#39;</span><span class="p">,</span> <span class="s1">&#39;fdw_mf&#39;</span><span class="p">,</span> <span class="s1">&#39;fdw_uhf&#39;</span><span class="p">]</span>
+        <span class="n">bands</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lf_f030_lf_f040&#39;</span><span class="p">,</span> <span class="s1">&#39;mf_f090_mf_f150&#39;</span><span class="p">,</span> <span class="s1">&#39;uhf_f230_uhf_f290&#39;</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ext_sims</span><span class="p">:</span>
+            <span class="c1"># For extended sims: treat each available split as independent</span>
+            <span class="c1"># nsplits=1: idx=0 -&gt; sim=0,split=1; idx=1 -&gt; sim=0,split=2; etc. (1200 total sims)</span>
+            <span class="c1"># nsplits=2: idx=0 -&gt; sim=0,splits=1,2; idx=1 -&gt; sim=0,splits=3,4; idx=2 -&gt; sim=1,splits=1,2; etc. (600 total sims)</span>
+            <span class="c1"># nsplits=3: idx=0 -&gt; sim=0,splits=1,2,3; idx=1 -&gt; sim=0,splits=4,1,2 (wraps); etc. (400 total sims)</span>
+            <span class="c1"># nsplits=4: idx=0 -&gt; sim=0,splits=1,2,3,4; idx=1 -&gt; sim=1,splits=1,2,3,4; etc. (300 total sims)</span>
+            
+            <span class="n">sims_per_original</span> <span class="o">=</span> <span class="n">sim_nsplits</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span>  <span class="c1"># how many extended sims per original sim</span>
+            <span class="n">sim_num</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">//</span> <span class="n">sims_per_original</span>
+            <span class="n">split_group</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">%</span> <span class="n">sims_per_original</span>
+            
+            <span class="n">fac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sim_nsplits</span><span class="p">)</span>
+            
+            <span class="n">N</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">split</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">):</span>
+                <span class="n">actual_split</span> <span class="o">=</span> <span class="n">split_group</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span> <span class="o">+</span> <span class="n">split</span>  <span class="c1"># 0-indexed (set0, set1, set2, set3)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bands</span><span class="p">)):</span>
+                    <span class="n">fbase</span> <span class="o">=</span> <span class="n">fbase_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">models</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">band</span><span class="o">=</span><span class="n">bands</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">split_num</span><span class="o">=</span><span class="n">actual_split</span><span class="p">,</span> <span class="n">sim_num</span><span class="o">=</span><span class="n">sim_num</span><span class="p">)</span>
+                    <span class="n">fpath</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fdir</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">fbase</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+                        <span class="n">n</span> <span class="o">=</span> <span class="n">enmap</span><span class="o">.</span><span class="n">read_map</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span><span class="n">sel</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:])</span> <span class="c1"># the 1: will select the QU fields</span>
+                        <span class="n">mm</span> <span class="o">=</span> <span class="n">map2healpix</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">nside</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">rot</span><span class="o">=</span><span class="s1">&#39;equ,gal&#39;</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                        <span class="k">del</span> <span class="n">n</span>
+                        <span class="n">N</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">mm</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">mm</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Original behavior</span>
+            <span class="n">fac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sim_nsplits</span><span class="p">)</span>
+            <span class="n">N</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">split</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bands</span><span class="p">)):</span>
+                    <span class="n">fbase</span> <span class="o">=</span> <span class="n">fbase_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">models</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">band</span><span class="o">=</span><span class="n">bands</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">split_num</span><span class="o">=</span><span class="n">split</span><span class="p">,</span> <span class="n">sim_num</span><span class="o">=</span><span class="n">idx</span><span class="p">)</span>
+                    <span class="n">fpath</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fdir</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">fbase</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+                        <span class="n">n</span> <span class="o">=</span> <span class="n">enmap</span><span class="o">.</span><span class="n">read_map</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span><span class="n">sel</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:])</span> <span class="c1"># the 1: will select the QU fields</span>
+                        <span class="n">mm</span> <span class="o">=</span> <span class="n">map2healpix</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">nside</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">rot</span><span class="o">=</span><span class="s1">&#39;equ,gal&#39;</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                        <span class="k">del</span> <span class="n">n</span>
+                        <span class="n">N</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">mm</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">mm</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+        
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">*</span><span class="n">fac</span></div>
+
+
+<div class="viewcode-block" id="Noise.noiseQU_TOD_sat_band">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise.noiseQU_TOD_sat_band">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">noiseQU_TOD_sat_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">freq</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">band</span> <span class="o">=</span> <span class="n">freq</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">split</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">freq</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">sim_nsplits</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="n">fac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sim_nsplits</span><span class="p">)</span>
+        <span class="n">sim_no</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">idx</span><span class="si">:</span><span class="s1">04</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">fdir</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;/global/cfs/cdirs/sobs/awg_bb/sims/BBSims/NOISE_20230531/goal_optimistic/</span><span class="si">{</span><span class="n">sim_no</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">fbase</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;SO_SAT_</span><span class="si">{</span><span class="n">band</span><span class="si">}</span><span class="s1">_noise_split_</span><span class="si">{</span><span class="n">split</span><span class="si">}</span><span class="s1">of4_</span><span class="si">{</span><span class="n">sim_no</span><span class="si">}</span><span class="s1">_goal_optimistic_20230531.fits&#39;</span>
+        <span class="n">fpath</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fdir</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">fbase</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">mm</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">read_map</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="c1">#type: ignore</span>
+        <span class="n">mm</span> <span class="o">=</span> <span class="n">change_coord</span><span class="p">(</span><span class="n">mm</span><span class="p">)</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mm</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">mm</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="k">return</span> <span class="n">N</span><span class="o">*</span><span class="n">fac</span></div>
+
+    
+<div class="viewcode-block" id="Noise.noiseQU_TOD_lat_band">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise.noiseQU_TOD_lat_band">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">noiseQU_TOD_lat_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">freq</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">band</span> <span class="o">=</span> <span class="n">freq</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">split</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">freq</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># 1-indexed from user input</span>
+        <span class="n">sim_nsplits</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="n">fdir</span> <span class="o">=</span> <span class="s1">&#39;/global/cfs/cdirs/sobs/v4_sims/mbs/mbs_s0015_20240504/sims&#39;</span>
+        
+        <span class="c1"># Validate split number</span>
+        <span class="k">if</span> <span class="n">split</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">split</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid split=</span><span class="si">{</span><span class="n">split</span><span class="si">}</span><span class="s2">. Must be between 1 and </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="si">}</span><span class="s2"> for nsplits=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">model</span><span class="p">,</span> <span class="n">band_name</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;27&quot;</span><span class="p">:[</span><span class="s1">&#39;fdw_lf&#39;</span><span class="p">,</span> <span class="s1">&#39;lf_f030_lf_f040&#39;</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> 
+                               <span class="s2">&quot;39&quot;</span><span class="p">:[</span><span class="s1">&#39;fdw_lf&#39;</span><span class="p">,</span> <span class="s1">&#39;lf_f030_lf_f040&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> 
+                               <span class="s2">&quot;93&quot;</span><span class="p">:[</span><span class="s1">&#39;fdw_mf&#39;</span><span class="p">,</span> <span class="s1">&#39;mf_f090_mf_f150&#39;</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> 
+                               <span class="s2">&quot;145&quot;</span><span class="p">:[</span><span class="s1">&#39;fdw_mf&#39;</span><span class="p">,</span> <span class="s1">&#39;mf_f090_mf_f150&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> 
+                               <span class="s2">&quot;225&quot;</span><span class="p">:[</span><span class="s1">&#39;fdw_uhf&#39;</span><span class="p">,</span> <span class="s1">&#39;uhf_f230_uhf_f290&#39;</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> 
+                               <span class="s2">&quot;280&quot;</span><span class="p">:[</span><span class="s1">&#39;fdw_uhf&#39;</span><span class="p">,</span> <span class="s1">&#39;uhf_f230_uhf_f290&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">]}[</span><span class="n">band</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ext_sims</span><span class="p">:</span>
+            <span class="c1"># Apply ext_sims logic: treat each split as independent</span>
+            <span class="c1"># For nsplits=1: each idx gets one split from the 4 available</span>
+            <span class="c1"># For nsplits=2: each idx gets two consecutive splits</span>
+            <span class="n">sims_per_original</span> <span class="o">=</span> <span class="n">sim_nsplits</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span>
+            <span class="n">sim_num</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">//</span> <span class="n">sims_per_original</span>
+            <span class="n">split_group</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">%</span> <span class="n">sims_per_original</span>
+            
+            <span class="c1"># Map the requested split (1-indexed from freq like &#39;93-1&#39;) to the actual file split</span>
+            <span class="c1"># The user&#39;s split number refers to which of the nsplits they want (1 to nsplits)</span>
+            <span class="c1"># We need to map this to the actual file split based on split_group</span>
+            <span class="c1"># Files use 0-indexed naming (set0, set1, set2, set3)</span>
+            <span class="n">actual_split</span> <span class="o">=</span> <span class="n">split_group</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span> <span class="o">+</span> <span class="p">(</span><span class="n">split</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Convert to 0-indexed</span>
+            
+            <span class="n">fac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sim_nsplits</span><span class="p">)</span>
+            <span class="n">fbase</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;so_lat_mbs_mss0002_</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">band_name</span><span class="si">}</span><span class="s1">_lmax5400_4way_set</span><span class="si">{</span><span class="n">actual_split</span><span class="si">}</span><span class="s1">_noise_sim_map</span><span class="si">{</span><span class="n">sim_num</span><span class="si">:</span><span class="s1">04</span><span class="si">}</span><span class="s1">.fits&#39;</span>
+            
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[EXT_SIMS] idx=</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">, freq=</span><span class="si">{</span><span class="n">freq</span><span class="si">}</span><span class="s2"> -&gt; file_idx=</span><span class="si">{</span><span class="n">sim_num</span><span class="si">:</span><span class="s2">04</span><span class="si">}</span><span class="s2">, file_split=</span><span class="si">{</span><span class="n">actual_split</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Original behavior with sim_config support</span>
+            <span class="n">seed_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_noise_seed_idx__</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+            <span class="n">fac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sim_nsplits</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsplits</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">fbase</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;so_lat_mbs_mss0002_</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">band_name</span><span class="si">}</span><span class="s1">_lmax5400_4way_set</span><span class="si">{</span><span class="n">split</span><span class="o">-</span><span class="mi">1</span><span class="si">}</span><span class="s1">_noise_sim_map</span><span class="si">{</span><span class="n">seed_idx</span><span class="si">:</span><span class="s1">04</span><span class="si">}</span><span class="s1">.fits&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fbase</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;so_lat_mbs_mss0002_</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">band_name</span><span class="si">}</span><span class="s1">_lmax5400_2way_set</span><span class="si">{</span><span class="n">split</span><span class="si">}</span><span class="s1">_noise_sim_map</span><span class="si">{</span><span class="n">seed_idx</span><span class="si">:</span><span class="s1">04</span><span class="si">}</span><span class="s1">.fits&#39;</span>
+        
+        <span class="n">fpath</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fdir</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">fbase</span><span class="si">}</span><span class="s1">&#39;</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="n">enmap</span><span class="o">.</span><span class="n">read_map</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span><span class="n">sel</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">mm</span> <span class="o">=</span> <span class="n">map2healpix</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">nside</span><span class="o">=</span><span class="mi">2048</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">mm</span> <span class="o">=</span> <span class="n">change_coord</span><span class="p">(</span><span class="n">mm</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">n</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mm</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">mm</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="k">return</span> <span class="n">N</span><span class="o">*</span><span class="n">fac</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="Noise.noiseQU_TOD">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise.noiseQU_TOD">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">noiseQU_TOD</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">telescope</span> <span class="o">==</span> <span class="s1">&#39;SAT&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">noiseQU_TOD_sat</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">telescope</span> <span class="o">==</span> <span class="s1">&#39;LAT&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">noiseQU_TOD_lat</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid telescope: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">telescope</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;Choose from &#39;LAT&#39; or &#39;SAT&#39;.&quot;</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="Noise.noiseQU_TOD_freq">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise.noiseQU_TOD_freq">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">noiseQU_TOD_freq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">freq</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">telescope</span> <span class="o">==</span> <span class="s1">&#39;SAT&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">noiseQU_TOD_sat_band</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">telescope</span> <span class="o">==</span> <span class="s1">&#39;LAT&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">noiseQU_TOD_lat_band</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid telescope: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">telescope</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;Choose from &#39;LAT&#39; or &#39;SAT&#39;.&quot;</span><span class="p">)</span></div>
+
+
+    
+<div class="viewcode-block" id="Noise.noiseQU">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise.noiseQU">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">noiseQU</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates Q and U polarization noise maps based on the noise model.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        np.ndarray: An array of Q and U noise maps.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span> <span class="o">==</span> <span class="s1">&#39;NC&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">noiseQU_NC</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span> <span class="o">==</span> <span class="s1">&#39;TOD&#39;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;For TOD simulation, provide the index of the simulation.&quot;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">noiseQU_TOD</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid simulation type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;Choose from &#39;NC&#39; or &#39;TOD&#39;.&quot;</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="Noise.noiseQU_freq">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Noise.noiseQU_freq">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">noiseQU_freq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">freq</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates Q and U polarization noise maps for a specific frequency band.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        np.ndarray: An array of Q and U noise maps for the specified frequency band.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span> <span class="o">==</span> <span class="s1">&#39;NC&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">noiseQU_NC_freq</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span> <span class="o">==</span> <span class="s1">&#39;TOD&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">noiseQU_TOD_freq</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid simulation type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;Choose from &#39;NC&#39; or &#39;TOD&#39;.&quot;</span><span class="p">)</span></div>
+</div>
+
+        
+        
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024-2025, Anto Idicherian Lonappan.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

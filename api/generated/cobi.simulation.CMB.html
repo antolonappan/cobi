@@ -1,0 +1,1369 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cobi.simulation.CMB &mdash; COBI: Cosmic Birefringence Analysis Pipeline 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="cobi.simulation.Foreground" href="cobi.simulation.Foreground.html" />
+    <link rel="prev" title="Simulation Subpackage" href="../simulation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            COBI: Cosmic Birefringence Analysis Pipeline
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../calibration.html">Calibration Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.spec_cross"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.spec_cross</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.sat_err"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.sat_err</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.sat_lrange"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.sat_lrange</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.lat_lrange"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.lat_lrange</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.fit_per_split"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.fit_per_split</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.spectra_selection"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.spectra_selection</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.libdir"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.libdir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.binner"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.binner</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.Lmax"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.Lmax</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.maptags"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.maptags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.freq_groups"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.freq_groups</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.freq_bases"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.freq_bases</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.mean_spec"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.mean_spec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.std_spec"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.std_spec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.beam_arr"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.beam_arr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.__init__"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.theory"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.lnprior"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.lnprior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.__all_spectra__"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.__all_spectra__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.chisq"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.chisq()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.ln_likelihood"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.ln_likelihood()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.ln_prob"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.ln_prob()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.run_mcmc"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.run_mcmc()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.getdist_samples"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.getdist_samples()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.plot_posteriors"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.plot_posteriors()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.plot_spectra_matrix"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.plot_spectra_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.BaseSat4LatCross.mle"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.mle()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../calibration.html#cobi.calibration.Sat4LatCross"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.Sat4LatCross.cl_len"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.cl_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.Sat4LatCross.__init__"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.Sat4LatCross.theory"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.Sat4LatCross.lnprior"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.lnprior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.Sat4LatCross.dof"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.dof</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.eb_template_unbinned"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.eb_template_unbinned</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.binned_template"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.binned_template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.cl_len"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.cl_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.cl_diff_unbinned"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.cl_diff_unbinned</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.__init__"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.theory"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.lnprior"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.lnprior()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../calibration.html#cobi.calibration.LatCross"><code class="docutils literal notranslate"><span class="pre">LatCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.LatCross.cl_len"><code class="docutils literal notranslate"><span class="pre">LatCross.cl_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.LatCross.lat_err"><code class="docutils literal notranslate"><span class="pre">LatCross.lat_err</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.LatCross.__init__"><code class="docutils literal notranslate"><span class="pre">LatCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.LatCross.theory"><code class="docutils literal notranslate"><span class="pre">LatCross.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.LatCross.lnprior"><code class="docutils literal notranslate"><span class="pre">LatCross.lnprior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration.LatCross.dof"><code class="docutils literal notranslate"><span class="pre">LatCross.dof</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../calibration.html#helper-functions">Helper Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#cobi.calibration._format_alpha_label"><code class="docutils literal notranslate"><span class="pre">_format_alpha_label()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../calibration.html#base-classes">Base Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#id0"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../calibration.html#calibration-classes">Calibration Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#id28"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../calibration.html#id34"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../data.html">Data Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../data.html#data-loading-and-management-module">Data Loading and Management Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#data-objects">Data Objects</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../data.html#cobi.data.Data"><code class="docutils literal notranslate"><span class="pre">Data</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#cobi.data.Data.filename"><code class="docutils literal notranslate"><span class="pre">Data.filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#cobi.data.Data.directory"><code class="docutils literal notranslate"><span class="pre">Data.directory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#cobi.data.Data.galcut"><code class="docutils literal notranslate"><span class="pre">Data.galcut</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#cobi.data.Data.fname"><code class="docutils literal notranslate"><span class="pre">Data.fname</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#cobi.data.Data.url"><code class="docutils literal notranslate"><span class="pre">Data.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#cobi.data.Data.data"><code class="docutils literal notranslate"><span class="pre">Data.data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#cobi.data.Data.__init__"><code class="docutils literal notranslate"><span class="pre">Data.__init__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../data.html#data-class">Data Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#id0"><code class="docutils literal notranslate"><span class="pre">Data</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../data.html#pre-defined-data-objects">Pre-defined Data Objects</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#cobi.data.SAT_MASK"><code class="docutils literal notranslate"><span class="pre">SAT_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#cobi.data.LAT_MASK"><code class="docutils literal notranslate"><span class="pre">LAT_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#cobi.data.CO_MASK"><code class="docutils literal notranslate"><span class="pre">CO_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#cobi.data.GAL_MASK"><code class="docutils literal notranslate"><span class="pre">GAL_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#cobi.data.PS_MASK"><code class="docutils literal notranslate"><span class="pre">PS_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#cobi.data.BP_PROFILE"><code class="docutils literal notranslate"><span class="pre">BP_PROFILE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#cobi.data.CAMB_INI"><code class="docutils literal notranslate"><span class="pre">CAMB_INI</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#cobi.data.SPECTRA"><code class="docutils literal notranslate"><span class="pre">SPECTRA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../data.html#cobi.data.ISO_TD_SPECTRA"><code class="docutils literal notranslate"><span class="pre">ISO_TD_SPECTRA</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../mle.html">Maximum Likelihood Estimation Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../mle.html#cobi.mle.bin_from_edges"><code class="docutils literal notranslate"><span class="pre">bin_from_edges()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mle.html#cobi.mle.bin_configuration"><code class="docutils literal notranslate"><span class="pre">bin_configuration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mle.html#cobi.mle.bin_spec_matrix"><code class="docutils literal notranslate"><span class="pre">bin_spec_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mle.html#cobi.mle.bin_cov_matrix"><code class="docutils literal notranslate"><span class="pre">bin_cov_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mle.html#cobi.mle.MLE"><code class="docutils literal notranslate"><span class="pre">MLE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../mle.html#cobi.mle.MLE.FIT_OPTIONS"><code class="docutils literal notranslate"><span class="pre">MLE.FIT_OPTIONS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mle.html#cobi.mle.MLE.__init__"><code class="docutils literal notranslate"><span class="pre">MLE.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mle.html#cobi.mle.MLE.calculate"><code class="docutils literal notranslate"><span class="pre">MLE.calculate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mle.html#cobi.mle.MLE.estimate_angles"><code class="docutils literal notranslate"><span class="pre">MLE.estimate_angles()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mle.html#cobi.mle.MLE.result_name"><code class="docutils literal notranslate"><span class="pre">MLE.result_name()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../mle.html#binning-functions">Binning Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../mle.html#id0"><code class="docutils literal notranslate"><span class="pre">bin_from_edges()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mle.html#id1"><code class="docutils literal notranslate"><span class="pre">bin_configuration()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mle.html#id2"><code class="docutils literal notranslate"><span class="pre">bin_spec_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mle.html#id3"><code class="docutils literal notranslate"><span class="pre">bin_cov_matrix()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../mle.html#result-class">Result Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../mle.html#cobi.mle._Result"><code class="docutils literal notranslate"><span class="pre">_Result</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../mle.html#mle-class">MLE Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../mle.html#id4"><code class="docutils literal notranslate"><span class="pre">MLE</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../quest.html">Quadratic Estimator Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../quest.html#quadratic-estimator-for-cosmic-birefringence-module">Quadratic Estimator for Cosmic Birefringence Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#algorithm">Algorithm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#requirements">Requirements</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../quest.html#cobi.quest.FilterEB"><code class="docutils literal notranslate"><span class="pre">FilterEB</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.FilterEB.__init__"><code class="docutils literal notranslate"><span class="pre">FilterEB.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.FilterEB.Bl"><code class="docutils literal notranslate"><span class="pre">FilterEB.Bl</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.FilterEB.convolved_EB"><code class="docutils literal notranslate"><span class="pre">FilterEB.convolved_EB()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.FilterEB.NL"><code class="docutils literal notranslate"><span class="pre">FilterEB.NL()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.FilterEB.QU"><code class="docutils literal notranslate"><span class="pre">FilterEB.QU()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.FilterEB.cinv_EB"><code class="docutils literal notranslate"><span class="pre">FilterEB.cinv_EB()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.FilterEB.check_file_exist"><code class="docutils literal notranslate"><span class="pre">FilterEB.check_file_exist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.FilterEB.plot_cinv"><code class="docutils literal notranslate"><span class="pre">FilterEB.plot_cinv()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../quest.html#cobi.quest.QE"><code class="docutils literal notranslate"><span class="pre">QE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.QE.__init__"><code class="docutils literal notranslate"><span class="pre">QE.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.QE.cl_aa"><code class="docutils literal notranslate"><span class="pre">QE.cl_aa</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.QE.qlm"><code class="docutils literal notranslate"><span class="pre">QE.qlm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.QE.check_file_exist"><code class="docutils literal notranslate"><span class="pre">QE.check_file_exist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.QE.qcl"><code class="docutils literal notranslate"><span class="pre">QE.qcl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.QE.mean_field"><code class="docutils literal notranslate"><span class="pre">QE.mean_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.QE.mean_field_cl"><code class="docutils literal notranslate"><span class="pre">QE.mean_field_cl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.QE.RDN0"><code class="docutils literal notranslate"><span class="pre">QE.RDN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.QE.RDN0_mpi"><code class="docutils literal notranslate"><span class="pre">QE.RDN0_mpi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.QE.N0_sim"><code class="docutils literal notranslate"><span class="pre">QE.N0_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.QE.MCN0"><code class="docutils literal notranslate"><span class="pre">QE.MCN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.QE.N1"><code class="docutils literal notranslate"><span class="pre">QE.N1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.QE.Nlens"><code class="docutils literal notranslate"><span class="pre">QE.Nlens()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.QE.RDN0_stat"><code class="docutils literal notranslate"><span class="pre">QE.RDN0_stat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.QE.qcl_stat"><code class="docutils literal notranslate"><span class="pre">QE.qcl_stat()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE"><code class="docutils literal notranslate"><span class="pre">CrossQE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.__init__"><code class="docutils literal notranslate"><span class="pre">CrossQE.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.cl_aa"><code class="docutils literal notranslate"><span class="pre">CrossQE.cl_aa</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.precompute_split_ocl"><code class="docutils literal notranslate"><span class="pre">CrossQE.precompute_split_ocl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.precompute_pair_norms"><code class="docutils literal notranslate"><span class="pre">CrossQE.precompute_pair_norms()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.qlm_pair"><code class="docutils literal notranslate"><span class="pre">CrossQE.qlm_pair()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.mean_field_sim"><code class="docutils literal notranslate"><span class="pre">CrossQE.mean_field_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.mean_field"><code class="docutils literal notranslate"><span class="pre">CrossQE.mean_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.mean_field_cl"><code class="docutils literal notranslate"><span class="pre">CrossQE.mean_field_cl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.qcl_cross_only"><code class="docutils literal notranslate"><span class="pre">CrossQE.qcl_cross_only()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.Nlens"><code class="docutils literal notranslate"><span class="pre">CrossQE.Nlens()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.N1"><code class="docutils literal notranslate"><span class="pre">CrossQE.N1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.qcl_stat"><code class="docutils literal notranslate"><span class="pre">CrossQE.qcl_stat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.N0_sim"><code class="docutils literal notranslate"><span class="pre">CrossQE.N0_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.MCN0"><code class="docutils literal notranslate"><span class="pre">CrossQE.MCN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.RDN0"><code class="docutils literal notranslate"><span class="pre">CrossQE.RDN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.RDN0_mpi"><code class="docutils literal notranslate"><span class="pre">CrossQE.RDN0_mpi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#cobi.quest.CrossQE.RDN0_stat"><code class="docutils literal notranslate"><span class="pre">CrossQE.RDN0_stat()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../quest.html#filtering-class">Filtering Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#id0"><code class="docutils literal notranslate"><span class="pre">FilterEB</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../quest.html#quadratic-estimator-class">Quadratic Estimator Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../quest.html#id9"><code class="docutils literal notranslate"><span class="pre">QE</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../quest.html#likelihood-class">Likelihood Class</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../spectra.html">Spectra Computation Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../spectra.html#power-spectra-computation-module">Power Spectra Computation Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra"><code class="docutils literal notranslate"><span class="pre">Spectra</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.__init__"><code class="docutils literal notranslate"><span class="pre">Spectra.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.get_apodised_mask"><code class="docutils literal notranslate"><span class="pre">Spectra.get_apodised_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.get_coupling_matrix"><code class="docutils literal notranslate"><span class="pre">Spectra.get_coupling_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.compute_master"><code class="docutils literal notranslate"><span class="pre">Spectra.compute_master()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.__set_dir__"><code class="docutils literal notranslate"><span class="pre">Spectra.__set_dir__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.load_obsQUmaps"><code class="docutils literal notranslate"><span class="pre">Spectra.load_obsQUmaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.Obs_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.Obs_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.__get_fg_QUmap__"><code class="docutils literal notranslate"><span class="pre">Spectra.__get_fg_QUmap__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.load_dustQUmaps"><code class="docutils literal notranslate"><span class="pre">Spectra.load_dustQUmaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.Dust_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.Dust_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.load_syncQUmaps"><code class="docutils literal notranslate"><span class="pre">Spectra.load_syncQUmaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.Sync_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.Sync_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.obs_x_obs_check"><code class="docutils literal notranslate"><span class="pre">Spectra.obs_x_obs_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.__obs_x_obs_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__obs_x_obs_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.__obs_x_obs_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__obs_x_obs_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.obs_x_obs"><code class="docutils literal notranslate"><span class="pre">Spectra.obs_x_obs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.__fg_x_obs_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_obs_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.__fg_x_obs_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_obs_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.dust_x_obs"><code class="docutils literal notranslate"><span class="pre">Spectra.dust_x_obs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.dust_x_obs_check"><code class="docutils literal notranslate"><span class="pre">Spectra.dust_x_obs_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.sync_x_obs_check"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_obs_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.sync_x_obs"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_obs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.__fg_x_fg_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_fg_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.__fg_x_fg_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_fg_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.sync_x_sync"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_sync()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.dust_x_dust"><code class="docutils literal notranslate"><span class="pre">Spectra.dust_x_dust()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.__sync_x_dust_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__sync_x_dust_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.__sync_x_dust_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__sync_x_dust_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.sync_x_dust"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_dust()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.clear_obs_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.clear_obs_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.clear_dust_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.clear_dust_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.clear_sync_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.clear_sync_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.compute"><code class="docutils literal notranslate"><span class="pre">Spectra.compute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.Compute"><code class="docutils literal notranslate"><span class="pre">Spectra.Compute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.Spectra.get_spectra"><code class="docutils literal notranslate"><span class="pre">Spectra.get_spectra()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../spectra.html#cobi.spectra.SpectraCross"><code class="docutils literal notranslate"><span class="pre">SpectraCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.SpectraCross.__init__"><code class="docutils literal notranslate"><span class="pre">SpectraCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.SpectraCross.get_mask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.get_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.SpectraCross.satmask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.satmask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.SpectraCross.latmask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.latmask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.SpectraCross.satlatmask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.satlatmask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.SpectraCross.compute_master"><code class="docutils literal notranslate"><span class="pre">SpectraCross.compute_master()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#cobi.spectra.SpectraCross.data_matrix"><code class="docutils literal notranslate"><span class="pre">SpectraCross.data_matrix()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../spectra.html#spectra-class">Spectra Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#id0"><code class="docutils literal notranslate"><span class="pre">Spectra</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../spectra.html#cross-spectra-class">Cross-Spectra Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../spectra.html#id36"><code class="docutils literal notranslate"><span class="pre">SpectraCross</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../sht.html">Spherical Harmonic Transforms Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../sht.html#id1">Spherical Harmonic Transforms Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../sht.html#classes">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../sht.html#cobi.sht.HealpixDUCC"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../sht.html#cobi.sht.HealpixDUCC.__init__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../sht.html#cobi.sht.HealpixDUCC.getsize"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.getsize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../sht.html#cobi.sht.HealpixDUCC.__tomap__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__tomap__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../sht.html#cobi.sht.HealpixDUCC.__toalm__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__toalm__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../sht.html#cobi.sht.HealpixDUCC.__alm2map_spin2__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__alm2map_spin2__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../sht.html#cobi.sht.HealpixDUCC.__map2alm_spin2__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__map2alm_spin2__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../sht.html#cobi.sht.HealpixDUCC.__alm2map_spin0__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__alm2map_spin0__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../sht.html#cobi.sht.HealpixDUCC.__map2alm_spin0__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__map2alm_spin0__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../sht.html#cobi.sht.HealpixDUCC.alm2map"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.alm2map()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../sht.html#cobi.sht.HealpixDUCC.map2alm"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.map2alm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../sht.html#cobi.sht.HealpixDUCC.smoothing_alms"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.smoothing_alms()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../sht.html#cobi.sht.HealpixDUCC.smoothing_maps"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.smoothing_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../sht.html#cobi.sht.HealpixDUCC.smoothing"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.smoothing()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../sht.html#healpixducc-class">HealpixDUCC Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../sht.html#id0"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../utils.html">Utilities Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../utils.html#utility-functions-module">Utility Functions Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../utils.html#functions">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../utils.html#cobi.utils.Logger"><code class="docutils literal notranslate"><span class="pre">Logger</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../utils.html#cobi.utils.Logger.__init__"><code class="docutils literal notranslate"><span class="pre">Logger.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../utils.html#cobi.utils.Logger.log"><code class="docutils literal notranslate"><span class="pre">Logger.log()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../utils.html#cobi.utils.inrad"><code class="docutils literal notranslate"><span class="pre">inrad()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../utils.html#cobi.utils.cli"><code class="docutils literal notranslate"><span class="pre">cli()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../utils.html#cobi.utils.download_file"><code class="docutils literal notranslate"><span class="pre">download_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../utils.html#cobi.utils.deconvolveQU"><code class="docutils literal notranslate"><span class="pre">deconvolveQU()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../utils.html#cobi.utils.change_coord"><code class="docutils literal notranslate"><span class="pre">change_coord()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../utils.html#cobi.utils.slice_alms"><code class="docutils literal notranslate"><span class="pre">slice_alms()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../utils.html#cobi.utils.Binner"><code class="docutils literal notranslate"><span class="pre">Binner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../utils.html#cobi.utils.Binner.__init__"><code class="docutils literal notranslate"><span class="pre">Binner.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../utils.html#cobi.utils.Binner.bin"><code class="docutils literal notranslate"><span class="pre">Binner.bin()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../utils.html#logger-class">Logger Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../utils.html#id0"><code class="docutils literal notranslate"><span class="pre">Logger</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../utils.html#utility-functions">Utility Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../utils.html#id3"><code class="docutils literal notranslate"><span class="pre">inrad()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../utils.html#id4"><code class="docutils literal notranslate"><span class="pre">cli()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../utils.html#id5"><code class="docutils literal notranslate"><span class="pre">download_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../utils.html#id6"><code class="docutils literal notranslate"><span class="pre">deconvolveQU()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../utils.html#id7"><code class="docutils literal notranslate"><span class="pre">change_coord()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../utils.html#id8"><code class="docutils literal notranslate"><span class="pre">slice_alms()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../mpi.html">MPI Support Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../mpi.html#id1">MPI Support Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../mpi.html#cobi.mpi.mpi"><code class="docutils literal notranslate"><span class="pre">mpi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mpi.html#cobi.mpi.com"><code class="docutils literal notranslate"><span class="pre">com</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mpi.html#cobi.mpi.rank"><code class="docutils literal notranslate"><span class="pre">rank</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mpi.html#cobi.mpi.size"><code class="docutils literal notranslate"><span class="pre">size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mpi.html#cobi.mpi.barrier"><code class="docutils literal notranslate"><span class="pre">barrier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mpi.html#cobi.mpi.finalize"><code class="docutils literal notranslate"><span class="pre">finalize</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../mpi.html#module-attributes">Module Attributes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../mpi.html#id0"><code class="docutils literal notranslate"><span class="pre">mpi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mpi.html#id2"><code class="docutils literal notranslate"><span class="pre">com</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mpi.html#id3"><code class="docutils literal notranslate"><span class="pre">rank</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mpi.html#id4"><code class="docutils literal notranslate"><span class="pre">size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mpi.html#id5"><code class="docutils literal notranslate"><span class="pre">barrier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../mpi.html#id6"><code class="docutils literal notranslate"><span class="pre">finalize</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="../simulation.html">Simulation Subpackage</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../simulation.html#id1">Simulation Subpackage</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#modules">Modules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#classes">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../simulation.html#overview">Overview</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../simulation.html#main-classes">Main Classes</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">cobi.simulation.CMB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cobi.simulation.Foreground.html">cobi.simulation.Foreground</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cobi.simulation.Mask.html">cobi.simulation.Mask</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cobi.simulation.Noise.html">cobi.simulation.Noise</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cobi.simulation.LATsky.html">cobi.simulation.LATsky</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cobi.simulation.SATsky.html">cobi.simulation.SATsky</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cobi.simulation.LATskyC.html">cobi.simulation.LATskyC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cobi.simulation.SATskyC.html">cobi.simulation.SATskyC</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../simulation.html#module-cobi.simulation.cmb">CMB Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#cmb-simulation-module">CMB Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#cobi.simulation.cmb.synfast_pol"><code class="docutils literal notranslate"><span class="pre">synfast_pol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#cobi.simulation.cmb.CMB"><code class="docutils literal notranslate"><span class="pre">CMB</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#id3">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#id44">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../simulation.html#module-cobi.simulation.fg">Foreground Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#foreground-simulation-module">Foreground Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#cobi.simulation.fg.BandpassInt"><code class="docutils literal notranslate"><span class="pre">BandpassInt</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#cobi.simulation.fg.Foreground"><code class="docutils literal notranslate"><span class="pre">Foreground</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#cobi.simulation.fg.HILC"><code class="docutils literal notranslate"><span class="pre">HILC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#id49">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../simulation.html#module-cobi.simulation.mask">Mask Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#mask-generation-module">Mask Generation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#cobi.simulation.mask.Mask"><code class="docutils literal notranslate"><span class="pre">Mask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#id73">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../simulation.html#module-cobi.simulation.noise">Noise Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#noise-simulation-module">Noise Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#cobi.simulation.noise.NoiseSpectra"><code class="docutils literal notranslate"><span class="pre">NoiseSpectra()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#cobi.simulation.noise.Noise"><code class="docutils literal notranslate"><span class="pre">Noise</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#id87">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#id115">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../simulation.html#module-cobi.simulation.sky">Sky Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#sky-simulation-module">Sky Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#cobi.simulation.sky.SkySimulation"><code class="docutils literal notranslate"><span class="pre">SkySimulation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#cobi.simulation.sky.LATsky"><code class="docutils literal notranslate"><span class="pre">LATsky</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#cobi.simulation.sky.SATsky"><code class="docutils literal notranslate"><span class="pre">SATsky</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#cobi.simulation.sky.LATskyC"><code class="docutils literal notranslate"><span class="pre">LATskyC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#cobi.simulation.sky.SATskyC"><code class="docutils literal notranslate"><span class="pre">SATskyC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../simulation.html#id118">Classes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">COBI: Cosmic Birefringence Analysis Pipeline</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../simulation.html">Simulation Subpackage</a></li>
+      <li class="breadcrumb-item active">cobi.simulation.CMB</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/antolonappan/cobi/blob/main/docs/api/generated/cobi.simulation.CMB.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="cobi-simulation-cmb">
+<h1>cobi.simulation.CMB<a class="headerlink" href="#cobi-simulation-cmb" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="cobi.simulation.CMB">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CMB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">libdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nside</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iso'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Acb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lensing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB" title="Link to this definition"></a></dt>
+<dd><p>CMB map generator with cosmic birefringence support.</p>
+<p>This class handles the generation of CMB temperature and polarization maps
+with optional cosmic birefringence rotation. Supports three birefringence models:</p>
+<ul class="simple">
+<li><p><strong>iso</strong>: Isotropic (constant) rotation angle β</p></li>
+<li><p><strong>iso_td</strong>: Time-dependent isotropic model with axion mass parameter</p></li>
+<li><p><strong>aniso</strong>: Anisotropic (spatially-varying) rotation from patchy reionization</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>libdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Directory for caching simulation products and power spectra.</p></li>
+<li><p><strong>nside</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – HEALPix resolution parameter (nside = 2^n).</p></li>
+<li><p><strong>model</strong> (<code class="docutils literal notranslate"><span class="pre">{'iso',</span> <span class="pre">'iso_td',</span> <span class="pre">'aniso'}</span></code>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">'iso'</span></code>) – Birefringence model type.</p></li>
+<li><p><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Isotropic rotation angle in degrees (required for model=’iso’).</p></li>
+<li><p><strong>mass</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Axion mass parameter in units of 10^-22 eV.
+Must be 1, 1.5, or 6.4 (required for model=’iso_td’).</p></li>
+<li><p><strong>Acb</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>optional</em>) – Amplitude of anisotropic birefringence power spectrum
+(required for model=’aniso’).</p></li>
+<li><p><strong>lensing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>default</em> <a class="reference external" href="https://docs.python.org/3/library/constants.html#False" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code></a>) – Whether to include CMB lensing effects.</p></li>
+<li><p><strong>sim_config</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <em>optional</em>) – Configuration for simulation seed management with keys:
+- ‘set1’: Number of sims with varying CMB, Noise, and alpha
+- ‘other_sets’: Number of base CMB+Noise sims, each used with 3 alpha modes</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>default</em> <a class="reference external" href="https://docs.python.org/3/library/constants.html#True" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">True</span></code></a>) – Enable logging output.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.nside">
+<span class="sig-name descname"><span class="pre">nside</span></span><a class="headerlink" href="#cobi.simulation.CMB.nside" title="Link to this definition"></a></dt>
+<dd><p>HEALPix resolution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.lmax">
+<span class="sig-name descname"><span class="pre">lmax</span></span><a class="headerlink" href="#cobi.simulation.CMB.lmax" title="Link to this definition"></a></dt>
+<dd><p>Maximum multipole (3*nside - 1).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#cobi.simulation.CMB.model" title="Link to this definition"></a></dt>
+<dd><p>Birefringence model type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.beta">
+<span class="sig-name descname"><span class="pre">beta</span></span><a class="headerlink" href="#cobi.simulation.CMB.beta" title="Link to this definition"></a></dt>
+<dd><p>Isotropic rotation angle in degrees.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.lensing">
+<span class="sig-name descname"><span class="pre">lensing</span></span><a class="headerlink" href="#cobi.simulation.CMB.lensing" title="Link to this definition"></a></dt>
+<dd><p>Whether lensing is enabled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.cls">
+<span class="sig-name descname"><span class="pre">cls</span></span><a class="headerlink" href="#cobi.simulation.CMB.cls" title="Link to this definition"></a></dt>
+<dd><p>CMB power spectra (TT, EE, BB, TE).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="admonition-examples admonition">
+<p class="admonition-title">Examples</p>
+<p>Generate isotropic birefringence simulation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmb</span> <span class="o">=</span> <span class="n">CMB</span><span class="p">(</span>
+    <span class="n">libdir</span><span class="o">=</span><span class="s1">&#39;./cmb_sims&#39;</span><span class="p">,</span>
+    <span class="n">nside</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;iso&#39;</span><span class="p">,</span>
+    <span class="n">beta</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span>
+    <span class="n">lensing</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="c1"># Get rotated CMB map</span>
+<span class="n">cmb_map</span> <span class="o">=</span> <span class="n">cmb</span><span class="o">.</span><span class="n">get_map</span><span class="p">(</span><span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">apply_beta</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Generate anisotropic birefringence:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmb</span> <span class="o">=</span> <span class="n">CMB</span><span class="p">(</span>
+    <span class="n">libdir</span><span class="o">=</span><span class="s1">&#39;./cmb_sims&#39;</span><span class="p">,</span>
+    <span class="n">nside</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s1">&#39;aniso&#39;</span><span class="p">,</span>
+    <span class="n">Acb</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+    <span class="n">lensing</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="c1"># Get map with spatially-varying rotation</span>
+<span class="n">cmb_map</span> <span class="o">=</span> <span class="n">cmb</span><span class="o">.</span><span class="n">get_map</span><span class="p">(</span><span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">apply_beta</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="admonition-notes admonition">
+<p class="admonition-title">Notes</p>
+<ul class="simple">
+<li><p>Uses CAMB for power spectrum generation</p></li>
+<li><p>Supports efficient caching of realizations</p></li>
+<li><p>MPI-aware for parallel simulation generation</p></li>
+<li><p>Lensing implemented via lenspyx</p></li>
+</ul>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">libdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nside</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iso'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Acb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lensing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.__init__" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>libdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>nside</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>mass</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>Acb</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>lensing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>sim_config</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id0" title="cobi.simulation.CMB.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(libdir, nside[, model, beta, mass, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cobi.simulation.CMB.alpha_alm" title="cobi.simulation.CMB.alpha_alm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">alpha_alm</span></code></a>(idx)</p></td>
+<td><p>Generate the alpha alm for the anisotropic model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cobi.simulation.CMB.alpha_map" title="cobi.simulation.CMB.alpha_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">alpha_map</span></code></a>(idx)</p></td>
+<td><p>Generate a map of the rotation angle alpha for the anisotropic model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cobi.simulation.CMB.cl_aa" title="cobi.simulation.CMB.cl_aa"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cl_aa</span></code></a>()</p></td>
+<td><p>Compute the Cl_AA power spectrum for the anisotropic model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cobi.simulation.CMB.cl_pp" title="cobi.simulation.CMB.cl_pp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cl_pp</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cobi.simulation.CMB.compute_powers" title="cobi.simulation.CMB.compute_powers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_powers</span></code></a>()</p></td>
+<td><p>compute the CMB power spectra using CAMB.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_aniso_gauss_lensed_QU" title="cobi.simulation.CMB.get_aniso_gauss_lensed_QU"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_aniso_gauss_lensed_QU</span></code></a>(idx)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_aniso_model_cb_lensed_QU" title="cobi.simulation.CMB.get_aniso_model_cb_lensed_QU"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_aniso_model_cb_lensed_QU</span></code></a>(idx)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_aniso_real_lensed_QU" title="cobi.simulation.CMB.get_aniso_real_lensed_QU"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_aniso_real_lensed_QU</span></code></a>(idx)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_cb_lensed_QU" title="cobi.simulation.CMB.get_cb_lensed_QU"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cb_lensed_QU</span></code></a>(idx)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_cb_lensed_mass_spectra" title="cobi.simulation.CMB.get_cb_lensed_mass_spectra"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cb_lensed_mass_spectra</span></code></a>([dl, dtype, new])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_cb_lensed_spectra" title="cobi.simulation.CMB.get_cb_lensed_spectra"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cb_lensed_spectra</span></code></a>([beta, dl, dtype, new])</p></td>
+<td><p>Calculate the cosmic birefringence (CB) lensed spectra with a given rotation angle <cite>beta</cite>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_cb_unlensed_mass_spectra" title="cobi.simulation.CMB.get_cb_unlensed_mass_spectra"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cb_unlensed_mass_spectra</span></code></a>([dl, dtype, new])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_cb_unlensed_spectra" title="cobi.simulation.CMB.get_cb_unlensed_spectra"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cb_unlensed_spectra</span></code></a>([beta, dl, dtype, new])</p></td>
+<td><p>Calculate the cosmic birefringence (CB) unlensed spectra with a given rotation angle <cite>beta</cite>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_iso_const_cb_gaussian_lensed_QU" title="cobi.simulation.CMB.get_iso_const_cb_gaussian_lensed_QU"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_iso_const_cb_gaussian_lensed_QU</span></code></a>(idx)</p></td>
+<td><p>Generate or retrieve the Q and U Stokes parameters after applying cosmic birefringence.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_iso_const_cb_real_lensed_QU" title="cobi.simulation.CMB.get_iso_const_cb_real_lensed_QU"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_iso_const_cb_real_lensed_QU</span></code></a>(idx)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_iso_model_cb_gaussian_lensed_QU" title="cobi.simulation.CMB.get_iso_model_cb_gaussian_lensed_QU"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_iso_model_cb_gaussian_lensed_QU</span></code></a>(idx)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_iso_model_cb_lensed_QU" title="cobi.simulation.CMB.get_iso_model_cb_lensed_QU"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_iso_model_cb_lensed_QU</span></code></a>(idx)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_iso_model_cb_real_lensed_QU" title="cobi.simulation.CMB.get_iso_model_cb_real_lensed_QU"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_iso_model_cb_real_lensed_QU</span></code></a>(idx)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_iso_td_cb_gaussian_lensed_QU" title="cobi.simulation.CMB.get_iso_td_cb_gaussian_lensed_QU"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_iso_td_cb_gaussian_lensed_QU</span></code></a>(idx)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_iso_td_cb_real_lensed_QU" title="cobi.simulation.CMB.get_iso_td_cb_real_lensed_QU"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_iso_td_cb_real_lensed_QU</span></code></a>(idx)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_lensed_spectra" title="cobi.simulation.CMB.get_lensed_spectra"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_lensed_spectra</span></code></a>([dl, dtype])</p></td>
+<td><p>Retrieve the lensed scalar spectra from the power spectrum data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_power" title="cobi.simulation.CMB.get_power"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_power</span></code></a>([dl])</p></td>
+<td><p>Get the CMB power spectra.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cobi.simulation.CMB.get_unlensed_spectra" title="cobi.simulation.CMB.get_unlensed_spectra"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unlensed_spectra</span></code></a>([dl, dtype])</p></td>
+<td><p>Retrieve the unlensed scalar spectra from the power spectrum data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cobi.simulation.CMB.grad_phi_alm" title="cobi.simulation.CMB.grad_phi_alm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">grad_phi_alm</span></code></a>(idx)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cobi.simulation.CMB.phi_alm" title="cobi.simulation.CMB.phi_alm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">phi_alm</span></code></a>(idx)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cobi.simulation.CMB.scale_invariant" title="cobi.simulation.CMB.scale_invariant"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_invariant</span></code></a>(Acb)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">libdir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nside</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'iso'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Acb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lensing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>libdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>nside</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>mass</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>Acb</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>lensing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>sim_config</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.scale_invariant">
+<span class="sig-name descname"><span class="pre">scale_invariant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Acb</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.scale_invariant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.scale_invariant" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.__validate_sim_config__">
+<span class="sig-name descname"><span class="pre">__validate_sim_config__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.__validate_sim_config__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.__validate_sim_config__" title="Link to this definition"></a></dt>
+<dd><p>Validate the sim_config dictionary structure for new seed regime.</p>
+<p>Expected structure:
+{</p>
+<blockquote>
+<div><p>‘set1’: 400,  # Number of sims with varying CMB, Noise, and alpha
+‘reuse_last’: 100  # Number of sims from end of set1 to reuse for constant/null alpha</p>
+</div></blockquote>
+<p>}</p>
+<p>This creates:
+- Indices 0-399: set1 sims (all vary independently)
+- Indices 400-499: reuse CMB/Noise from 300-399 with constant alpha
+- Indices 500-599: reuse CMB/Noise from 300-399 with null alpha (α=0)
+Total: 600 simulations instead of 700</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.__get_alpha_mode__">
+<span class="sig-name descname"><span class="pre">__get_alpha_mode__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.__get_alpha_mode__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.__get_alpha_mode__" title="Link to this definition"></a></dt>
+<dd><p>Determine which alpha mode to use for a given index.</p>
+<p>Parameters:
+idx (int): The realization index.</p>
+<p>Returns:
+str: One of ‘vary’, ‘constant’, or ‘null’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.__get_cmb_seed_idx__">
+<span class="sig-name descname"><span class="pre">__get_cmb_seed_idx__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.__get_cmb_seed_idx__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.__get_cmb_seed_idx__" title="Link to this definition"></a></dt>
+<dd><p>Map simulation index to the actual CMB seed index.</p>
+<p>For indices &lt; set1: use idx directly
+For indices &gt;= set1: map to last reuse_last indices of set1</p>
+<p>Parameters:
+idx (int): The simulation realization index.</p>
+<p>Returns:
+int: The seed index to use for CMB generation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.__set_seeds__">
+<span class="sig-name descname"><span class="pre">__set_seeds__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.__set_seeds__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.__set_seeds__" title="Link to this definition"></a></dt>
+<dd><p>Sets the seeds for the simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.__set_workspace__">
+<span class="sig-name descname"><span class="pre">__set_workspace__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.__set_workspace__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.__set_workspace__" title="Link to this definition"></a></dt>
+<dd><p>Set the workspace for the CMB simulations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.__dl2cl__">
+<span class="sig-name descname"><span class="pre">__dl2cl__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.__dl2cl__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.__dl2cl__" title="Link to this definition"></a></dt>
+<dd><p>Convert Dl to Cl.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>arr</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.__td_eb__">
+<span class="sig-name descname"><span class="pre">__td_eb__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.__td_eb__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.__td_eb__" title="Link to this definition"></a></dt>
+<dd><p>Read the E and B mode power spectra from the CMB power spectra data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.compute_powers">
+<span class="sig-name descname"><span class="pre">compute_powers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.compute_powers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.compute_powers" title="Link to this definition"></a></dt>
+<dd><p>compute the CMB power spectra using CAMB.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_power">
+<span class="sig-name descname"><span class="pre">get_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_power"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_power" title="Link to this definition"></a></dt>
+<dd><p>Get the CMB power spectra.</p>
+<p>Parameters:
+dl (bool): If True, return the power spectra with dl factor else without dl factor.</p>
+<p>Returns:
+Dict[str, np.ndarray]: A dictionary containing the CMB power spectra.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dl</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_unlensed_spectra">
+<span class="sig-name descname"><span class="pre">get_unlensed_spectra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'d'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_unlensed_spectra"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_unlensed_spectra" title="Link to this definition"></a></dt>
+<dd><p>Retrieve the unlensed scalar spectra from the power spectrum data.</p>
+<p>Parameters:
+dl (bool, optional): If True, returns Dl (C_l * l * (l + 1) / 2π). Defaults to True.
+dtype (str, optional): Specifies the format of the returned spectra.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>‘d’ returns a dictionary with keys ‘tt’, ‘ee’, ‘bb’, ‘te’.</p></li>
+<li><p>‘a’ returns the full array of power spectra.</p></li>
+</ul>
+<p>Defaults to ‘d’.</p>
+</div></blockquote>
+<p>Returns:
+Union[Dict[str, Any], np.ndarray]:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>A dictionary containing individual power spectra for ‘tt’, ‘ee’, ‘bb’, ‘te’ if dtype is ‘d’.</p></li>
+<li><p>The full array of unlensed scalar power spectra if dtype is ‘a’.</p></li>
+</ul>
+</div></blockquote>
+<p>Raises:
+ValueError: If <cite>dtype</cite> is not ‘d’ or ‘a’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dl</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a>] | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_lensed_spectra">
+<span class="sig-name descname"><span class="pre">get_lensed_spectra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'d'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_lensed_spectra"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_lensed_spectra" title="Link to this definition"></a></dt>
+<dd><p>Retrieve the lensed scalar spectra from the power spectrum data.</p>
+<p>Parameters:
+dl (bool, optional): If True, returns Dl (C_l * l * (l + 1) / 2π). Defaults to True.
+dtype (str, optional): Specifies the format of the returned spectra.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>‘d’ returns a dictionary with keys ‘tt’, ‘ee’, ‘bb’, ‘te’.</p></li>
+<li><p>‘a’ returns the full array of power spectra.</p></li>
+</ul>
+<p>Defaults to ‘d’.</p>
+</div></blockquote>
+<p>Returns:
+Union[Dict[str, Any], np.ndarray]:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>A dictionary containing individual power spectra for ‘tt’, ‘ee’, ‘bb’, ‘te’ if dtype is ‘d’.</p></li>
+<li><p>The full array of lensed scalar power spectra if dtype is ‘a’.</p></li>
+</ul>
+</div></blockquote>
+<p>Raises:
+ValueError: If <cite>dtype</cite> is not ‘d’ or ‘a’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dl</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a>] | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_cb_unlensed_spectra">
+<span class="sig-name descname"><span class="pre">get_cb_unlensed_spectra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'d'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_cb_unlensed_spectra"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_cb_unlensed_spectra" title="Link to this definition"></a></dt>
+<dd><p>Calculate the cosmic birefringence (CB) unlensed spectra with a given rotation angle <cite>beta</cite>.</p>
+<p>Parameters:
+beta (float, optional): The rotation angle in degrees for the cosmic birefringence effect. Defaults to 0.3 degrees.
+dl (bool, optional): If True, returns Dl (C_l * l * (l + 1) / 2π). Defaults to True.
+dtype (str, optional): Specifies the format of the returned spectra.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>‘d’ returns a dictionary with keys ‘tt’, ‘ee’, ‘bb’, ‘te’, ‘eb’, ‘tb’.</p></li>
+<li><p>‘a’ returns an array of power spectra.</p></li>
+</ul>
+<p>Defaults to ‘d’.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>new (bool, optional): Determines the ordering of the spectra in the array if dtype is ‘a’.</dt><dd><p>If True, returns [TT, EE, BB, TE, EB, TB].
+If False, returns [TT, TE, TB, EE, EB, BB].
+Defaults to False.</p>
+</dd>
+</dl>
+<p>Returns:
+Union[Dict[str, np.ndarray], np.ndarray]:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>A dictionary containing individual CB unlensed power spectra for ‘tt’, ‘ee’, ‘bb’, ‘te’, ‘eb’, ‘tb’ if dtype is ‘d’.</p></li>
+<li><p>An array of CB unlensed power spectra with ordering determined by the <cite>new</cite> parameter if dtype is ‘a’.</p></li>
+</ul>
+</div></blockquote>
+<p>Raises:
+ValueError: If <cite>dtype</cite> is not ‘d’ or ‘a’.</p>
+<p>Notes:
+The method applies a rotation by <cite>alpha</cite> degrees to the E and B mode spectra to account for cosmic birefringence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+<li><p><strong>dl</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a>] | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_cb_unlensed_mass_spectra">
+<span class="sig-name descname"><span class="pre">get_cb_unlensed_mass_spectra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'d'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_cb_unlensed_mass_spectra"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_cb_unlensed_mass_spectra" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dl</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a>] | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_cb_lensed_spectra">
+<span class="sig-name descname"><span class="pre">get_cb_lensed_spectra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'d'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_cb_lensed_spectra"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_cb_lensed_spectra" title="Link to this definition"></a></dt>
+<dd><p>Calculate the cosmic birefringence (CB) lensed spectra with a given rotation angle <cite>beta</cite>.</p>
+<p>Parameters:
+beta (float, optional): The rotation angle in degrees for the cosmic birefringence effect. Defaults to 0.3 degrees.
+dl (bool, optional): If True, returns Dl (C_l * l * (l + 1) / 2π). Defaults to True.
+dtype (str, optional): Specifies the format of the returned spectra.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>‘d’ returns a dictionary with keys ‘tt’, ‘ee’, ‘bb’, ‘te’, ‘eb’, ‘tb’.</p></li>
+<li><p>‘a’ returns an array of power spectra.</p></li>
+</ul>
+<p>Defaults to ‘d’.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>new (bool, optional): Determines the ordering of the spectra in the array if dtype is ‘a’.</dt><dd><p>If True, returns [TT, EE, BB, TE, EB, TB].
+If False, returns [TT, TE, TB, EE, EB, BB].
+Defaults to False.</p>
+</dd>
+</dl>
+<p>Returns:
+Union[Dict[str, np.ndarray], np.ndarray]:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>A dictionary containing individual CB lensed power spectra for ‘tt’, ‘ee’, ‘bb’, ‘te’, ‘eb’, ‘tb’ if dtype is ‘d’.</p></li>
+<li><p>An array of CB lensed power spectra with ordering determined by the <cite>new</cite> parameter if dtype is ‘a’.</p></li>
+</ul>
+</div></blockquote>
+<p>Raises:
+ValueError: If <cite>dtype</cite> is not ‘d’ or ‘a’.</p>
+<p>Notes:
+The method applies a rotation by <cite>alpha</cite> degrees to the E and B mode spectra to account for cosmic birefringence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+<li><p><strong>dl</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a>] | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_cb_lensed_mass_spectra">
+<span class="sig-name descname"><span class="pre">get_cb_lensed_mass_spectra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'d'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_cb_lensed_mass_spectra"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_cb_lensed_mass_spectra" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dl</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a>] | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.cl_aa">
+<span class="sig-name descname"><span class="pre">cl_aa</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.cl_aa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.cl_aa" title="Link to this definition"></a></dt>
+<dd><p>Compute the Cl_AA power spectrum for the anisotropic model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.cl_pp">
+<span class="sig-name descname"><span class="pre">cl_pp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.cl_pp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.cl_pp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_iso_const_cb_real_lensed_QU">
+<span class="sig-name descname"><span class="pre">get_iso_const_cb_real_lensed_QU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_iso_const_cb_real_lensed_QU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_iso_const_cb_real_lensed_QU" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_iso_td_cb_real_lensed_QU">
+<span class="sig-name descname"><span class="pre">get_iso_td_cb_real_lensed_QU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_iso_td_cb_real_lensed_QU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_iso_td_cb_real_lensed_QU" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_iso_model_cb_real_lensed_QU">
+<span class="sig-name descname"><span class="pre">get_iso_model_cb_real_lensed_QU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_iso_model_cb_real_lensed_QU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_iso_model_cb_real_lensed_QU" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_iso_const_cb_gaussian_lensed_QU">
+<span class="sig-name descname"><span class="pre">get_iso_const_cb_gaussian_lensed_QU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_iso_const_cb_gaussian_lensed_QU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_iso_const_cb_gaussian_lensed_QU" title="Link to this definition"></a></dt>
+<dd><p>Generate or retrieve the Q and U Stokes parameters after applying cosmic birefringence.</p>
+<p>Parameters:
+idx (int): Index for the realization of the CMB map.</p>
+<p>Returns:
+List[np.ndarray]: A list containing the Q and U Stokes parameter maps as NumPy arrays.</p>
+<p>Notes:
+The method applies a rotation to the E and B mode spherical harmonics to simulate the effect of cosmic birefringence.
+If the map for the given <cite>idx</cite> exists in the specified directory, it reads the map from the file.
+Otherwise, it generates the Q and U maps, applies the birefringence, and saves the resulting map to a FITS file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_iso_td_cb_gaussian_lensed_QU">
+<span class="sig-name descname"><span class="pre">get_iso_td_cb_gaussian_lensed_QU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_iso_td_cb_gaussian_lensed_QU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_iso_td_cb_gaussian_lensed_QU" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_iso_model_cb_gaussian_lensed_QU">
+<span class="sig-name descname"><span class="pre">get_iso_model_cb_gaussian_lensed_QU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_iso_model_cb_gaussian_lensed_QU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_iso_model_cb_gaussian_lensed_QU" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_iso_model_cb_lensed_QU">
+<span class="sig-name descname"><span class="pre">get_iso_model_cb_lensed_QU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_iso_model_cb_lensed_QU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_iso_model_cb_lensed_QU" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.alpha_alm">
+<span class="sig-name descname"><span class="pre">alpha_alm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.alpha_alm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.alpha_alm" title="Link to this definition"></a></dt>
+<dd><p>Generate the alpha alm for the anisotropic model.</p>
+<p>Parameters:
+idx (int): Index for the realization of the CMB map.</p>
+<p>Returns:
+np.ndarray: The alpha alm as a NumPy array.</p>
+<p>Notes:
+The method generates the alpha alm for the anisotropic model.
+The alpha alm is generated as a random realization of the Cl_AA power spectrum.
+The behavior depends on Acb_sim_config:
+- ‘vary’: Each idx gets a unique seed (default)
+- ‘constant’: All indices in this range use the same fixed seed
+- ‘null’: Returns zeros (no rotation)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.phi_alm">
+<span class="sig-name descname"><span class="pre">phi_alm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.phi_alm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.phi_alm" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.grad_phi_alm">
+<span class="sig-name descname"><span class="pre">grad_phi_alm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.grad_phi_alm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.grad_phi_alm" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.alpha_map">
+<span class="sig-name descname"><span class="pre">alpha_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.alpha_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.alpha_map" title="Link to this definition"></a></dt>
+<dd><p>Generate a map of the rotation angle alpha for the anisotropic model.</p>
+<p>Parameters:
+idx (int): Index for the realization of the CMB map.</p>
+<p>Returns:
+np.ndarray: A map of the rotation angle alpha as a NumPy array.</p>
+<p>Notes:
+The method generates a map of the rotation angle alpha for the anisotropic model.
+The map is generated as a random realization of the Cl_AA power spectrum.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_aniso_real_lensed_QU">
+<span class="sig-name descname"><span class="pre">get_aniso_real_lensed_QU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_aniso_real_lensed_QU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_aniso_real_lensed_QU" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_aniso_gauss_lensed_QU">
+<span class="sig-name descname"><span class="pre">get_aniso_gauss_lensed_QU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_aniso_gauss_lensed_QU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_aniso_gauss_lensed_QU" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_aniso_model_cb_lensed_QU">
+<span class="sig-name descname"><span class="pre">get_aniso_model_cb_lensed_QU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_aniso_model_cb_lensed_QU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_aniso_model_cb_lensed_QU" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.simulation.CMB.get_cb_lensed_QU">
+<span class="sig-name descname"><span class="pre">get_cb_lensed_QU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cobi/simulation/cmb.html#CMB.get_cb_lensed_QU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.simulation.CMB.get_cb_lensed_QU" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../simulation.html" class="btn btn-neutral float-left" title="Simulation Subpackage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cobi.simulation.Foreground.html" class="btn btn-neutral float-right" title="cobi.simulation.Foreground" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024-2025, Anto Idicherian Lonappan.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

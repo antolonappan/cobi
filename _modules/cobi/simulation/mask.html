@@ -1,0 +1,829 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cobi.simulation.mask &mdash; COBI: Cosmic Birefringence Analysis Pipeline 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            COBI: Cosmic Birefringence Analysis Pipeline
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/calibration.html">Calibration Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.spec_cross"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.spec_cross</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.sat_err"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.sat_err</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.sat_lrange"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.sat_lrange</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.lat_lrange"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.lat_lrange</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.fit_per_split"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.fit_per_split</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.spectra_selection"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.spectra_selection</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.libdir"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.libdir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.binner"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.binner</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.Lmax"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.Lmax</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.maptags"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.maptags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.freq_groups"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.freq_groups</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.freq_bases"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.freq_bases</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.mean_spec"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.mean_spec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.std_spec"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.std_spec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.beam_arr"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.beam_arr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.__init__"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.theory"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.lnprior"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.lnprior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.__all_spectra__"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.__all_spectra__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.chisq"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.chisq()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.ln_likelihood"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.ln_likelihood()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.ln_prob"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.ln_prob()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.run_mcmc"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.run_mcmc()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.getdist_samples"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.getdist_samples()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.plot_posteriors"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.plot_posteriors()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.plot_spectra_matrix"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.plot_spectra_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.BaseSat4LatCross.mle"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.mle()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross.cl_len"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.cl_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross.__init__"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross.theory"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross.lnprior"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.lnprior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross.dof"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.dof</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.eb_template_unbinned"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.eb_template_unbinned</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.binned_template"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.binned_template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.cl_len"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.cl_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.cl_diff_unbinned"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.cl_diff_unbinned</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.__init__"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.theory"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.lnprior"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.lnprior()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.LatCross"><code class="docutils literal notranslate"><span class="pre">LatCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.LatCross.cl_len"><code class="docutils literal notranslate"><span class="pre">LatCross.cl_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.LatCross.lat_err"><code class="docutils literal notranslate"><span class="pre">LatCross.lat_err</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.LatCross.__init__"><code class="docutils literal notranslate"><span class="pre">LatCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.LatCross.theory"><code class="docutils literal notranslate"><span class="pre">LatCross.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.LatCross.lnprior"><code class="docutils literal notranslate"><span class="pre">LatCross.lnprior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration.LatCross.dof"><code class="docutils literal notranslate"><span class="pre">LatCross.dof</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/calibration.html#helper-functions">Helper Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#cobi.calibration._format_alpha_label"><code class="docutils literal notranslate"><span class="pre">_format_alpha_label()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/calibration.html#base-classes">Base Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#id0"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/calibration.html#calibration-classes">Calibration Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#id28"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/calibration.html#id34"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/data.html">Data Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/data.html#data-loading-and-management-module">Data Loading and Management Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#data-objects">Data Objects</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/data.html#cobi.data.Data"><code class="docutils literal notranslate"><span class="pre">Data</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.Data.filename"><code class="docutils literal notranslate"><span class="pre">Data.filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.Data.directory"><code class="docutils literal notranslate"><span class="pre">Data.directory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.Data.galcut"><code class="docutils literal notranslate"><span class="pre">Data.galcut</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.Data.fname"><code class="docutils literal notranslate"><span class="pre">Data.fname</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.Data.url"><code class="docutils literal notranslate"><span class="pre">Data.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.Data.data"><code class="docutils literal notranslate"><span class="pre">Data.data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.Data.__init__"><code class="docutils literal notranslate"><span class="pre">Data.__init__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/data.html#data-class">Data Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#id0"><code class="docutils literal notranslate"><span class="pre">Data</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/data.html#pre-defined-data-objects">Pre-defined Data Objects</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.SAT_MASK"><code class="docutils literal notranslate"><span class="pre">SAT_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.LAT_MASK"><code class="docutils literal notranslate"><span class="pre">LAT_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.CO_MASK"><code class="docutils literal notranslate"><span class="pre">CO_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.GAL_MASK"><code class="docutils literal notranslate"><span class="pre">GAL_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.PS_MASK"><code class="docutils literal notranslate"><span class="pre">PS_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.BP_PROFILE"><code class="docutils literal notranslate"><span class="pre">BP_PROFILE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.CAMB_INI"><code class="docutils literal notranslate"><span class="pre">CAMB_INI</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.SPECTRA"><code class="docutils literal notranslate"><span class="pre">SPECTRA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/data.html#cobi.data.ISO_TD_SPECTRA"><code class="docutils literal notranslate"><span class="pre">ISO_TD_SPECTRA</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/mle.html">Maximum Likelihood Estimation Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mle.html#cobi.mle.bin_from_edges"><code class="docutils literal notranslate"><span class="pre">bin_from_edges()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mle.html#cobi.mle.bin_configuration"><code class="docutils literal notranslate"><span class="pre">bin_configuration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mle.html#cobi.mle.bin_spec_matrix"><code class="docutils literal notranslate"><span class="pre">bin_spec_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mle.html#cobi.mle.bin_cov_matrix"><code class="docutils literal notranslate"><span class="pre">bin_cov_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mle.html#cobi.mle.MLE"><code class="docutils literal notranslate"><span class="pre">MLE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#cobi.mle.MLE.FIT_OPTIONS"><code class="docutils literal notranslate"><span class="pre">MLE.FIT_OPTIONS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#cobi.mle.MLE.__init__"><code class="docutils literal notranslate"><span class="pre">MLE.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#cobi.mle.MLE.calculate"><code class="docutils literal notranslate"><span class="pre">MLE.calculate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#cobi.mle.MLE.estimate_angles"><code class="docutils literal notranslate"><span class="pre">MLE.estimate_angles()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#cobi.mle.MLE.result_name"><code class="docutils literal notranslate"><span class="pre">MLE.result_name()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mle.html#binning-functions">Binning Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#id0"><code class="docutils literal notranslate"><span class="pre">bin_from_edges()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#id1"><code class="docutils literal notranslate"><span class="pre">bin_configuration()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#id2"><code class="docutils literal notranslate"><span class="pre">bin_spec_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#id3"><code class="docutils literal notranslate"><span class="pre">bin_cov_matrix()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mle.html#result-class">Result Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#cobi.mle._Result"><code class="docutils literal notranslate"><span class="pre">_Result</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mle.html#mle-class">MLE Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mle.html#id4"><code class="docutils literal notranslate"><span class="pre">MLE</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/quest.html">Quadratic Estimator Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/quest.html#quadratic-estimator-for-cosmic-birefringence-module">Quadratic Estimator for Cosmic Birefringence Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#algorithm">Algorithm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#requirements">Requirements</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB"><code class="docutils literal notranslate"><span class="pre">FilterEB</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB.__init__"><code class="docutils literal notranslate"><span class="pre">FilterEB.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB.Bl"><code class="docutils literal notranslate"><span class="pre">FilterEB.Bl</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB.convolved_EB"><code class="docutils literal notranslate"><span class="pre">FilterEB.convolved_EB()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB.NL"><code class="docutils literal notranslate"><span class="pre">FilterEB.NL()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB.QU"><code class="docutils literal notranslate"><span class="pre">FilterEB.QU()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB.cinv_EB"><code class="docutils literal notranslate"><span class="pre">FilterEB.cinv_EB()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB.check_file_exist"><code class="docutils literal notranslate"><span class="pre">FilterEB.check_file_exist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.FilterEB.plot_cinv"><code class="docutils literal notranslate"><span class="pre">FilterEB.plot_cinv()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE"><code class="docutils literal notranslate"><span class="pre">QE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.__init__"><code class="docutils literal notranslate"><span class="pre">QE.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.cl_aa"><code class="docutils literal notranslate"><span class="pre">QE.cl_aa</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.qlm"><code class="docutils literal notranslate"><span class="pre">QE.qlm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.check_file_exist"><code class="docutils literal notranslate"><span class="pre">QE.check_file_exist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.qcl"><code class="docutils literal notranslate"><span class="pre">QE.qcl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.mean_field"><code class="docutils literal notranslate"><span class="pre">QE.mean_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.mean_field_cl"><code class="docutils literal notranslate"><span class="pre">QE.mean_field_cl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.RDN0"><code class="docutils literal notranslate"><span class="pre">QE.RDN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.RDN0_mpi"><code class="docutils literal notranslate"><span class="pre">QE.RDN0_mpi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.N0_sim"><code class="docutils literal notranslate"><span class="pre">QE.N0_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.MCN0"><code class="docutils literal notranslate"><span class="pre">QE.MCN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.N1"><code class="docutils literal notranslate"><span class="pre">QE.N1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.Nlens"><code class="docutils literal notranslate"><span class="pre">QE.Nlens()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.RDN0_stat"><code class="docutils literal notranslate"><span class="pre">QE.RDN0_stat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.QE.qcl_stat"><code class="docutils literal notranslate"><span class="pre">QE.qcl_stat()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE"><code class="docutils literal notranslate"><span class="pre">CrossQE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.__init__"><code class="docutils literal notranslate"><span class="pre">CrossQE.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.cl_aa"><code class="docutils literal notranslate"><span class="pre">CrossQE.cl_aa</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.precompute_split_ocl"><code class="docutils literal notranslate"><span class="pre">CrossQE.precompute_split_ocl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.precompute_pair_norms"><code class="docutils literal notranslate"><span class="pre">CrossQE.precompute_pair_norms()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.qlm_pair"><code class="docutils literal notranslate"><span class="pre">CrossQE.qlm_pair()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.mean_field_sim"><code class="docutils literal notranslate"><span class="pre">CrossQE.mean_field_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.mean_field"><code class="docutils literal notranslate"><span class="pre">CrossQE.mean_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.mean_field_cl"><code class="docutils literal notranslate"><span class="pre">CrossQE.mean_field_cl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.qcl_cross_only"><code class="docutils literal notranslate"><span class="pre">CrossQE.qcl_cross_only()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.Nlens"><code class="docutils literal notranslate"><span class="pre">CrossQE.Nlens()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.N1"><code class="docutils literal notranslate"><span class="pre">CrossQE.N1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.qcl_stat"><code class="docutils literal notranslate"><span class="pre">CrossQE.qcl_stat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.N0_sim"><code class="docutils literal notranslate"><span class="pre">CrossQE.N0_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.MCN0"><code class="docutils literal notranslate"><span class="pre">CrossQE.MCN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.RDN0"><code class="docutils literal notranslate"><span class="pre">CrossQE.RDN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.RDN0_mpi"><code class="docutils literal notranslate"><span class="pre">CrossQE.RDN0_mpi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#cobi.quest.CrossQE.RDN0_stat"><code class="docutils literal notranslate"><span class="pre">CrossQE.RDN0_stat()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/quest.html#filtering-class">Filtering Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#id0"><code class="docutils literal notranslate"><span class="pre">FilterEB</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/quest.html#quadratic-estimator-class">Quadratic Estimator Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/quest.html#id9"><code class="docutils literal notranslate"><span class="pre">QE</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/quest.html#likelihood-class">Likelihood Class</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/spectra.html">Spectra Computation Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/spectra.html#power-spectra-computation-module">Power Spectra Computation Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra"><code class="docutils literal notranslate"><span class="pre">Spectra</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__init__"><code class="docutils literal notranslate"><span class="pre">Spectra.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.get_apodised_mask"><code class="docutils literal notranslate"><span class="pre">Spectra.get_apodised_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.get_coupling_matrix"><code class="docutils literal notranslate"><span class="pre">Spectra.get_coupling_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.compute_master"><code class="docutils literal notranslate"><span class="pre">Spectra.compute_master()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__set_dir__"><code class="docutils literal notranslate"><span class="pre">Spectra.__set_dir__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.load_obsQUmaps"><code class="docutils literal notranslate"><span class="pre">Spectra.load_obsQUmaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.Obs_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.Obs_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__get_fg_QUmap__"><code class="docutils literal notranslate"><span class="pre">Spectra.__get_fg_QUmap__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.load_dustQUmaps"><code class="docutils literal notranslate"><span class="pre">Spectra.load_dustQUmaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.Dust_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.Dust_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.load_syncQUmaps"><code class="docutils literal notranslate"><span class="pre">Spectra.load_syncQUmaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.Sync_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.Sync_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.obs_x_obs_check"><code class="docutils literal notranslate"><span class="pre">Spectra.obs_x_obs_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__obs_x_obs_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__obs_x_obs_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__obs_x_obs_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__obs_x_obs_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.obs_x_obs"><code class="docutils literal notranslate"><span class="pre">Spectra.obs_x_obs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__fg_x_obs_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_obs_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__fg_x_obs_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_obs_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.dust_x_obs"><code class="docutils literal notranslate"><span class="pre">Spectra.dust_x_obs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.dust_x_obs_check"><code class="docutils literal notranslate"><span class="pre">Spectra.dust_x_obs_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.sync_x_obs_check"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_obs_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.sync_x_obs"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_obs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__fg_x_fg_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_fg_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__fg_x_fg_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_fg_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.sync_x_sync"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_sync()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.dust_x_dust"><code class="docutils literal notranslate"><span class="pre">Spectra.dust_x_dust()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__sync_x_dust_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__sync_x_dust_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.__sync_x_dust_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__sync_x_dust_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.sync_x_dust"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_dust()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.clear_obs_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.clear_obs_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.clear_dust_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.clear_dust_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.clear_sync_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.clear_sync_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.compute"><code class="docutils literal notranslate"><span class="pre">Spectra.compute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.Compute"><code class="docutils literal notranslate"><span class="pre">Spectra.Compute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.Spectra.get_spectra"><code class="docutils literal notranslate"><span class="pre">Spectra.get_spectra()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.SpectraCross"><code class="docutils literal notranslate"><span class="pre">SpectraCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.SpectraCross.__init__"><code class="docutils literal notranslate"><span class="pre">SpectraCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.SpectraCross.get_mask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.get_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.SpectraCross.satmask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.satmask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.SpectraCross.latmask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.latmask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.SpectraCross.satlatmask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.satlatmask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.SpectraCross.compute_master"><code class="docutils literal notranslate"><span class="pre">SpectraCross.compute_master()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#cobi.spectra.SpectraCross.data_matrix"><code class="docutils literal notranslate"><span class="pre">SpectraCross.data_matrix()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/spectra.html#spectra-class">Spectra Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#id0"><code class="docutils literal notranslate"><span class="pre">Spectra</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/spectra.html#cross-spectra-class">Cross-Spectra Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/spectra.html#id36"><code class="docutils literal notranslate"><span class="pre">SpectraCross</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/sht.html">Spherical Harmonic Transforms Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/sht.html#id1">Spherical Harmonic Transforms Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#classes">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.__init__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.getsize"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.getsize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.__tomap__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__tomap__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.__toalm__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__toalm__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.__alm2map_spin2__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__alm2map_spin2__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.__map2alm_spin2__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__map2alm_spin2__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.__alm2map_spin0__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__alm2map_spin0__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.__map2alm_spin0__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__map2alm_spin0__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.alm2map"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.alm2map()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.map2alm"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.map2alm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.smoothing_alms"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.smoothing_alms()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.smoothing_maps"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.smoothing_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#cobi.sht.HealpixDUCC.smoothing"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.smoothing()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/sht.html#healpixducc-class">HealpixDUCC Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/sht.html#id0"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/utils.html">Utilities Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#utility-functions-module">Utility Functions Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#functions">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#cobi.utils.Logger"><code class="docutils literal notranslate"><span class="pre">Logger</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#cobi.utils.Logger.__init__"><code class="docutils literal notranslate"><span class="pre">Logger.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#cobi.utils.Logger.log"><code class="docutils literal notranslate"><span class="pre">Logger.log()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#cobi.utils.inrad"><code class="docutils literal notranslate"><span class="pre">inrad()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#cobi.utils.cli"><code class="docutils literal notranslate"><span class="pre">cli()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#cobi.utils.download_file"><code class="docutils literal notranslate"><span class="pre">download_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#cobi.utils.deconvolveQU"><code class="docutils literal notranslate"><span class="pre">deconvolveQU()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#cobi.utils.change_coord"><code class="docutils literal notranslate"><span class="pre">change_coord()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#cobi.utils.slice_alms"><code class="docutils literal notranslate"><span class="pre">slice_alms()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#cobi.utils.Binner"><code class="docutils literal notranslate"><span class="pre">Binner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#cobi.utils.Binner.__init__"><code class="docutils literal notranslate"><span class="pre">Binner.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#cobi.utils.Binner.bin"><code class="docutils literal notranslate"><span class="pre">Binner.bin()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#logger-class">Logger Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#id0"><code class="docutils literal notranslate"><span class="pre">Logger</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/utils.html#utility-functions">Utility Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#id3"><code class="docutils literal notranslate"><span class="pre">inrad()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#id4"><code class="docutils literal notranslate"><span class="pre">cli()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#id5"><code class="docutils literal notranslate"><span class="pre">download_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#id6"><code class="docutils literal notranslate"><span class="pre">deconvolveQU()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#id7"><code class="docutils literal notranslate"><span class="pre">change_coord()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/utils.html#id8"><code class="docutils literal notranslate"><span class="pre">slice_alms()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/mpi.html">MPI Support Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mpi.html#id1">MPI Support Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#cobi.mpi.mpi"><code class="docutils literal notranslate"><span class="pre">mpi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#cobi.mpi.com"><code class="docutils literal notranslate"><span class="pre">com</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#cobi.mpi.rank"><code class="docutils literal notranslate"><span class="pre">rank</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#cobi.mpi.size"><code class="docutils literal notranslate"><span class="pre">size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#cobi.mpi.barrier"><code class="docutils literal notranslate"><span class="pre">barrier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#cobi.mpi.finalize"><code class="docutils literal notranslate"><span class="pre">finalize</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/mpi.html#module-attributes">Module Attributes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#id0"><code class="docutils literal notranslate"><span class="pre">mpi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#id2"><code class="docutils literal notranslate"><span class="pre">com</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#id3"><code class="docutils literal notranslate"><span class="pre">rank</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#id4"><code class="docutils literal notranslate"><span class="pre">size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#id5"><code class="docutils literal notranslate"><span class="pre">barrier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/mpi.html#id6"><code class="docutils literal notranslate"><span class="pre">finalize</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/simulation.html">Simulation Subpackage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/simulation.html#id1">Simulation Subpackage</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#modules">Modules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#classes">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/simulation.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/simulation.html#main-classes">Main Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/generated/cobi.simulation.CMB.html">cobi.simulation.CMB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/generated/cobi.simulation.Foreground.html">cobi.simulation.Foreground</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/generated/cobi.simulation.Mask.html">cobi.simulation.Mask</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/generated/cobi.simulation.Noise.html">cobi.simulation.Noise</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/generated/cobi.simulation.LATsky.html">cobi.simulation.LATsky</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/generated/cobi.simulation.SATsky.html">cobi.simulation.SATsky</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/generated/cobi.simulation.LATskyC.html">cobi.simulation.LATskyC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/generated/cobi.simulation.SATskyC.html">cobi.simulation.SATskyC</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/simulation.html#module-cobi.simulation.cmb">CMB Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cmb-simulation-module">CMB Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.cmb.synfast_pol"><code class="docutils literal notranslate"><span class="pre">synfast_pol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.cmb.CMB"><code class="docutils literal notranslate"><span class="pre">CMB</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#id3">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#id44">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/simulation.html#module-cobi.simulation.fg">Foreground Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#foreground-simulation-module">Foreground Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.fg.BandpassInt"><code class="docutils literal notranslate"><span class="pre">BandpassInt</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.fg.Foreground"><code class="docutils literal notranslate"><span class="pre">Foreground</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.fg.HILC"><code class="docutils literal notranslate"><span class="pre">HILC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#id49">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/simulation.html#module-cobi.simulation.mask">Mask Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#mask-generation-module">Mask Generation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.mask.Mask"><code class="docutils literal notranslate"><span class="pre">Mask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#id73">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/simulation.html#module-cobi.simulation.noise">Noise Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#noise-simulation-module">Noise Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.noise.NoiseSpectra"><code class="docutils literal notranslate"><span class="pre">NoiseSpectra()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.noise.Noise"><code class="docutils literal notranslate"><span class="pre">Noise</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#id87">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#id115">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/simulation.html#module-cobi.simulation.sky">Sky Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#sky-simulation-module">Sky Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.sky.SkySimulation"><code class="docutils literal notranslate"><span class="pre">SkySimulation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.sky.LATsky"><code class="docutils literal notranslate"><span class="pre">LATsky</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.sky.SATsky"><code class="docutils literal notranslate"><span class="pre">SATsky</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.sky.LATskyC"><code class="docutils literal notranslate"><span class="pre">LATskyC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#cobi.simulation.sky.SATskyC"><code class="docutils literal notranslate"><span class="pre">SATskyC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/simulation.html#id118">Classes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">COBI: Cosmic Birefringence Analysis Pipeline</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">cobi.simulation.mask</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for cobi.simulation.mask</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Mask Generation Module</span>
+<span class="sd">======================</span>
+
+<span class="sd">This module provides tools for creating and managing sky masks used in CMB</span>
+<span class="sd">analysis, including galactic masks, point source masks, and survey footprints.</span>
+
+<span class="sd">Features:</span>
+
+<span class="sd">- Multiple mask types (LAT, SAT, CO, point sources, galactic)</span>
+<span class="sd">- Apodization with multiple methods (C1, C2, Gaussian)</span>
+<span class="sd">- Galactic cut options</span>
+<span class="sd">- Combination of multiple mask types</span>
+<span class="sd">- Automatic mask caching for efficiency</span>
+
+<span class="sd">Classes</span>
+<span class="sd">-------</span>
+<span class="sd">Mask</span>
+<span class="sd">    Main class for creating and managing sky masks with apodization.</span>
+
+<span class="sd">Example</span>
+<span class="sd">-------</span>
+<span class="sd">Create a LAT survey mask with galactic cut::</span>
+
+<span class="sd">    from cobi.simulation import Mask</span>
+<span class="sd">    </span>
+<span class="sd">    mask = Mask(</span>
+<span class="sd">        libdir=&#39;./masks&#39;,</span>
+<span class="sd">        nside=512,</span>
+<span class="sd">        select=&#39;lat&#39;,</span>
+<span class="sd">        apo_scale=1.0,  # degrees</span>
+<span class="sd">        apo_method=&#39;C2&#39;,</span>
+<span class="sd">        gal_cut=20  # degrees from galactic plane</span>
+<span class="sd">    )</span>
+<span class="sd">    </span>
+<span class="sd">    # Get the mask</span>
+<span class="sd">    mask_map = mask.mask</span>
+
+<span class="sd">Combine multiple masks::</span>
+
+<span class="sd">    mask = Mask(</span>
+<span class="sd">        libdir=&#39;./masks&#39;,</span>
+<span class="sd">        nside=512,</span>
+<span class="sd">        select=&#39;lat+gal+ps&#39;,  # LAT + galactic + point sources</span>
+<span class="sd">        apo_scale=1.0</span>
+<span class="sd">    )</span>
+
+<span class="sd">Notes</span>
+<span class="sd">-----</span>
+<span class="sd">Masks are cached to disk for reuse. The module supports NaMaster apodization</span>
+<span class="sd">methods for optimal mode-coupling correction in power spectrum estimation.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># General imports</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">healpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">hp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pymaster</span><span class="w"> </span><span class="kn">import</span> <span class="n">mask_apodization</span>
+<span class="c1"># Local imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cobi</span><span class="w"> </span><span class="kn">import</span> <span class="n">mpi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cobi.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">SAT_MASK</span><span class="p">,</span> <span class="n">LAT_MASK</span><span class="p">,</span> <span class="n">CO_MASK</span><span class="p">,</span> <span class="n">PS_MASK</span><span class="p">,</span> <span class="n">GAL_MASK</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cobi.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Logger</span>
+<div class="viewcode-block" id="Mask">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Mask">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Mask</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sky mask generator and manager for CMB analysis.</span>
+<span class="sd">    </span>
+<span class="sd">    This class creates and handles various types of sky masks including survey</span>
+<span class="sd">    footprints (LAT/SAT), galactic plane cuts, point source masks, and CO line</span>
+<span class="sd">    emission masks. Supports apodization for optimal power spectrum estimation.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    libdir : str</span>
+<span class="sd">        Directory for caching mask files.</span>
+<span class="sd">    nside : int</span>
+<span class="sd">        HEALPix resolution parameter.</span>
+<span class="sd">    select : str</span>
+<span class="sd">        Mask type selector. Can combine multiple masks with &#39;+&#39;:</span>
+<span class="sd">        - &#39;lat&#39;: LAT survey footprint</span>
+<span class="sd">        - &#39;sat&#39;: SAT survey footprint  </span>
+<span class="sd">        - &#39;co&#39;: CO line emission mask</span>
+<span class="sd">        - &#39;ps&#39;: Point source mask</span>
+<span class="sd">        - &#39;gal&#39;: Galactic plane mask</span>
+<span class="sd">        Example: &#39;lat+gal+ps&#39; combines LAT, galactic, and point source masks.</span>
+<span class="sd">    apo_scale : float, default=0.0</span>
+<span class="sd">        Apodization scale in degrees. If 0, no apodization applied.</span>
+<span class="sd">    apo_method : {&#39;C1&#39;, &#39;C2&#39;, &#39;Gaussian&#39;}, default=&#39;C2&#39;</span>
+<span class="sd">        Apodization method compatible with NaMaster.</span>
+<span class="sd">    gal_cut : float, int, or str, default=0</span>
+<span class="sd">        Galactic cut specification:</span>
+<span class="sd">        - float &lt; 1: f_sky fraction (e.g., 0.4 for 40% sky)</span>
+<span class="sd">        - int &gt; 1: percentage (e.g., 40 for 40% sky)</span>
+<span class="sd">        - str: direct percentage &#39;40&#39;, &#39;60&#39;, &#39;70&#39;, &#39;80&#39;, &#39;90&#39;</span>
+<span class="sd">        Only used when &#39;gal&#39; or &#39;GAL&#39; in select.</span>
+<span class="sd">    verbose : bool, default=True</span>
+<span class="sd">        Enable logging output.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nside : int</span>
+<span class="sd">        HEALPix resolution.</span>
+<span class="sd">    mask : ndarray</span>
+<span class="sd">        The combined mask array (values 0-1).</span>
+<span class="sd">    select : str</span>
+<span class="sd">        Mask type identifier.</span>
+<span class="sd">    apo_scale : float</span>
+<span class="sd">        Apodization scale in degrees.</span>
+<span class="sd">    fsky : float</span>
+<span class="sd">        Sky fraction (computed from mask).</span>
+<span class="sd">    </span>
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    get_mask()</span>
+<span class="sd">        Returns the mask array.</span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Create LAT mask with galactic cut::</span>
+<span class="sd">    </span>
+<span class="sd">        mask = Mask(</span>
+<span class="sd">            libdir=&#39;./masks&#39;,</span>
+<span class="sd">            nside=512,</span>
+<span class="sd">            select=&#39;lat+gal&#39;,</span>
+<span class="sd">            gal_cut=20,  # 20% sky</span>
+<span class="sd">            apo_scale=1.0,</span>
+<span class="sd">            apo_method=&#39;C2&#39;</span>
+<span class="sd">        )</span>
+<span class="sd">        </span>
+<span class="sd">        mask_array = mask.mask</span>
+<span class="sd">        print(f&quot;Sky fraction: {mask.fsky:.3f}&quot;)</span>
+<span class="sd">    </span>
+<span class="sd">    Simple point source mask::</span>
+<span class="sd">    </span>
+<span class="sd">        ps_mask = Mask(</span>
+<span class="sd">            libdir=&#39;./masks&#39;,</span>
+<span class="sd">            nside=512,</span>
+<span class="sd">            select=&#39;ps&#39;,</span>
+<span class="sd">            apo_scale=0.5</span>
+<span class="sd">        )</span>
+<span class="sd">    </span>
+<span class="sd">    Combined mask for full analysis::</span>
+<span class="sd">    </span>
+<span class="sd">        full_mask = Mask(</span>
+<span class="sd">            libdir=&#39;./masks&#39;,</span>
+<span class="sd">            nside=512,</span>
+<span class="sd">            select=&#39;lat+gal+ps+co&#39;,</span>
+<span class="sd">            gal_cut=40,</span>
+<span class="sd">            apo_scale=1.0</span>
+<span class="sd">        )</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - Masks are cached to disk for efficient reuse</span>
+<span class="sd">    - Apodization reduces mode-coupling in power spectra</span>
+<span class="sd">    - Multiple masks are combined via multiplication</span>
+<span class="sd">    - Compatible with NaMaster (pymaster) workflows</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Mask.__init__">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Mask.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                 <span class="n">libdir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+                 <span class="n">nside</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> 
+                 <span class="n">select</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+                 <span class="n">apo_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">apo_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;C2&#39;</span><span class="p">,</span>
+                 <span class="n">gal_cut</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                 <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the Mask class for handling and generating sky masks.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        nside (int): HEALPix resolution parameter.</span>
+<span class="sd">        libdir (Optional[str], optional): Directory where the mask may be saved or loaded from. Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">libdir</span> <span class="o">=</span> <span class="n">libdir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maskdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">libdir</span><span class="p">,</span> <span class="s2">&quot;Masks&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mpi</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maskdir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nside</span> <span class="o">=</span> <span class="n">nside</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">select</span> <span class="o">=</span> <span class="n">select</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apo_scale</span> <span class="o">=</span> <span class="n">apo_scale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apo_method</span> <span class="o">=</span> <span class="n">apo_method</span>
+
+        <span class="n">mask_mapper</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;40&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;60&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;70&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span><span class="s1">&#39;80&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="s1">&#39;90&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="s1">&#39;GAL&#39;</span> <span class="ow">in</span> <span class="n">select</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gal_cut</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="n">gal_cut</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The given galactic cut value seems in fsky and it corresponds to </span><span class="si">{</span><span class="n">gal_cut</span><span class="o">*</span><span class="mi">100</span><span class="si">}</span><span class="s2">% of sky&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;info&quot;</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">gal_cut</span><span class="o">*</span><span class="mi">100</span><span class="p">))</span> <span class="ow">in</span> <span class="n">mask_mapper</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;Invalid gal_cut value: </span><span class="si">{</span><span class="n">gal_cut</span><span class="si">}</span><span class="s2">, it should be in [0.4,0.6,0.7,0.8,0.9]&quot;</span>
+                <span class="n">gal_cut</span> <span class="o">=</span> <span class="n">mask_mapper</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">gal_cut</span><span class="o">*</span><span class="mi">100</span><span class="p">))]</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gal_cut</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">gal_cut</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The given galactic cut value seems in percent of sky and it corresponds to </span><span class="si">{</span><span class="n">gal_cut</span><span class="si">}</span><span class="s2">% of sky&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;info&quot;</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">gal_cut</span><span class="p">)</span> <span class="ow">in</span> <span class="n">mask_mapper</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;Invalid gal_cut value: </span><span class="si">{</span><span class="n">gal_cut</span><span class="si">}</span><span class="s2">, it should be in [40,60,70,80,90]&quot;</span>
+                <span class="n">gal_cut</span> <span class="o">=</span> <span class="n">mask_mapper</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">gal_cut</span><span class="p">)]</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gal_cut</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="p">:</span>
+                <span class="k">assert</span> <span class="n">gal_cut</span> <span class="ow">in</span> <span class="n">mask_mapper</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;Invalid gal_cut value: </span><span class="si">{</span><span class="n">gal_cut</span><span class="si">}</span><span class="s2">, it should be in [40,60,70,80,90]&quot;</span>
+                <span class="n">gal_cut</span> <span class="o">=</span> <span class="n">mask_mapper</span><span class="p">[</span><span class="n">gal_cut</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid gal_cut value: </span><span class="si">{</span><span class="n">gal_cut</span><span class="si">}</span><span class="s2">, it should be in [0,40,60,70,80,90]&quot;</span><span class="p">)</span>
+
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">gal_cut</span> <span class="o">=</span> <span class="n">gal_cut</span>
+        <span class="k">if</span> <span class="n">apo_scale</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">maskfname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maskdir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">select</span><span class="si">}</span><span class="s2">_G</span><span class="si">{</span><span class="n">gal_cut</span><span class="si">}</span><span class="s2">_N</span><span class="si">{</span><span class="n">nside</span><span class="si">}</span><span class="s2">_apo</span><span class="si">{</span><span class="n">apo_scale</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">apo_method</span><span class="si">}</span><span class="s2">.fits&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">maskfname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maskdir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">select</span><span class="si">}</span><span class="s2">_G</span><span class="si">{</span><span class="n">gal_cut</span><span class="si">}</span><span class="s2">_N</span><span class="si">{</span><span class="n">nside</span><span class="si">}</span><span class="s2">.fits&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">maskfname</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">read_map</span><span class="p">(</span><span class="n">maskfname</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__load_mask__</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">mpi</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">hp</span><span class="o">.</span><span class="n">write_map</span><span class="p">(</span><span class="n">maskfname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">mpi</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsky</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__calc_fsky__</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__mask_obj__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">select</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">match</span> <span class="n">select</span><span class="p">:</span>
+            <span class="k">case</span> <span class="s2">&quot;SAT&quot;</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">SAT_MASK</span>
+            <span class="k">case</span> <span class="s2">&quot;LAT&quot;</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">LAT_MASK</span>
+            <span class="k">case</span> <span class="s2">&quot;CO&quot;</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">CO_MASK</span>
+            <span class="k">case</span> <span class="s2">&quot;PS&quot;</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">PS_MASK</span>
+            <span class="k">case</span> <span class="s2">&quot;GAL&quot;</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">GAL_MASK</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid mask selection: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mask</span>
+
+<div class="viewcode-block" id="Mask.__load_mask_healper__">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Mask.__load_mask_healper__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__load_mask_healper__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads a mask from a file.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        np.ndarray: The mask array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s1">&#39;x&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Loading composite mask&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;info&quot;</span><span class="p">)</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+            <span class="n">final_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">nside2npix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">))</span>
+            <span class="n">fsky</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">mask</span> <span class="ow">in</span> <span class="n">masks</span><span class="p">:</span>
+                <span class="n">maskobj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mask_obj__</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+                <span class="n">maskobj</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">libdir</span>
+                <span class="k">if</span> <span class="n">mask</span> <span class="o">==</span> <span class="s1">&#39;GAL&#39;</span><span class="p">:</span>
+                    <span class="n">maskobj</span><span class="o">.</span><span class="n">galcut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gal_cut</span>
+                <span class="n">smask</span> <span class="o">=</span> <span class="n">maskobj</span><span class="o">.</span><span class="n">data</span>
+                <span class="k">if</span> <span class="n">hp</span><span class="o">.</span><span class="n">get_nside</span><span class="p">(</span><span class="n">smask</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downgrading mask </span><span class="si">{</span><span class="n">mask</span><span class="si">}</span><span class="s2"> resolution&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;info&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Upgrading mask </span><span class="si">{</span><span class="n">mask</span><span class="si">}</span><span class="s2"> resolution&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;info&quot;</span><span class="p">)</span>
+                <span class="n">smask</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">ud_grade</span><span class="p">(</span><span class="n">smask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">)</span>
+                <span class="n">fsky</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__calc_fsky__</span><span class="p">(</span><span class="n">smask</span><span class="p">))</span>
+                <span class="n">final_mask</span> <span class="o">*=</span> <span class="n">smask</span>
+            <span class="n">fskyb</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">fsky</span><span class="p">))[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">fskyf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__calc_fsky__</span><span class="p">(</span><span class="n">final_mask</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Composite Mask </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="si">}</span><span class="s2">: fsky changed </span><span class="si">{</span><span class="n">fskyb</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">fskyf</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">  &quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;info&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mask_obj__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="p">)</span>
+            <span class="n">mask</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">libdir</span>
+            <span class="n">final_mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">data</span>
+            <span class="k">if</span> <span class="n">hp</span><span class="o">.</span><span class="n">get_nside</span><span class="p">(</span><span class="n">final_mask</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">hp</span><span class="o">.</span><span class="n">get_nside</span><span class="p">(</span><span class="n">final_mask</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downgrading mask </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="si">}</span><span class="s2"> resolution&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;info&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Upgrading mask </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="si">}</span><span class="s2"> resolution&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;info&quot;</span><span class="p">)</span>
+                <span class="n">final_mask</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">ud_grade</span><span class="p">(</span><span class="n">final_mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nside</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">final_mask</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="Mask.__load_mask__">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Mask.__load_mask__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__load_mask__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads a mask from a file.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        np.ndarray: The mask array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__load_mask_healper__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">apo_scale</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">fskyb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__calc_fsky__</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Apodizing mask: scale </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">apo_scale</span><span class="si">}</span><span class="s2">: method: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">apo_method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;info&quot;</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">mask_apodization</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">apo_scale</span><span class="p">,</span> <span class="n">apotype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">apo_method</span><span class="p">)</span>
+            <span class="n">fskya</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__calc_fsky__</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Apodizing changed the fsky </span><span class="si">{</span><span class="n">fskyb</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">fskya</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;info&quot;</span><span class="p">)</span> 
+        <span class="k">return</span> <span class="n">mask</span></div>
+
+
+<div class="viewcode-block" id="Mask.__calc_fsky__">
+<a class="viewcode-back" href="../../../api/simulation.html#cobi.simulation.Mask.__calc_fsky__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__calc_fsky__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates the fraction of sky covered by the mask.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        float: The fraction of sky covered by the mask.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mask</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mask</span> <span class="o">**</span> <span class="mi">4</span><span class="p">))</span></div>
+</div>
+
+
+    
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024-2025, Anto Idicherian Lonappan.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

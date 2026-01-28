@@ -1,0 +1,1274 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quadratic Estimator Module &mdash; COBI: Cosmic Birefringence Analysis Pipeline 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Spectra Computation Module" href="spectra.html" />
+    <link rel="prev" title="Maximum Likelihood Estimation Module" href="mle.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            COBI: Cosmic Birefringence Analysis Pipeline
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="calibration.html">Calibration Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.spec_cross"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.spec_cross</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.sat_err"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.sat_err</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.sat_lrange"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.sat_lrange</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.lat_lrange"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.lat_lrange</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.fit_per_split"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.fit_per_split</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.spectra_selection"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.spectra_selection</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.libdir"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.libdir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.binner"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.binner</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.Lmax"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.Lmax</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.maptags"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.maptags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.freq_groups"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.freq_groups</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.freq_bases"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.freq_bases</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.mean_spec"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.mean_spec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.std_spec"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.std_spec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.beam_arr"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.beam_arr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.__init__"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.theory"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.lnprior"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.lnprior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.__all_spectra__"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.__all_spectra__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.chisq"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.chisq()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.ln_likelihood"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.ln_likelihood()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.ln_prob"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.ln_prob()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.run_mcmc"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.run_mcmc()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.getdist_samples"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.getdist_samples()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.plot_posteriors"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.plot_posteriors()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.plot_spectra_matrix"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.plot_spectra_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.mle"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.mle()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross.cl_len"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.cl_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross.__init__"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross.theory"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross.lnprior"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.lnprior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross.dof"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.dof</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.eb_template_unbinned"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.eb_template_unbinned</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.binned_template"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.binned_template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.cl_len"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.cl_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.cl_diff_unbinned"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.cl_diff_unbinned</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.__init__"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.theory"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.lnprior"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.lnprior()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="calibration.html#cobi.calibration.LatCross"><code class="docutils literal notranslate"><span class="pre">LatCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.LatCross.cl_len"><code class="docutils literal notranslate"><span class="pre">LatCross.cl_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.LatCross.lat_err"><code class="docutils literal notranslate"><span class="pre">LatCross.lat_err</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.LatCross.__init__"><code class="docutils literal notranslate"><span class="pre">LatCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.LatCross.theory"><code class="docutils literal notranslate"><span class="pre">LatCross.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.LatCross.lnprior"><code class="docutils literal notranslate"><span class="pre">LatCross.lnprior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.LatCross.dof"><code class="docutils literal notranslate"><span class="pre">LatCross.dof</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="calibration.html#helper-functions">Helper Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration._format_alpha_label"><code class="docutils literal notranslate"><span class="pre">_format_alpha_label()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="calibration.html#base-classes">Base Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#id0"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="calibration.html#calibration-classes">Calibration Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#id28"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#id34"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data.html">Data Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data.html#data-loading-and-management-module">Data Loading and Management Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="data.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#data-objects">Data Objects</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="data.html#cobi.data.Data"><code class="docutils literal notranslate"><span class="pre">Data</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.Data.filename"><code class="docutils literal notranslate"><span class="pre">Data.filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.Data.directory"><code class="docutils literal notranslate"><span class="pre">Data.directory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.Data.galcut"><code class="docutils literal notranslate"><span class="pre">Data.galcut</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.Data.fname"><code class="docutils literal notranslate"><span class="pre">Data.fname</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.Data.url"><code class="docutils literal notranslate"><span class="pre">Data.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.Data.data"><code class="docutils literal notranslate"><span class="pre">Data.data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.Data.__init__"><code class="docutils literal notranslate"><span class="pre">Data.__init__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="data.html#data-class">Data Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="data.html#id0"><code class="docutils literal notranslate"><span class="pre">Data</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="data.html#pre-defined-data-objects">Pre-defined Data Objects</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.SAT_MASK"><code class="docutils literal notranslate"><span class="pre">SAT_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.LAT_MASK"><code class="docutils literal notranslate"><span class="pre">LAT_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.CO_MASK"><code class="docutils literal notranslate"><span class="pre">CO_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.GAL_MASK"><code class="docutils literal notranslate"><span class="pre">GAL_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.PS_MASK"><code class="docutils literal notranslate"><span class="pre">PS_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.BP_PROFILE"><code class="docutils literal notranslate"><span class="pre">BP_PROFILE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.CAMB_INI"><code class="docutils literal notranslate"><span class="pre">CAMB_INI</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.SPECTRA"><code class="docutils literal notranslate"><span class="pre">SPECTRA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.ISO_TD_SPECTRA"><code class="docutils literal notranslate"><span class="pre">ISO_TD_SPECTRA</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mle.html">Maximum Likelihood Estimation Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mle.html#cobi.mle.bin_from_edges"><code class="docutils literal notranslate"><span class="pre">bin_from_edges()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mle.html#cobi.mle.bin_configuration"><code class="docutils literal notranslate"><span class="pre">bin_configuration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mle.html#cobi.mle.bin_spec_matrix"><code class="docutils literal notranslate"><span class="pre">bin_spec_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mle.html#cobi.mle.bin_cov_matrix"><code class="docutils literal notranslate"><span class="pre">bin_cov_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mle.html#cobi.mle.MLE"><code class="docutils literal notranslate"><span class="pre">MLE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#cobi.mle.MLE.FIT_OPTIONS"><code class="docutils literal notranslate"><span class="pre">MLE.FIT_OPTIONS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#cobi.mle.MLE.__init__"><code class="docutils literal notranslate"><span class="pre">MLE.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#cobi.mle.MLE.calculate"><code class="docutils literal notranslate"><span class="pre">MLE.calculate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#cobi.mle.MLE.estimate_angles"><code class="docutils literal notranslate"><span class="pre">MLE.estimate_angles()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#cobi.mle.MLE.result_name"><code class="docutils literal notranslate"><span class="pre">MLE.result_name()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mle.html#binning-functions">Binning Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#id0"><code class="docutils literal notranslate"><span class="pre">bin_from_edges()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#id1"><code class="docutils literal notranslate"><span class="pre">bin_configuration()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#id2"><code class="docutils literal notranslate"><span class="pre">bin_spec_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#id3"><code class="docutils literal notranslate"><span class="pre">bin_cov_matrix()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mle.html#result-class">Result Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#cobi.mle._Result"><code class="docutils literal notranslate"><span class="pre">_Result</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mle.html#mle-class">MLE Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#id4"><code class="docutils literal notranslate"><span class="pre">MLE</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Quadratic Estimator Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#quadratic-estimator-for-cosmic-birefringence-module">Quadratic Estimator for Cosmic Birefringence Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#algorithm">Algorithm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#cobi.quest.FilterEB"><code class="docutils literal notranslate"><span class="pre">FilterEB</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.FilterEB.__init__"><code class="docutils literal notranslate"><span class="pre">FilterEB.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.FilterEB.Bl"><code class="docutils literal notranslate"><span class="pre">FilterEB.Bl</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.FilterEB.convolved_EB"><code class="docutils literal notranslate"><span class="pre">FilterEB.convolved_EB()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.FilterEB.NL"><code class="docutils literal notranslate"><span class="pre">FilterEB.NL()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.FilterEB.QU"><code class="docutils literal notranslate"><span class="pre">FilterEB.QU()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.FilterEB.cinv_EB"><code class="docutils literal notranslate"><span class="pre">FilterEB.cinv_EB()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.FilterEB.check_file_exist"><code class="docutils literal notranslate"><span class="pre">FilterEB.check_file_exist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.FilterEB.plot_cinv"><code class="docutils literal notranslate"><span class="pre">FilterEB.plot_cinv()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#cobi.quest.QE"><code class="docutils literal notranslate"><span class="pre">QE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.QE.__init__"><code class="docutils literal notranslate"><span class="pre">QE.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.QE.cl_aa"><code class="docutils literal notranslate"><span class="pre">QE.cl_aa</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.QE.qlm"><code class="docutils literal notranslate"><span class="pre">QE.qlm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.QE.check_file_exist"><code class="docutils literal notranslate"><span class="pre">QE.check_file_exist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.QE.qcl"><code class="docutils literal notranslate"><span class="pre">QE.qcl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.QE.mean_field"><code class="docutils literal notranslate"><span class="pre">QE.mean_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.QE.mean_field_cl"><code class="docutils literal notranslate"><span class="pre">QE.mean_field_cl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.QE.RDN0"><code class="docutils literal notranslate"><span class="pre">QE.RDN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.QE.RDN0_mpi"><code class="docutils literal notranslate"><span class="pre">QE.RDN0_mpi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.QE.N0_sim"><code class="docutils literal notranslate"><span class="pre">QE.N0_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.QE.MCN0"><code class="docutils literal notranslate"><span class="pre">QE.MCN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.QE.N1"><code class="docutils literal notranslate"><span class="pre">QE.N1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.QE.Nlens"><code class="docutils literal notranslate"><span class="pre">QE.Nlens()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.QE.RDN0_stat"><code class="docutils literal notranslate"><span class="pre">QE.RDN0_stat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.QE.qcl_stat"><code class="docutils literal notranslate"><span class="pre">QE.qcl_stat()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#cobi.quest.CrossQE"><code class="docutils literal notranslate"><span class="pre">CrossQE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.__init__"><code class="docutils literal notranslate"><span class="pre">CrossQE.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.cl_aa"><code class="docutils literal notranslate"><span class="pre">CrossQE.cl_aa</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.precompute_split_ocl"><code class="docutils literal notranslate"><span class="pre">CrossQE.precompute_split_ocl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.precompute_pair_norms"><code class="docutils literal notranslate"><span class="pre">CrossQE.precompute_pair_norms()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.qlm_pair"><code class="docutils literal notranslate"><span class="pre">CrossQE.qlm_pair()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.mean_field_sim"><code class="docutils literal notranslate"><span class="pre">CrossQE.mean_field_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.mean_field"><code class="docutils literal notranslate"><span class="pre">CrossQE.mean_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.mean_field_cl"><code class="docutils literal notranslate"><span class="pre">CrossQE.mean_field_cl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.qcl_cross_only"><code class="docutils literal notranslate"><span class="pre">CrossQE.qcl_cross_only()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.Nlens"><code class="docutils literal notranslate"><span class="pre">CrossQE.Nlens()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.N1"><code class="docutils literal notranslate"><span class="pre">CrossQE.N1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.qcl_stat"><code class="docutils literal notranslate"><span class="pre">CrossQE.qcl_stat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.N0_sim"><code class="docutils literal notranslate"><span class="pre">CrossQE.N0_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.MCN0"><code class="docutils literal notranslate"><span class="pre">CrossQE.MCN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.RDN0"><code class="docutils literal notranslate"><span class="pre">CrossQE.RDN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.RDN0_mpi"><code class="docutils literal notranslate"><span class="pre">CrossQE.RDN0_mpi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.quest.CrossQE.RDN0_stat"><code class="docutils literal notranslate"><span class="pre">CrossQE.RDN0_stat()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#filtering-class">Filtering Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">FilterEB</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#quadratic-estimator-class">Quadratic Estimator Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id9"><code class="docutils literal notranslate"><span class="pre">QE</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#likelihood-class">Likelihood Class</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="spectra.html">Spectra Computation Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="spectra.html#power-spectra-computation-module">Power Spectra Computation Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra"><code class="docutils literal notranslate"><span class="pre">Spectra</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__init__"><code class="docutils literal notranslate"><span class="pre">Spectra.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.get_apodised_mask"><code class="docutils literal notranslate"><span class="pre">Spectra.get_apodised_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.get_coupling_matrix"><code class="docutils literal notranslate"><span class="pre">Spectra.get_coupling_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.compute_master"><code class="docutils literal notranslate"><span class="pre">Spectra.compute_master()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__set_dir__"><code class="docutils literal notranslate"><span class="pre">Spectra.__set_dir__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.load_obsQUmaps"><code class="docutils literal notranslate"><span class="pre">Spectra.load_obsQUmaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.Obs_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.Obs_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__get_fg_QUmap__"><code class="docutils literal notranslate"><span class="pre">Spectra.__get_fg_QUmap__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.load_dustQUmaps"><code class="docutils literal notranslate"><span class="pre">Spectra.load_dustQUmaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.Dust_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.Dust_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.load_syncQUmaps"><code class="docutils literal notranslate"><span class="pre">Spectra.load_syncQUmaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.Sync_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.Sync_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.obs_x_obs_check"><code class="docutils literal notranslate"><span class="pre">Spectra.obs_x_obs_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__obs_x_obs_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__obs_x_obs_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__obs_x_obs_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__obs_x_obs_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.obs_x_obs"><code class="docutils literal notranslate"><span class="pre">Spectra.obs_x_obs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__fg_x_obs_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_obs_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__fg_x_obs_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_obs_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.dust_x_obs"><code class="docutils literal notranslate"><span class="pre">Spectra.dust_x_obs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.dust_x_obs_check"><code class="docutils literal notranslate"><span class="pre">Spectra.dust_x_obs_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.sync_x_obs_check"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_obs_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.sync_x_obs"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_obs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__fg_x_fg_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_fg_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__fg_x_fg_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_fg_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.sync_x_sync"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_sync()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.dust_x_dust"><code class="docutils literal notranslate"><span class="pre">Spectra.dust_x_dust()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__sync_x_dust_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__sync_x_dust_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__sync_x_dust_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__sync_x_dust_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.sync_x_dust"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_dust()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.clear_obs_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.clear_obs_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.clear_dust_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.clear_dust_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.clear_sync_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.clear_sync_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.compute"><code class="docutils literal notranslate"><span class="pre">Spectra.compute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.Compute"><code class="docutils literal notranslate"><span class="pre">Spectra.Compute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.get_spectra"><code class="docutils literal notranslate"><span class="pre">Spectra.get_spectra()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="spectra.html#cobi.spectra.SpectraCross"><code class="docutils literal notranslate"><span class="pre">SpectraCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.SpectraCross.__init__"><code class="docutils literal notranslate"><span class="pre">SpectraCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.SpectraCross.get_mask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.get_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.SpectraCross.satmask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.satmask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.SpectraCross.latmask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.latmask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.SpectraCross.satlatmask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.satlatmask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.SpectraCross.compute_master"><code class="docutils literal notranslate"><span class="pre">SpectraCross.compute_master()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.SpectraCross.data_matrix"><code class="docutils literal notranslate"><span class="pre">SpectraCross.data_matrix()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="spectra.html#spectra-class">Spectra Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#id0"><code class="docutils literal notranslate"><span class="pre">Spectra</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="spectra.html#cross-spectra-class">Cross-Spectra Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#id36"><code class="docutils literal notranslate"><span class="pre">SpectraCross</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sht.html">Spherical Harmonic Transforms Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sht.html#id1">Spherical Harmonic Transforms Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="sht.html#classes">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="sht.html#cobi.sht.HealpixDUCC"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="sht.html#cobi.sht.HealpixDUCC.__init__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="sht.html#cobi.sht.HealpixDUCC.getsize"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.getsize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="sht.html#cobi.sht.HealpixDUCC.__tomap__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__tomap__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="sht.html#cobi.sht.HealpixDUCC.__toalm__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__toalm__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="sht.html#cobi.sht.HealpixDUCC.__alm2map_spin2__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__alm2map_spin2__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="sht.html#cobi.sht.HealpixDUCC.__map2alm_spin2__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__map2alm_spin2__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="sht.html#cobi.sht.HealpixDUCC.__alm2map_spin0__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__alm2map_spin0__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="sht.html#cobi.sht.HealpixDUCC.__map2alm_spin0__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__map2alm_spin0__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="sht.html#cobi.sht.HealpixDUCC.alm2map"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.alm2map()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="sht.html#cobi.sht.HealpixDUCC.map2alm"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.map2alm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="sht.html#cobi.sht.HealpixDUCC.smoothing_alms"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.smoothing_alms()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="sht.html#cobi.sht.HealpixDUCC.smoothing_maps"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.smoothing_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="sht.html#cobi.sht.HealpixDUCC.smoothing"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.smoothing()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="sht.html#healpixducc-class">HealpixDUCC Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="sht.html#id0"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">Utilities Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utility-functions-module">Utility Functions Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#functions">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#cobi.utils.Logger"><code class="docutils literal notranslate"><span class="pre">Logger</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#cobi.utils.Logger.__init__"><code class="docutils literal notranslate"><span class="pre">Logger.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#cobi.utils.Logger.log"><code class="docutils literal notranslate"><span class="pre">Logger.log()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#cobi.utils.inrad"><code class="docutils literal notranslate"><span class="pre">inrad()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#cobi.utils.cli"><code class="docutils literal notranslate"><span class="pre">cli()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#cobi.utils.download_file"><code class="docutils literal notranslate"><span class="pre">download_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#cobi.utils.deconvolveQU"><code class="docutils literal notranslate"><span class="pre">deconvolveQU()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#cobi.utils.change_coord"><code class="docutils literal notranslate"><span class="pre">change_coord()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#cobi.utils.slice_alms"><code class="docutils literal notranslate"><span class="pre">slice_alms()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#cobi.utils.Binner"><code class="docutils literal notranslate"><span class="pre">Binner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#cobi.utils.Binner.__init__"><code class="docutils literal notranslate"><span class="pre">Binner.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#cobi.utils.Binner.bin"><code class="docutils literal notranslate"><span class="pre">Binner.bin()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#logger-class">Logger Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#id0"><code class="docutils literal notranslate"><span class="pre">Logger</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utility-functions">Utility Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#id3"><code class="docutils literal notranslate"><span class="pre">inrad()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#id4"><code class="docutils literal notranslate"><span class="pre">cli()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#id5"><code class="docutils literal notranslate"><span class="pre">download_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#id6"><code class="docutils literal notranslate"><span class="pre">deconvolveQU()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#id7"><code class="docutils literal notranslate"><span class="pre">change_coord()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#id8"><code class="docutils literal notranslate"><span class="pre">slice_alms()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mpi.html">MPI Support Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mpi.html#id1">MPI Support Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#cobi.mpi.mpi"><code class="docutils literal notranslate"><span class="pre">mpi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#cobi.mpi.com"><code class="docutils literal notranslate"><span class="pre">com</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#cobi.mpi.rank"><code class="docutils literal notranslate"><span class="pre">rank</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#cobi.mpi.size"><code class="docutils literal notranslate"><span class="pre">size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#cobi.mpi.barrier"><code class="docutils literal notranslate"><span class="pre">barrier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#cobi.mpi.finalize"><code class="docutils literal notranslate"><span class="pre">finalize</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mpi.html#module-attributes">Module Attributes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#id0"><code class="docutils literal notranslate"><span class="pre">mpi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#id2"><code class="docutils literal notranslate"><span class="pre">com</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#id3"><code class="docutils literal notranslate"><span class="pre">rank</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#id4"><code class="docutils literal notranslate"><span class="pre">size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#id5"><code class="docutils literal notranslate"><span class="pre">barrier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#id6"><code class="docutils literal notranslate"><span class="pre">finalize</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="simulation.html">Simulation Subpackage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html#id1">Simulation Subpackage</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#modules">Modules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#classes">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html#main-classes">Main Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generated/cobi.simulation.CMB.html">cobi.simulation.CMB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/cobi.simulation.Foreground.html">cobi.simulation.Foreground</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/cobi.simulation.Mask.html">cobi.simulation.Mask</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/cobi.simulation.Noise.html">cobi.simulation.Noise</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/cobi.simulation.LATsky.html">cobi.simulation.LATsky</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/cobi.simulation.SATsky.html">cobi.simulation.SATsky</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/cobi.simulation.LATskyC.html">cobi.simulation.LATskyC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/cobi.simulation.SATskyC.html">cobi.simulation.SATskyC</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html#module-cobi.simulation.cmb">CMB Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cmb-simulation-module">CMB Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.cmb.synfast_pol"><code class="docutils literal notranslate"><span class="pre">synfast_pol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.cmb.CMB"><code class="docutils literal notranslate"><span class="pre">CMB</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#id3">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#id44">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html#module-cobi.simulation.fg">Foreground Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#foreground-simulation-module">Foreground Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.fg.BandpassInt"><code class="docutils literal notranslate"><span class="pre">BandpassInt</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.fg.Foreground"><code class="docutils literal notranslate"><span class="pre">Foreground</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.fg.HILC"><code class="docutils literal notranslate"><span class="pre">HILC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#id49">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html#module-cobi.simulation.mask">Mask Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#mask-generation-module">Mask Generation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.mask.Mask"><code class="docutils literal notranslate"><span class="pre">Mask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#id73">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html#module-cobi.simulation.noise">Noise Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#noise-simulation-module">Noise Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.noise.NoiseSpectra"><code class="docutils literal notranslate"><span class="pre">NoiseSpectra()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.noise.Noise"><code class="docutils literal notranslate"><span class="pre">Noise</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#id87">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#id115">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html#module-cobi.simulation.sky">Sky Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#sky-simulation-module">Sky Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.sky.SkySimulation"><code class="docutils literal notranslate"><span class="pre">SkySimulation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.sky.LATsky"><code class="docutils literal notranslate"><span class="pre">LATsky</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.sky.SATsky"><code class="docutils literal notranslate"><span class="pre">SATsky</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.sky.LATskyC"><code class="docutils literal notranslate"><span class="pre">LATskyC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.sky.SATskyC"><code class="docutils literal notranslate"><span class="pre">SATskyC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#id118">Classes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">COBI: Cosmic Birefringence Analysis Pipeline</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Quadratic Estimator Module</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/antolonappan/cobi/blob/main/docs/api/quest.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-cobi.quest">
+<span id="quadratic-estimator-module"></span><h1>Quadratic Estimator Module<a class="headerlink" href="#module-cobi.quest" title="Link to this heading"></a></h1>
+<section id="quadratic-estimator-for-cosmic-birefringence-module">
+<h2>Quadratic Estimator for Cosmic Birefringence Module<a class="headerlink" href="#quadratic-estimator-for-cosmic-birefringence-module" title="Link to this heading"></a></h2>
+<p>This module implements quadratic estimator (QE) methods for reconstructing
+cosmic birefringence rotation angle fields from CMB polarization observations.</p>
+<p>The module provides:
+- Wiener filtering of E and B modes using C⁻¹ filters
+- Quadratic estimator reconstruction of rotation angle alms
+- N0 and RDN0 bias estimation
+- Mean field subtraction
+- Likelihood analysis for cosmic birefringence amplitude</p>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h3>
+<dl>
+<dt>FilterEB</dt><dd><p>Implements C⁻¹ Wiener filtering for E and B mode polarization using
+the curvedsky library. Handles component-separated maps with noise
+and beam deconvolution.</p>
+</dd>
+<dt>QE</dt><dd><p>Quadratic estimator class for cosmic birefringence reconstruction.
+Computes rotation angle power spectra with various bias correction
+methods (analytical N0, realization-dependent N0, mean field).</p>
+<p>Simulation Index Structure (sim_config is required):</p>
+<p>From sim_config={‘set1’: 400, ‘reuse_last’: 100} and nsims_mf=100:
+- stat_index: 0-299 (set1 - nsims_mf) - Statistics and OCL computation
+- mf_index: 300-399 (last nsims_mf from set1) - Mean field simulations
+- vary_index: 300-399 (last reuse_last from set1) - Varying alpha (CMB mode=’vary’)
+- const_index: 400-499 (reuse_last sims) - Constant alpha (CMB mode=’constant’)
+- null_index: 500-599 (reuse_last sims) - Null alpha (CMB mode=’null’)</p>
+<p>Note: When nsims_mf equals reuse_last, mf_index and vary_index are identical.</p>
+<p>Bias Estimation:
+- MCN0(‘stat’): Uses stat_index (0-299)
+- MCN0(‘vary’): Uses vary_index (300-399)
+- MCN0(‘const’): Uses const_index (400-499)
+- N1 = MCN0(‘const’) - MCN0(‘vary’)
+- Nlens: Uses null_index (500-599) and MCN0(‘vary’)</p>
+</dd>
+<dt>AcbLikelihood</dt><dd><p>Likelihood analysis class for constraining the cosmic birefringence
+amplitude A_CB from reconstructed rotation angle power spectra.</p>
+</dd>
+</dl>
+</section>
+<section id="algorithm">
+<h3>Algorithm<a class="headerlink" href="#algorithm" title="Link to this heading"></a></h3>
+<p>The quadratic estimator exploits EB correlations induced by cosmic birefringence:</p>
+<ol class="arabic simple">
+<li><p>Apply C⁻¹ Wiener filter to observed E and B maps</p></li>
+<li><p>Compute quadratic combination: qlm ∝ Ẽlm B̃*lm</p></li>
+<li><p>Apply normalization from Fisher information</p></li>
+<li><p>Estimate and subtract biases (N0, mean field)</p></li>
+<li><p>Compare to theoretical prediction for A_CB</p></li>
+</ol>
+</section>
+<section id="requirements">
+<h3>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h3>
+<p>Requires the curvedsky library for efficient curved-sky operations.
+Install from: <a class="reference external" href="https://github.com/toshiyan/cmblensplus">https://github.com/toshiyan/cmblensplus</a></p>
+<div class="admonition-example admonition">
+<p class="admonition-title">Example</p>
+<p>from cobi.quest import FilterEB, QE
+from cobi.simulation import LATsky, Mask</p>
+<p># Set up sky and mask
+sky = LATsky(libdir, nside=512)
+mask = Mask(libdir, nside=512, mask_str=’LAT’)</p>
+<p># Initialize Wiener filter
+filter_eb = FilterEB(</p>
+<blockquote>
+<div><p>sky=sky,
+mask=mask,
+lmax=3000,
+fwhm=2.0,  # arcmin
+sht_backend=’ducc0’</p>
+</div></blockquote>
+<p>)</p>
+<p># Create quadratic estimator
+qe = QE(</p>
+<blockquote>
+<div><p>filter=filter_eb,
+lmin=30,
+lmax=300,
+recon_lmax=100,
+norm_nsim=100</p>
+</div></blockquote>
+<p>)</p>
+<p># Reconstruct rotation angle for simulation 0
+qlm = qe.qlm(idx=0)</p>
+<p># Get bias-corrected power spectrum
+cl_aa = qe.qcl(idx=0, rm_bias=True, rdn0=True)</p>
+<p># Run likelihood analysis
+likelihood = AcbLikelihood(qe, lmin=2, lmax=50)
+samples = likelihood.samples(nwalkers=100, nsamples=2000)</p>
+</div>
+<div class="admonition-notes admonition">
+<p class="admonition-title">Notes</p>
+<p>The curvedsky library must be installed to use this module.
+MPI parallelization is supported for RDN0 computation.</p>
+</div>
+</section>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="cobi.quest.FilterEB">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FilterEB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sky</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sht_backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'healpy'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#FilterEB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.FilterEB" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sky</strong> (<a class="reference internal" href="simulation.html#id140" title="cobi.simulation.sky.LATsky"><em>LATsky</em></a>)</p></li>
+<li><p><strong>mask</strong> (<a class="reference internal" href="simulation.html#id74" title="cobi.simulation.mask.Mask"><em>Mask</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>fwhm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+<li><p><strong>sht_backend</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.FilterEB.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sky</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sht_backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'healpy'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#FilterEB.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.FilterEB.__init__" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sky</strong> (<a class="reference internal" href="simulation.html#id140" title="cobi.simulation.sky.LATsky"><em>LATsky</em></a>)</p></li>
+<li><p><strong>mask</strong> (<a class="reference internal" href="simulation.html#id74" title="cobi.simulation.mask.Mask"><em>Mask</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>fwhm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+<li><p><strong>sht_backend</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cobi.quest.FilterEB.Bl">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Bl</span></span><a class="headerlink" href="#cobi.quest.FilterEB.Bl" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.FilterEB.convolved_EB">
+<span class="sig-name descname"><span class="pre">convolved_EB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#FilterEB.convolved_EB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.FilterEB.convolved_EB" title="Link to this definition"></a></dt>
+<dd><p>convolve the component separated map with the beam</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (int : <code class="xref py py-class docutils literal notranslate"><span class="pre">index</span></code> of <code class="xref py py-class docutils literal notranslate"><span class="pre">the</span> <span class="pre">simulation</span></code>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.FilterEB.NL">
+<span class="sig-name descname"><span class="pre">NL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#FilterEB.NL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.FilterEB.NL" title="Link to this definition"></a></dt>
+<dd><p>array manipulation of noise spectra obtained by ILC weight
+for the filtering process</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.FilterEB.QU">
+<span class="sig-name descname"><span class="pre">QU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#FilterEB.QU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.FilterEB.QU" title="Link to this definition"></a></dt>
+<dd><p>deconvolve the beam from the QU map</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (int : <code class="xref py py-class docutils literal notranslate"><span class="pre">index</span></code> of <code class="xref py py-class docutils literal notranslate"><span class="pre">the</span> <span class="pre">simulation</span></code>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.FilterEB.cinv_EB">
+<span class="sig-name descname"><span class="pre">cinv_EB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#FilterEB.cinv_EB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.FilterEB.cinv_EB" title="Link to this definition"></a></dt>
+<dd><p>C inv Filter for the component separated maps</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>idx</strong> (int : <code class="xref py py-class docutils literal notranslate"><span class="pre">index</span></code> of <code class="xref py py-class docutils literal notranslate"><span class="pre">the</span> <span class="pre">simulation</span></code>)</p></li>
+<li><p><strong>test</strong> (bool : <code class="xref py py-class docutils literal notranslate"><span class="pre">if</span> <span class="pre">True</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">run</span> <span class="pre">the</span> <span class="pre">filter</span> <span class="pre">for</span> <span class="pre">10</span> <span class="pre">iterations</span> <span class="pre">(not</span> <span class="pre">cached)</span></code>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.FilterEB.check_file_exist">
+<span class="sig-name descname"><span class="pre">check_file_exist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nsims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#FilterEB.check_file_exist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.FilterEB.check_file_exist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.FilterEB.plot_cinv">
+<span class="sig-name descname"><span class="pre">plot_cinv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#FilterEB.plot_cinv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.FilterEB.plot_cinv" title="Link to this definition"></a></dt>
+<dd><p>plot the cinv filtered Cls for a given idx</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (int : <code class="xref py py-class docutils literal notranslate"><span class="pre">index</span></code> of <code class="xref py py-class docutils literal notranslate"><span class="pre">the</span> <span class="pre">simulation</span></code>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cobi.quest.QE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">QE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recon_lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsims_mf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.QE" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filter</strong> (<a class="reference internal" href="#id0" title="cobi.quest.FilterEB"><em>FilterEB</em></a>)</p></li>
+<li><p><strong>lmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>recon_lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.QE.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recon_lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsims_mf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.QE.__init__" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filter</strong> (<a class="reference internal" href="#id0" title="cobi.quest.FilterEB"><em>FilterEB</em></a>)</p></li>
+<li><p><strong>lmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>recon_lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cobi.quest.QE.cl_aa">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cl_aa</span></span><a class="headerlink" href="#cobi.quest.QE.cl_aa" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.QE.qlm">
+<span class="sig-name descname"><span class="pre">qlm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.qlm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.QE.qlm" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.QE.check_file_exist">
+<span class="sig-name descname"><span class="pre">check_file_exist</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.check_file_exist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.QE.check_file_exist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.QE.qcl">
+<span class="sig-name descname"><span class="pre">qcl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binned</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.qcl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.QE.qcl" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.QE.mean_field">
+<span class="sig-name descname"><span class="pre">mean_field</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.mean_field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.QE.mean_field" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.QE.mean_field_cl">
+<span class="sig-name descname"><span class="pre">mean_field_cl</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.mean_field_cl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.QE.mean_field_cl" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.QE.RDN0">
+<span class="sig-name descname"><span class="pre">RDN0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.RDN0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.QE.RDN0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.QE.RDN0_mpi">
+<span class="sig-name descname"><span class="pre">RDN0_mpi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.RDN0_mpi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.QE.RDN0_mpi" title="Link to this definition"></a></dt>
+<dd><p>MPI-parallel version of RDN0(…) using mpi4py.</p>
+<p>Parallelizes the 100 Monte-Carlo iterations; safe for any number of ranks.
+Only rank 0 touches the on-disk cache.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.QE.N0_sim">
+<span class="sig-name descname"><span class="pre">N0_sim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'vary'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.N0_sim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.QE.N0_sim" title="Link to this definition"></a></dt>
+<dd><p>Calculate the N0 bias from the Reconstructed potential using filtered Fields
+with different CMB fields. If E modes is from ith simulation then B modes is
+from (i+1)th simulation</p>
+<p>idx: int : index of the N0
+which: str : ‘stat’, ‘vary’, or ‘const’ to select which index range to use
+debug: bool : if True, print the indices used for computation and return None</p>
+<p>Index ranges and wrapping:
+- ‘stat’: stat_index, wraps within stat range
+- ‘vary’: vary_index, wraps within vary range
+- ‘const’: const_index, wraps within const range</p>
+<p>Requires sim_config to be set, or manually set the corresponding index array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.QE.MCN0">
+<span class="sig-name descname"><span class="pre">MCN0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'vary'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.MCN0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.QE.MCN0" title="Link to this definition"></a></dt>
+<dd><p>Monte Carlo average of N0_sim over specified index range</p>
+<dl class="simple">
+<dt>which: str<span class="classifier">‘stat’, ‘vary’, or ‘const’ to select which index range to use</span></dt><dd><p>‘stat’ uses stat_index
+‘vary’ uses vary_index
+‘const’ uses const_index</p>
+</dd>
+</dl>
+<p>Requires sim_config to be set, or manually set the corresponding index arrays.
+Note: vary_index overlaps with mf_index only when nsims_mf equals reuse_last.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.QE.N1">
+<span class="sig-name descname"><span class="pre">N1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binned</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.N1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.QE.N1" title="Link to this definition"></a></dt>
+<dd><p>N1 bias: difference between MCN0 for constant and varying alpha
+N1 = MCN0(‘const’) - MCN0(‘vary’)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.QE.Nlens">
+<span class="sig-name descname"><span class="pre">Nlens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">MCN0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binned</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.Nlens"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.QE.Nlens" title="Link to this definition"></a></dt>
+<dd><p>Lensing bias: average qcl on null_index minus MCN0(‘vary’)
+Nlens = &lt;qcl(null_alpha)&gt; - MCN0(‘vary’)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.QE.RDN0_stat">
+<span class="sig-name descname"><span class="pre">RDN0_stat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.RDN0_stat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.QE.RDN0_stat" title="Link to this definition"></a></dt>
+<dd><p>RDN0 for all stat_index simulations</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.QE.qcl_stat">
+<span class="sig-name descname"><span class="pre">qcl_stat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binned</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.qcl_stat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.QE.qcl_stat" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CrossQE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recon_lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsims_mf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filter</strong> (<a class="reference internal" href="#id0" title="cobi.quest.FilterEB"><em>FilterEB</em></a>)</p></li>
+<li><p><strong>lmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>recon_lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recon_lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsims_mf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE.__init__" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filter</strong> (<a class="reference internal" href="#id0" title="cobi.quest.FilterEB"><em>FilterEB</em></a>)</p></li>
+<li><p><strong>lmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>recon_lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.cl_aa">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cl_aa</span></span><a class="headerlink" href="#cobi.quest.CrossQE.cl_aa" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.precompute_split_ocl">
+<span class="sig-name descname"><span class="pre">precompute_split_ocl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">splits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE.precompute_split_ocl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE.precompute_split_ocl" title="Link to this definition"></a></dt>
+<dd><p>Computes split-level total spectra:
+oclE[s] = ClEE_lensed + &lt;N_EE_split_s&gt;
+oclB[s] = ClBB_lensed + &lt;N_BB_split_s&gt;
+Saves dict {s: (oclE, oclB)}.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.precompute_pair_norms">
+<span class="sig-name descname"><span class="pre">precompute_pair_norms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">((1,</span> <span class="pre">2),</span> <span class="pre">(3,</span> <span class="pre">4),</span> <span class="pre">(1,</span> <span class="pre">3),</span> <span class="pre">(2,</span> <span class="pre">4),</span> <span class="pre">(1,</span> <span class="pre">4),</span> <span class="pre">(2,</span> <span class="pre">3))</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE.precompute_pair_norms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE.precompute_pair_norms" title="Link to this definition"></a></dt>
+<dd><p>Precomputes normalization arrays for each split pair.</p>
+<p>Returns dict:
+norms[(i,j)] = {“EiBj”: norm_ij, “EjBi”: norm_ji}
+where norm_ij normalizes Q(E^i, B^j).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.qlm_pair">
+<span class="sig-name descname"><span class="pre">qlm_pair</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE.qlm_pair"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE.qlm_pair" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>si</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>sj</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.mean_field_sim">
+<span class="sig-name descname"><span class="pre">mean_field_sim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">splits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE.mean_field_sim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE.mean_field_sim" title="Link to this definition"></a></dt>
+<dd><p>Cross-only lensing power estimate:
+average over cross-spectra of reconstructions from disjoint split pairs.
+For 4 splits, uses the 3 disjoint pairings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.mean_field">
+<span class="sig-name descname"><span class="pre">mean_field</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE.mean_field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE.mean_field" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.mean_field_cl">
+<span class="sig-name descname"><span class="pre">mean_field_cl</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE.mean_field_cl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE.mean_field_cl" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.qcl_cross_only">
+<span class="sig-name descname"><span class="pre">qcl_cross_only</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">splits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE.qcl_cross_only"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE.qcl_cross_only" title="Link to this definition"></a></dt>
+<dd><p>Cross-only lensing power estimate:
+average over cross-spectra of reconstructions from disjoint split pairs.
+For 4 splits, uses the 3 disjoint pairings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.Nlens">
+<span class="sig-name descname"><span class="pre">Nlens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binned</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE.Nlens"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE.Nlens" title="Link to this definition"></a></dt>
+<dd><p>Lensing bias: average qcl on null_index minus MCN0(‘vary’)
+Nlens = &lt;qcl(null_alpha)&gt; - MCN0(‘vary’)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.N1">
+<span class="sig-name descname"><span class="pre">N1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binned</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE.N1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE.N1" title="Link to this definition"></a></dt>
+<dd><p>N1 bias: difference between MCN0 for constant and varying alpha
+N1 = MCN0(‘const’) - MCN0(‘vary’)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.qcl_stat">
+<span class="sig-name descname"><span class="pre">qcl_stat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binned</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE.qcl_stat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE.qcl_stat" title="Link to this definition"></a></dt>
+<dd><p>Compute statistics of qcl over stat_sims with various bias corrections.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n0</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>) – N0 bias correction: None (no correction), ‘mcn0’, or ‘rdn0’</p></li>
+<li><p><strong>mf</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If True, subtract mean field bias</p></li>
+<li><p><strong>nlens</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If True, subtract lensing bias</p></li>
+<li><p><strong>binned</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If True, return binned spectra</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>cl</strong> – Array of shape (nsims, nlmax+1) or (nsims, nbins) if binned</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">array</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.N0_sim">
+<span class="sig-name descname"><span class="pre">N0_sim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'vary'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE.N0_sim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE.N0_sim" title="Link to this definition"></a></dt>
+<dd><p>Calculate the N0 bias from the Reconstructed potential using filtered Fields
+with different CMB fields. If E modes is from ith simulation then B modes is
+from (i+1)th simulation</p>
+<p>idx: int : index of the N0
+which: str : ‘stat’, ‘vary’, or ‘const’ to select which index range to use
+debug: bool : if True, print the indices used for computation and return None</p>
+<p>Index ranges and wrapping:
+- ‘stat’: stat_index, wraps within stat range
+- ‘vary’: vary_index, wraps within vary range
+- ‘const’: const_index, wraps within const range</p>
+<p>Requires sim_config to be set, or manually set the corresponding index array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.MCN0">
+<span class="sig-name descname"><span class="pre">MCN0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'vary'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE.MCN0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE.MCN0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.RDN0">
+<span class="sig-name descname"><span class="pre">RDN0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">navg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE.RDN0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE.RDN0" title="Link to this definition"></a></dt>
+<dd><p>Realization-dependent N0 (RDN0) compatible with qcl_cross_only() (symmetric estimator).</p>
+<p>Uses the same Eq.(43)-style structure:
+RDN0 = Cx(ds,ds) + Cx(ds,sd) + Cx(sd,ds) + Cx(sd,sd) - Cx(ss0,ss0) - Cx(ss0,s0s)
+where Cx is the cross-only spectrum operator (12×34+13×24+14×23)/3.</p>
+<p>Returns: array C_L[0..recon_lmax]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>navg</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.RDN0_mpi">
+<span class="sig-name descname"><span class="pre">RDN0_mpi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">navg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE.RDN0_mpi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE.RDN0_mpi" title="Link to this definition"></a></dt>
+<dd><p>MPI-parallel cross-only RDN0 for SYM estimator (compatible with qcl_cross_only()).</p>
+<p>Implements the Eq.(43)-style combination (same algebra as your rot version),
+but with SYM estimator:
+RDN0 = Cx(ds,ds)+Cx(ds,sd)+Cx(sd,ds)+Cx(sd,sd) - Cx(ss0,ss0) - Cx(ss0,s0s)</p>
+<p>Parallelizes navg Monte-Carlo draws over (s, s0) pairs.
+Only rank 0 reads/writes the cache.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>navg</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.quest.CrossQE.RDN0_stat">
+<span class="sig-name descname"><span class="pre">RDN0_stat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#CrossQE.RDN0_stat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.quest.CrossQE.RDN0_stat" title="Link to this definition"></a></dt>
+<dd><p>RDN0 for all stat_index simulations</p>
+</dd></dl>
+
+</dd></dl>
+
+<section id="filtering-class">
+<h2>Filtering Class<a class="headerlink" href="#filtering-class" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FilterEB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sky</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sht_backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'healpy'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#FilterEB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sky</strong> (<a class="reference internal" href="simulation.html#id140" title="cobi.simulation.sky.LATsky"><em>LATsky</em></a>)</p></li>
+<li><p><strong>mask</strong> (<a class="reference internal" href="simulation.html#id74" title="cobi.simulation.mask.Mask"><em>Mask</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>fwhm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+<li><p><strong>sht_backend</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sky</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sht_backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'healpy'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#FilterEB.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sky</strong> (<a class="reference internal" href="simulation.html#id140" title="cobi.simulation.sky.LATsky"><em>LATsky</em></a>)</p></li>
+<li><p><strong>mask</strong> (<a class="reference internal" href="simulation.html#id74" title="cobi.simulation.mask.Mask"><em>Mask</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>fwhm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+<li><p><strong>sht_backend</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id2">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Bl</span></span><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">convolved_EB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#FilterEB.convolved_EB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd><p>convolve the component separated map with the beam</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (int : <code class="xref py py-class docutils literal notranslate"><span class="pre">index</span></code> of <code class="xref py py-class docutils literal notranslate"><span class="pre">the</span> <span class="pre">simulation</span></code>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">NL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#FilterEB.NL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd><p>array manipulation of noise spectra obtained by ILC weight
+for the filtering process</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">QU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#FilterEB.QU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
+<dd><p>deconvolve the beam from the QU map</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (int : <code class="xref py py-class docutils literal notranslate"><span class="pre">index</span></code> of <code class="xref py py-class docutils literal notranslate"><span class="pre">the</span> <span class="pre">simulation</span></code>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">cinv_EB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#FilterEB.cinv_EB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id6" title="Link to this definition"></a></dt>
+<dd><p>C inv Filter for the component separated maps</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>idx</strong> (int : <code class="xref py py-class docutils literal notranslate"><span class="pre">index</span></code> of <code class="xref py py-class docutils literal notranslate"><span class="pre">the</span> <span class="pre">simulation</span></code>)</p></li>
+<li><p><strong>test</strong> (bool : <code class="xref py py-class docutils literal notranslate"><span class="pre">if</span> <span class="pre">True</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">run</span> <span class="pre">the</span> <span class="pre">filter</span> <span class="pre">for</span> <span class="pre">10</span> <span class="pre">iterations</span> <span class="pre">(not</span> <span class="pre">cached)</span></code>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">check_file_exist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nsims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#FilterEB.check_file_exist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id7" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">plot_cinv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#FilterEB.plot_cinv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id8" title="Link to this definition"></a></dt>
+<dd><p>plot the cinv filtered Cls for a given idx</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> (int : <code class="xref py py-class docutils literal notranslate"><span class="pre">index</span></code> of <code class="xref py py-class docutils literal notranslate"><span class="pre">the</span> <span class="pre">simulation</span></code>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="quadratic-estimator-class">
+<h2>Quadratic Estimator Class<a class="headerlink" href="#quadratic-estimator-class" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="id9">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">QE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recon_lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsims_mf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id9" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filter</strong> (<a class="reference internal" href="#id0" title="cobi.quest.FilterEB"><em>FilterEB</em></a>)</p></li>
+<li><p><strong>lmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>recon_lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recon_lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsims_mf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id10" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filter</strong> (<a class="reference internal" href="#id0" title="cobi.quest.FilterEB"><em>FilterEB</em></a>)</p></li>
+<li><p><strong>lmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>recon_lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id11">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cl_aa</span></span><a class="headerlink" href="#id11" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id12">
+<span class="sig-name descname"><span class="pre">qlm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.qlm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id12" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id13">
+<span class="sig-name descname"><span class="pre">check_file_exist</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.check_file_exist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id13" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id14">
+<span class="sig-name descname"><span class="pre">qcl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binned</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.qcl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id14" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id15">
+<span class="sig-name descname"><span class="pre">mean_field</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.mean_field"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id15" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id16">
+<span class="sig-name descname"><span class="pre">mean_field_cl</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.mean_field_cl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id16" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id17">
+<span class="sig-name descname"><span class="pre">RDN0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.RDN0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id17" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id18">
+<span class="sig-name descname"><span class="pre">RDN0_mpi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.RDN0_mpi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id18" title="Link to this definition"></a></dt>
+<dd><p>MPI-parallel version of RDN0(…) using mpi4py.</p>
+<p>Parallelizes the 100 Monte-Carlo iterations; safe for any number of ranks.
+Only rank 0 touches the on-disk cache.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id19">
+<span class="sig-name descname"><span class="pre">N0_sim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'vary'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.N0_sim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id19" title="Link to this definition"></a></dt>
+<dd><p>Calculate the N0 bias from the Reconstructed potential using filtered Fields
+with different CMB fields. If E modes is from ith simulation then B modes is
+from (i+1)th simulation</p>
+<p>idx: int : index of the N0
+which: str : ‘stat’, ‘vary’, or ‘const’ to select which index range to use
+debug: bool : if True, print the indices used for computation and return None</p>
+<p>Index ranges and wrapping:
+- ‘stat’: stat_index, wraps within stat range
+- ‘vary’: vary_index, wraps within vary range
+- ‘const’: const_index, wraps within const range</p>
+<p>Requires sim_config to be set, or manually set the corresponding index array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id20">
+<span class="sig-name descname"><span class="pre">MCN0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'vary'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.MCN0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id20" title="Link to this definition"></a></dt>
+<dd><p>Monte Carlo average of N0_sim over specified index range</p>
+<dl class="simple">
+<dt>which: str<span class="classifier">‘stat’, ‘vary’, or ‘const’ to select which index range to use</span></dt><dd><p>‘stat’ uses stat_index
+‘vary’ uses vary_index
+‘const’ uses const_index</p>
+</dd>
+</dl>
+<p>Requires sim_config to be set, or manually set the corresponding index arrays.
+Note: vary_index overlaps with mf_index only when nsims_mf equals reuse_last.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id21">
+<span class="sig-name descname"><span class="pre">N1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binned</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.N1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id21" title="Link to this definition"></a></dt>
+<dd><p>N1 bias: difference between MCN0 for constant and varying alpha
+N1 = MCN0(‘const’) - MCN0(‘vary’)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id22">
+<span class="sig-name descname"><span class="pre">Nlens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">MCN0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binned</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.Nlens"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id22" title="Link to this definition"></a></dt>
+<dd><p>Lensing bias: average qcl on null_index minus MCN0(‘vary’)
+Nlens = &lt;qcl(null_alpha)&gt; - MCN0(‘vary’)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id23">
+<span class="sig-name descname"><span class="pre">RDN0_stat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.RDN0_stat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id23" title="Link to this definition"></a></dt>
+<dd><p>RDN0 for all stat_index simulations</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id24">
+<span class="sig-name descname"><span class="pre">qcl_stat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binned</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/quest.html#QE.qcl_stat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id24" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="likelihood-class">
+<h2>Likelihood Class<a class="headerlink" href="#likelihood-class" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="mle.html" class="btn btn-neutral float-left" title="Maximum Likelihood Estimation Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="spectra.html" class="btn btn-neutral float-right" title="Spectra Computation Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024-2025, Anto Idicherian Lonappan.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

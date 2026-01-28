@@ -1,0 +1,38 @@
+﻿cobi.simulation.LATsky
+======================
+
+.. currentmodule:: cobi.simulation
+
+.. autoclass:: LATsky
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~LATsky.HILC_obsEB
+      ~LATsky.SaveObsQUs
+      ~LATsky.__init__
+      ~LATsky.checkObsQU
+      ~LATsky.get_alpha
+      ~LATsky.obsQU
+      ~LATsky.obsQUfname
+      ~LATsky.obsQUwAlpha
+      ~LATsky.signalOnlyQU
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~LATsky.freqs
+      ~LATsky.fwhm
+      ~LATsky.tube
+   
+   

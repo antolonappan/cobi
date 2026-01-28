@@ -1,0 +1,1282 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spherical Harmonic Transforms Module &mdash; COBI: Cosmic Birefringence Analysis Pipeline 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Utilities Module" href="utils.html" />
+    <link rel="prev" title="Spectra Computation Module" href="spectra.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            COBI: Cosmic Birefringence Analysis Pipeline
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="calibration.html">Calibration Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.spec_cross"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.spec_cross</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.sat_err"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.sat_err</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.sat_lrange"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.sat_lrange</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.lat_lrange"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.lat_lrange</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.fit_per_split"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.fit_per_split</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.spectra_selection"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.spectra_selection</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.libdir"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.libdir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.binner"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.binner</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.Lmax"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.Lmax</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.maptags"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.maptags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.freq_groups"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.freq_groups</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.freq_bases"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.freq_bases</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.mean_spec"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.mean_spec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.std_spec"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.std_spec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.beam_arr"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.beam_arr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.__init__"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.theory"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.lnprior"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.lnprior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.__all_spectra__"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.__all_spectra__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.chisq"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.chisq()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.ln_likelihood"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.ln_likelihood()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.ln_prob"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.ln_prob()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.run_mcmc"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.run_mcmc()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.getdist_samples"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.getdist_samples()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.plot_posteriors"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.plot_posteriors()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.plot_spectra_matrix"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.plot_spectra_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.BaseSat4LatCross.mle"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross.mle()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross.cl_len"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.cl_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross.__init__"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross.theory"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross.lnprior"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.lnprior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross.dof"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross.dof</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.eb_template_unbinned"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.eb_template_unbinned</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.binned_template"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.binned_template</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.cl_len"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.cl_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.cl_diff_unbinned"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.cl_diff_unbinned</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.__init__"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.theory"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.Sat4LatCross_AmplitudeFit.lnprior"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit.lnprior()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="calibration.html#cobi.calibration.LatCross"><code class="docutils literal notranslate"><span class="pre">LatCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.LatCross.cl_len"><code class="docutils literal notranslate"><span class="pre">LatCross.cl_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.LatCross.lat_err"><code class="docutils literal notranslate"><span class="pre">LatCross.lat_err</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.LatCross.__init__"><code class="docutils literal notranslate"><span class="pre">LatCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.LatCross.theory"><code class="docutils literal notranslate"><span class="pre">LatCross.theory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.LatCross.lnprior"><code class="docutils literal notranslate"><span class="pre">LatCross.lnprior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration.LatCross.dof"><code class="docutils literal notranslate"><span class="pre">LatCross.dof</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="calibration.html#helper-functions">Helper Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#cobi.calibration._format_alpha_label"><code class="docutils literal notranslate"><span class="pre">_format_alpha_label()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="calibration.html#base-classes">Base Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#id0"><code class="docutils literal notranslate"><span class="pre">BaseSat4LatCross</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="calibration.html#calibration-classes">Calibration Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#id28"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="calibration.html#id34"><code class="docutils literal notranslate"><span class="pre">Sat4LatCross_AmplitudeFit</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data.html">Data Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data.html#data-loading-and-management-module">Data Loading and Management Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="data.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#data-objects">Data Objects</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="data.html#cobi.data.Data"><code class="docutils literal notranslate"><span class="pre">Data</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.Data.filename"><code class="docutils literal notranslate"><span class="pre">Data.filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.Data.directory"><code class="docutils literal notranslate"><span class="pre">Data.directory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.Data.galcut"><code class="docutils literal notranslate"><span class="pre">Data.galcut</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.Data.fname"><code class="docutils literal notranslate"><span class="pre">Data.fname</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.Data.url"><code class="docutils literal notranslate"><span class="pre">Data.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.Data.data"><code class="docutils literal notranslate"><span class="pre">Data.data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.Data.__init__"><code class="docutils literal notranslate"><span class="pre">Data.__init__()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="data.html#data-class">Data Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="data.html#id0"><code class="docutils literal notranslate"><span class="pre">Data</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="data.html#pre-defined-data-objects">Pre-defined Data Objects</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.SAT_MASK"><code class="docutils literal notranslate"><span class="pre">SAT_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.LAT_MASK"><code class="docutils literal notranslate"><span class="pre">LAT_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.CO_MASK"><code class="docutils literal notranslate"><span class="pre">CO_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.GAL_MASK"><code class="docutils literal notranslate"><span class="pre">GAL_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.PS_MASK"><code class="docutils literal notranslate"><span class="pre">PS_MASK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.BP_PROFILE"><code class="docutils literal notranslate"><span class="pre">BP_PROFILE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.CAMB_INI"><code class="docutils literal notranslate"><span class="pre">CAMB_INI</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.SPECTRA"><code class="docutils literal notranslate"><span class="pre">SPECTRA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="data.html#cobi.data.ISO_TD_SPECTRA"><code class="docutils literal notranslate"><span class="pre">ISO_TD_SPECTRA</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mle.html">Maximum Likelihood Estimation Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mle.html#cobi.mle.bin_from_edges"><code class="docutils literal notranslate"><span class="pre">bin_from_edges()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mle.html#cobi.mle.bin_configuration"><code class="docutils literal notranslate"><span class="pre">bin_configuration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mle.html#cobi.mle.bin_spec_matrix"><code class="docutils literal notranslate"><span class="pre">bin_spec_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mle.html#cobi.mle.bin_cov_matrix"><code class="docutils literal notranslate"><span class="pre">bin_cov_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mle.html#cobi.mle.MLE"><code class="docutils literal notranslate"><span class="pre">MLE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#cobi.mle.MLE.FIT_OPTIONS"><code class="docutils literal notranslate"><span class="pre">MLE.FIT_OPTIONS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#cobi.mle.MLE.__init__"><code class="docutils literal notranslate"><span class="pre">MLE.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#cobi.mle.MLE.calculate"><code class="docutils literal notranslate"><span class="pre">MLE.calculate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#cobi.mle.MLE.estimate_angles"><code class="docutils literal notranslate"><span class="pre">MLE.estimate_angles()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#cobi.mle.MLE.result_name"><code class="docutils literal notranslate"><span class="pre">MLE.result_name()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mle.html#binning-functions">Binning Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#id0"><code class="docutils literal notranslate"><span class="pre">bin_from_edges()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#id1"><code class="docutils literal notranslate"><span class="pre">bin_configuration()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#id2"><code class="docutils literal notranslate"><span class="pre">bin_spec_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#id3"><code class="docutils literal notranslate"><span class="pre">bin_cov_matrix()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mle.html#result-class">Result Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#cobi.mle._Result"><code class="docutils literal notranslate"><span class="pre">_Result</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mle.html#mle-class">MLE Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mle.html#id4"><code class="docutils literal notranslate"><span class="pre">MLE</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quest.html">Quadratic Estimator Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="quest.html#quadratic-estimator-for-cosmic-birefringence-module">Quadratic Estimator for Cosmic Birefringence Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#algorithm">Algorithm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#requirements">Requirements</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="quest.html#cobi.quest.FilterEB"><code class="docutils literal notranslate"><span class="pre">FilterEB</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.FilterEB.__init__"><code class="docutils literal notranslate"><span class="pre">FilterEB.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.FilterEB.Bl"><code class="docutils literal notranslate"><span class="pre">FilterEB.Bl</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.FilterEB.convolved_EB"><code class="docutils literal notranslate"><span class="pre">FilterEB.convolved_EB()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.FilterEB.NL"><code class="docutils literal notranslate"><span class="pre">FilterEB.NL()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.FilterEB.QU"><code class="docutils literal notranslate"><span class="pre">FilterEB.QU()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.FilterEB.cinv_EB"><code class="docutils literal notranslate"><span class="pre">FilterEB.cinv_EB()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.FilterEB.check_file_exist"><code class="docutils literal notranslate"><span class="pre">FilterEB.check_file_exist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.FilterEB.plot_cinv"><code class="docutils literal notranslate"><span class="pre">FilterEB.plot_cinv()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="quest.html#cobi.quest.QE"><code class="docutils literal notranslate"><span class="pre">QE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.QE.__init__"><code class="docutils literal notranslate"><span class="pre">QE.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.QE.cl_aa"><code class="docutils literal notranslate"><span class="pre">QE.cl_aa</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.QE.qlm"><code class="docutils literal notranslate"><span class="pre">QE.qlm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.QE.check_file_exist"><code class="docutils literal notranslate"><span class="pre">QE.check_file_exist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.QE.qcl"><code class="docutils literal notranslate"><span class="pre">QE.qcl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.QE.mean_field"><code class="docutils literal notranslate"><span class="pre">QE.mean_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.QE.mean_field_cl"><code class="docutils literal notranslate"><span class="pre">QE.mean_field_cl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.QE.RDN0"><code class="docutils literal notranslate"><span class="pre">QE.RDN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.QE.RDN0_mpi"><code class="docutils literal notranslate"><span class="pre">QE.RDN0_mpi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.QE.N0_sim"><code class="docutils literal notranslate"><span class="pre">QE.N0_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.QE.MCN0"><code class="docutils literal notranslate"><span class="pre">QE.MCN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.QE.N1"><code class="docutils literal notranslate"><span class="pre">QE.N1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.QE.Nlens"><code class="docutils literal notranslate"><span class="pre">QE.Nlens()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.QE.RDN0_stat"><code class="docutils literal notranslate"><span class="pre">QE.RDN0_stat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.QE.qcl_stat"><code class="docutils literal notranslate"><span class="pre">QE.qcl_stat()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="quest.html#cobi.quest.CrossQE"><code class="docutils literal notranslate"><span class="pre">CrossQE</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.__init__"><code class="docutils literal notranslate"><span class="pre">CrossQE.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.cl_aa"><code class="docutils literal notranslate"><span class="pre">CrossQE.cl_aa</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.precompute_split_ocl"><code class="docutils literal notranslate"><span class="pre">CrossQE.precompute_split_ocl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.precompute_pair_norms"><code class="docutils literal notranslate"><span class="pre">CrossQE.precompute_pair_norms()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.qlm_pair"><code class="docutils literal notranslate"><span class="pre">CrossQE.qlm_pair()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.mean_field_sim"><code class="docutils literal notranslate"><span class="pre">CrossQE.mean_field_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.mean_field"><code class="docutils literal notranslate"><span class="pre">CrossQE.mean_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.mean_field_cl"><code class="docutils literal notranslate"><span class="pre">CrossQE.mean_field_cl()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.qcl_cross_only"><code class="docutils literal notranslate"><span class="pre">CrossQE.qcl_cross_only()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.Nlens"><code class="docutils literal notranslate"><span class="pre">CrossQE.Nlens()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.N1"><code class="docutils literal notranslate"><span class="pre">CrossQE.N1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.qcl_stat"><code class="docutils literal notranslate"><span class="pre">CrossQE.qcl_stat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.N0_sim"><code class="docutils literal notranslate"><span class="pre">CrossQE.N0_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.MCN0"><code class="docutils literal notranslate"><span class="pre">CrossQE.MCN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.RDN0"><code class="docutils literal notranslate"><span class="pre">CrossQE.RDN0()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.RDN0_mpi"><code class="docutils literal notranslate"><span class="pre">CrossQE.RDN0_mpi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#cobi.quest.CrossQE.RDN0_stat"><code class="docutils literal notranslate"><span class="pre">CrossQE.RDN0_stat()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="quest.html#filtering-class">Filtering Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#id0"><code class="docutils literal notranslate"><span class="pre">FilterEB</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="quest.html#quadratic-estimator-class">Quadratic Estimator Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="quest.html#id9"><code class="docutils literal notranslate"><span class="pre">QE</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="quest.html#likelihood-class">Likelihood Class</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="spectra.html">Spectra Computation Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="spectra.html#power-spectra-computation-module">Power Spectra Computation Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra"><code class="docutils literal notranslate"><span class="pre">Spectra</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__init__"><code class="docutils literal notranslate"><span class="pre">Spectra.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.get_apodised_mask"><code class="docutils literal notranslate"><span class="pre">Spectra.get_apodised_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.get_coupling_matrix"><code class="docutils literal notranslate"><span class="pre">Spectra.get_coupling_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.compute_master"><code class="docutils literal notranslate"><span class="pre">Spectra.compute_master()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__set_dir__"><code class="docutils literal notranslate"><span class="pre">Spectra.__set_dir__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.load_obsQUmaps"><code class="docutils literal notranslate"><span class="pre">Spectra.load_obsQUmaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.Obs_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.Obs_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__get_fg_QUmap__"><code class="docutils literal notranslate"><span class="pre">Spectra.__get_fg_QUmap__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.load_dustQUmaps"><code class="docutils literal notranslate"><span class="pre">Spectra.load_dustQUmaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.Dust_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.Dust_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.load_syncQUmaps"><code class="docutils literal notranslate"><span class="pre">Spectra.load_syncQUmaps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.Sync_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.Sync_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.obs_x_obs_check"><code class="docutils literal notranslate"><span class="pre">Spectra.obs_x_obs_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__obs_x_obs_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__obs_x_obs_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__obs_x_obs_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__obs_x_obs_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.obs_x_obs"><code class="docutils literal notranslate"><span class="pre">Spectra.obs_x_obs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__fg_x_obs_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_obs_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__fg_x_obs_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_obs_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.dust_x_obs"><code class="docutils literal notranslate"><span class="pre">Spectra.dust_x_obs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.dust_x_obs_check"><code class="docutils literal notranslate"><span class="pre">Spectra.dust_x_obs_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.sync_x_obs_check"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_obs_check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.sync_x_obs"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_obs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__fg_x_fg_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_fg_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__fg_x_fg_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__fg_x_fg_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.sync_x_sync"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_sync()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.dust_x_dust"><code class="docutils literal notranslate"><span class="pre">Spectra.dust_x_dust()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__sync_x_dust_helper_series__"><code class="docutils literal notranslate"><span class="pre">Spectra.__sync_x_dust_helper_series__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.__sync_x_dust_helper_parallel__"><code class="docutils literal notranslate"><span class="pre">Spectra.__sync_x_dust_helper_parallel__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.sync_x_dust"><code class="docutils literal notranslate"><span class="pre">Spectra.sync_x_dust()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.clear_obs_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.clear_obs_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.clear_dust_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.clear_dust_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.clear_sync_qu_maps"><code class="docutils literal notranslate"><span class="pre">Spectra.clear_sync_qu_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.compute"><code class="docutils literal notranslate"><span class="pre">Spectra.compute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.Compute"><code class="docutils literal notranslate"><span class="pre">Spectra.Compute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.Spectra.get_spectra"><code class="docutils literal notranslate"><span class="pre">Spectra.get_spectra()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="spectra.html#cobi.spectra.SpectraCross"><code class="docutils literal notranslate"><span class="pre">SpectraCross</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.SpectraCross.__init__"><code class="docutils literal notranslate"><span class="pre">SpectraCross.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.SpectraCross.get_mask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.get_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.SpectraCross.satmask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.satmask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.SpectraCross.latmask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.latmask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.SpectraCross.satlatmask"><code class="docutils literal notranslate"><span class="pre">SpectraCross.satlatmask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.SpectraCross.compute_master"><code class="docutils literal notranslate"><span class="pre">SpectraCross.compute_master()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#cobi.spectra.SpectraCross.data_matrix"><code class="docutils literal notranslate"><span class="pre">SpectraCross.data_matrix()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="spectra.html#spectra-class">Spectra Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#id0"><code class="docutils literal notranslate"><span class="pre">Spectra</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="spectra.html#cross-spectra-class">Cross-Spectra Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="spectra.html#id36"><code class="docutils literal notranslate"><span class="pre">SpectraCross</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Spherical Harmonic Transforms Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Spherical Harmonic Transforms Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#cobi.sht.HealpixDUCC"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.sht.HealpixDUCC.__init__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.sht.HealpixDUCC.getsize"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.getsize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.sht.HealpixDUCC.__tomap__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__tomap__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.sht.HealpixDUCC.__toalm__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__toalm__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.sht.HealpixDUCC.__alm2map_spin2__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__alm2map_spin2__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.sht.HealpixDUCC.__map2alm_spin2__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__map2alm_spin2__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.sht.HealpixDUCC.__alm2map_spin0__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__alm2map_spin0__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.sht.HealpixDUCC.__map2alm_spin0__"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.__map2alm_spin0__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.sht.HealpixDUCC.alm2map"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.alm2map()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.sht.HealpixDUCC.map2alm"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.map2alm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.sht.HealpixDUCC.smoothing_alms"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.smoothing_alms()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.sht.HealpixDUCC.smoothing_maps"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.smoothing_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cobi.sht.HealpixDUCC.smoothing"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC.smoothing()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#healpixducc-class">HealpixDUCC Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">HealpixDUCC</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">Utilities Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utility-functions-module">Utility Functions Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#functions">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#cobi.utils.Logger"><code class="docutils literal notranslate"><span class="pre">Logger</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#cobi.utils.Logger.__init__"><code class="docutils literal notranslate"><span class="pre">Logger.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#cobi.utils.Logger.log"><code class="docutils literal notranslate"><span class="pre">Logger.log()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#cobi.utils.inrad"><code class="docutils literal notranslate"><span class="pre">inrad()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#cobi.utils.cli"><code class="docutils literal notranslate"><span class="pre">cli()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#cobi.utils.download_file"><code class="docutils literal notranslate"><span class="pre">download_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#cobi.utils.deconvolveQU"><code class="docutils literal notranslate"><span class="pre">deconvolveQU()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#cobi.utils.change_coord"><code class="docutils literal notranslate"><span class="pre">change_coord()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#cobi.utils.slice_alms"><code class="docutils literal notranslate"><span class="pre">slice_alms()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#cobi.utils.Binner"><code class="docutils literal notranslate"><span class="pre">Binner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#cobi.utils.Binner.__init__"><code class="docutils literal notranslate"><span class="pre">Binner.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#cobi.utils.Binner.bin"><code class="docutils literal notranslate"><span class="pre">Binner.bin()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#logger-class">Logger Class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#id0"><code class="docutils literal notranslate"><span class="pre">Logger</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utility-functions">Utility Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#id3"><code class="docutils literal notranslate"><span class="pre">inrad()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#id4"><code class="docutils literal notranslate"><span class="pre">cli()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#id5"><code class="docutils literal notranslate"><span class="pre">download_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#id6"><code class="docutils literal notranslate"><span class="pre">deconvolveQU()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#id7"><code class="docutils literal notranslate"><span class="pre">change_coord()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#id8"><code class="docutils literal notranslate"><span class="pre">slice_alms()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mpi.html">MPI Support Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mpi.html#id1">MPI Support Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#cobi.mpi.mpi"><code class="docutils literal notranslate"><span class="pre">mpi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#cobi.mpi.com"><code class="docutils literal notranslate"><span class="pre">com</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#cobi.mpi.rank"><code class="docutils literal notranslate"><span class="pre">rank</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#cobi.mpi.size"><code class="docutils literal notranslate"><span class="pre">size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#cobi.mpi.barrier"><code class="docutils literal notranslate"><span class="pre">barrier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#cobi.mpi.finalize"><code class="docutils literal notranslate"><span class="pre">finalize</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mpi.html#module-attributes">Module Attributes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#id0"><code class="docutils literal notranslate"><span class="pre">mpi</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#id2"><code class="docutils literal notranslate"><span class="pre">com</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#id3"><code class="docutils literal notranslate"><span class="pre">rank</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#id4"><code class="docutils literal notranslate"><span class="pre">size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#id5"><code class="docutils literal notranslate"><span class="pre">barrier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="mpi.html#id6"><code class="docutils literal notranslate"><span class="pre">finalize</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="simulation.html">Simulation Subpackage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html#id1">Simulation Subpackage</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#modules">Modules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#classes">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html#main-classes">Main Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generated/cobi.simulation.CMB.html">cobi.simulation.CMB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/cobi.simulation.Foreground.html">cobi.simulation.Foreground</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/cobi.simulation.Mask.html">cobi.simulation.Mask</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/cobi.simulation.Noise.html">cobi.simulation.Noise</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/cobi.simulation.LATsky.html">cobi.simulation.LATsky</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/cobi.simulation.SATsky.html">cobi.simulation.SATsky</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/cobi.simulation.LATskyC.html">cobi.simulation.LATskyC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/cobi.simulation.SATskyC.html">cobi.simulation.SATskyC</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html#module-cobi.simulation.cmb">CMB Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cmb-simulation-module">CMB Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.cmb.synfast_pol"><code class="docutils literal notranslate"><span class="pre">synfast_pol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.cmb.CMB"><code class="docutils literal notranslate"><span class="pre">CMB</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#id3">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#id44">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html#module-cobi.simulation.fg">Foreground Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#foreground-simulation-module">Foreground Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.fg.BandpassInt"><code class="docutils literal notranslate"><span class="pre">BandpassInt</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.fg.Foreground"><code class="docutils literal notranslate"><span class="pre">Foreground</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.fg.HILC"><code class="docutils literal notranslate"><span class="pre">HILC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#id49">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html#module-cobi.simulation.mask">Mask Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#mask-generation-module">Mask Generation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.mask.Mask"><code class="docutils literal notranslate"><span class="pre">Mask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#id73">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html#module-cobi.simulation.noise">Noise Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#noise-simulation-module">Noise Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.noise.NoiseSpectra"><code class="docutils literal notranslate"><span class="pre">NoiseSpectra()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.noise.Noise"><code class="docutils literal notranslate"><span class="pre">Noise</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#id87">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#id115">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="simulation.html#module-cobi.simulation.sky">Sky Module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#sky-simulation-module">Sky Simulation Module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.sky.SkySimulation"><code class="docutils literal notranslate"><span class="pre">SkySimulation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.sky.LATsky"><code class="docutils literal notranslate"><span class="pre">LATsky</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.sky.SATsky"><code class="docutils literal notranslate"><span class="pre">SATsky</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.sky.LATskyC"><code class="docutils literal notranslate"><span class="pre">LATskyC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#cobi.simulation.sky.SATskyC"><code class="docutils literal notranslate"><span class="pre">SATskyC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="simulation.html#id118">Classes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">COBI: Cosmic Birefringence Analysis Pipeline</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Spherical Harmonic Transforms Module</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/antolonappan/cobi/blob/main/docs/api/sht.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-cobi.sht">
+<span id="spherical-harmonic-transforms-module"></span><h1>Spherical Harmonic Transforms Module<a class="headerlink" href="#module-cobi.sht" title="Link to this heading"></a></h1>
+<section id="id1">
+<h2>Spherical Harmonic Transforms Module<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p>This module provides fast spherical harmonic transforms using the DUCC0 library
+for HEALPix maps. It offers significant performance improvements over healpy’s
+default implementation, especially for high-resolution maps.</p>
+<p>The module supports:
+- Forward transforms (map2alm) for spin-0 and spin-2 fields
+- Adjoint/inverse transforms (alm2map)
+- Automatic pixel weighting for accurate transforms
+- Beam smoothing operations
+- Multi-threaded execution</p>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>HealpixDUCC</dt><dd><p>Main class for performing spherical harmonic transforms on HEALPix maps
+using the DUCC0 library.</p>
+</dd>
+</dl>
+<div class="admonition-example admonition">
+<p class="admonition-title">Example</p>
+<p>from cobi.sht import HealpixDUCC
+import numpy as np</p>
+<p># Initialize for nside=512
+hp_ducc = HealpixDUCC(nside=512)</p>
+<p># Transform Q/U polarization maps to E/B alms
+qu_maps = np.array([q_map, u_map])
+eb_alms = hp_ducc.map2alm(qu_maps, lmax=1500, nthreads=4)</p>
+<p># Smooth and transform back
+smoothed_maps = hp_ducc.smoothing(qu_maps, lmax=1500, fwhm=5.0, nthreads=4)</p>
+</div>
+<div class="admonition-notes admonition">
+<p class="admonition-title">Notes</p>
+<p>This module is imported from <a class="reference external" href="https://github.com/antolonappan/PyNILC/blob/main/pynilc/sht.py">https://github.com/antolonappan/PyNILC/blob/main/pynilc/sht.py</a>
+and provides a high-performance alternative to healpy for spherical harmonic transforms.</p>
+</div>
+</section>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="cobi.sht.HealpixDUCC">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">HealpixDUCC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nside</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.sht.HealpixDUCC" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A class to handle HEALPix geometry and perform spherical harmonic transforms.
+Attributes:
+———-
+nside : int</p>
+<blockquote>
+<div><p>The HEALPix nside parameter.</p>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.sht.HealpixDUCC.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nside</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.sht.HealpixDUCC.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.sht.HealpixDUCC.getsize">
+<span class="sig-name descname"><span class="pre">getsize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmax</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.getsize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.sht.HealpixDUCC.getsize" title="Link to this definition"></a></dt>
+<dd><p>Get size of the alm array for a given lmax and mmax.
+Parameters:
+———–
+lmax : int</p>
+<blockquote>
+<div><p>Maximum l.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>mmax<span class="classifier">int</span></dt><dd><p>Maximum m.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.sht.HealpixDUCC.__tomap__">
+<span class="sig-name descname"><span class="pre">__tomap__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.__tomap__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.sht.HealpixDUCC.__tomap__" title="Link to this definition"></a></dt>
+<dd><p>A helper function to perform the forward spherical harmonic transform.
+Parameters:
+———–
+alm : np.ndarray</p>
+<blockquote>
+<div><p>The input alm array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>spin<span class="classifier">int</span></dt><dd><p>The spin of the field.</p>
+</dd>
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>mmax<span class="classifier">int</span></dt><dd><p>Maximum m.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+<dt>map<span class="classifier">np.ndarray</span></dt><dd><p>The output map array.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alm</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>spin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>mmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>map</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.sht.HealpixDUCC.__toalm__">
+<span class="sig-name descname"><span class="pre">__toalm__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.__toalm__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.sht.HealpixDUCC.__toalm__" title="Link to this definition"></a></dt>
+<dd><p>A helper function to perform the adjoint spherical harmonic transform.
+Parameters:
+———–
+m : np.ndarray</p>
+<blockquote>
+<div><p>The input map array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>spin<span class="classifier">int</span></dt><dd><p>The spin of the field.</p>
+</dd>
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>mmax<span class="classifier">int</span></dt><dd><p>Maximum m.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+<dt>alm<span class="classifier">np.ndarray</span></dt><dd><p>The output alm array.</p>
+</dd>
+<dt>apply_weights<span class="classifier">bool</span></dt><dd><p>Whether to apply the weights.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>spin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>mmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.sht.HealpixDUCC.__alm2map_spin2__">
+<span class="sig-name descname"><span class="pre">__alm2map_spin2__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.__alm2map_spin2__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.sht.HealpixDUCC.__alm2map_spin2__" title="Link to this definition"></a></dt>
+<dd><p>A helper function to perform the forward spherical harmonic transform for spin-2 fields.
+Parameters:
+———–
+alm : np.ndarray</p>
+<blockquote>
+<div><p>The input alm array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alm</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.sht.HealpixDUCC.__map2alm_spin2__">
+<span class="sig-name descname"><span class="pre">__map2alm_spin2__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.__map2alm_spin2__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.sht.HealpixDUCC.__map2alm_spin2__" title="Link to this definition"></a></dt>
+<dd><p>A helper function to perform the adjoint spherical harmonic transform for spin-2 fields.
+Parameters:
+———–
+m : np.ndarray</p>
+<blockquote>
+<div><p>The input map array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.sht.HealpixDUCC.__alm2map_spin0__">
+<span class="sig-name descname"><span class="pre">__alm2map_spin0__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.__alm2map_spin0__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.sht.HealpixDUCC.__alm2map_spin0__" title="Link to this definition"></a></dt>
+<dd><p>A helper function to perform the forward spherical harmonic transform for spin-0 fields.
+Parameters:
+———–
+alm : np.ndarray</p>
+<blockquote>
+<div><p>The input alm array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alm</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.sht.HealpixDUCC.__map2alm_spin0__">
+<span class="sig-name descname"><span class="pre">__map2alm_spin0__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.__map2alm_spin0__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.sht.HealpixDUCC.__map2alm_spin0__" title="Link to this definition"></a></dt>
+<dd><p>A helper function to perform the adjoint spherical harmonic transform for spin-0 fields.
+Parameters:
+———–
+m : np.ndarray</p>
+<blockquote>
+<div><p>The input map array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.sht.HealpixDUCC.alm2map">
+<span class="sig-name descname"><span class="pre">alm2map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.alm2map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.sht.HealpixDUCC.alm2map" title="Link to this definition"></a></dt>
+<dd><p>Perform the forward spherical harmonic transform.
+Parameters:
+———–
+alm : np.ndarray</p>
+<blockquote>
+<div><p>The input alm array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alm</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.sht.HealpixDUCC.map2alm">
+<span class="sig-name descname"><span class="pre">map2alm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.map2alm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.sht.HealpixDUCC.map2alm" title="Link to this definition"></a></dt>
+<dd><p>Perform the adjoint spherical harmonic transform.
+Parameters:
+———–
+m : np.ndarray</p>
+<blockquote>
+<div><p>The input map array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.sht.HealpixDUCC.smoothing_alms">
+<span class="sig-name descname"><span class="pre">smoothing_alms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.smoothing_alms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.sht.HealpixDUCC.smoothing_alms" title="Link to this definition"></a></dt>
+<dd><p>Smooth the alm array.
+Parameters:
+———–
+alms : np.ndarray</p>
+<blockquote>
+<div><p>The input alm array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>fwhm<span class="classifier">float</span></dt><dd><p>The full width at half maximum of the beam.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alms</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>fwhm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.sht.HealpixDUCC.smoothing_maps">
+<span class="sig-name descname"><span class="pre">smoothing_maps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.smoothing_maps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.sht.HealpixDUCC.smoothing_maps" title="Link to this definition"></a></dt>
+<dd><p>Smooth the map array.
+Parameters:
+———–
+map : np.ndarray</p>
+<blockquote>
+<div><p>The input map array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>fwhm<span class="classifier">float</span></dt><dd><p>The full width at half maximum of the beam.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>map</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>fwhm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cobi.sht.HealpixDUCC.smoothing">
+<span class="sig-name descname"><span class="pre">smoothing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.smoothing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cobi.sht.HealpixDUCC.smoothing" title="Link to this definition"></a></dt>
+<dd><p>Smooth the Map or alm.
+Parameters:
+———–
+data : np.ndarray</p>
+<blockquote>
+<div><p>The input data array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>fwhm<span class="classifier">float</span></dt><dd><p>The full width at half maximum of the beam.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>fwhm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<section id="healpixducc-class">
+<h2>HealpixDUCC Class<a class="headerlink" href="#healpixducc-class" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">HealpixDUCC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nside</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>A class to handle HEALPix geometry and perform spherical harmonic transforms.
+Attributes:
+———-
+nside : int</p>
+<blockquote>
+<div><p>The HEALPix nside parameter.</p>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nside</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">getsize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmax</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.getsize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd><p>Get size of the alm array for a given lmax and mmax.
+Parameters:
+———–
+lmax : int</p>
+<blockquote>
+<div><p>Maximum l.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>mmax<span class="classifier">int</span></dt><dd><p>Maximum m.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">__tomap__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.__tomap__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd><p>A helper function to perform the forward spherical harmonic transform.
+Parameters:
+———–
+alm : np.ndarray</p>
+<blockquote>
+<div><p>The input alm array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>spin<span class="classifier">int</span></dt><dd><p>The spin of the field.</p>
+</dd>
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>mmax<span class="classifier">int</span></dt><dd><p>Maximum m.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+<dt>map<span class="classifier">np.ndarray</span></dt><dd><p>The output map array.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alm</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>spin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>mmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>map</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">__toalm__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.__toalm__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
+<dd><p>A helper function to perform the adjoint spherical harmonic transform.
+Parameters:
+———–
+m : np.ndarray</p>
+<blockquote>
+<div><p>The input map array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>spin<span class="classifier">int</span></dt><dd><p>The spin of the field.</p>
+</dd>
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>mmax<span class="classifier">int</span></dt><dd><p>Maximum m.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+<dt>alm<span class="classifier">np.ndarray</span></dt><dd><p>The output alm array.</p>
+</dd>
+<dt>apply_weights<span class="classifier">bool</span></dt><dd><p>Whether to apply the weights.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>spin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>mmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">__alm2map_spin2__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.__alm2map_spin2__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id6" title="Link to this definition"></a></dt>
+<dd><p>A helper function to perform the forward spherical harmonic transform for spin-2 fields.
+Parameters:
+———–
+alm : np.ndarray</p>
+<blockquote>
+<div><p>The input alm array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alm</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">__map2alm_spin2__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.__map2alm_spin2__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id7" title="Link to this definition"></a></dt>
+<dd><p>A helper function to perform the adjoint spherical harmonic transform for spin-2 fields.
+Parameters:
+———–
+m : np.ndarray</p>
+<blockquote>
+<div><p>The input map array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">__alm2map_spin0__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.__alm2map_spin0__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id8" title="Link to this definition"></a></dt>
+<dd><p>A helper function to perform the forward spherical harmonic transform for spin-0 fields.
+Parameters:
+———–
+alm : np.ndarray</p>
+<blockquote>
+<div><p>The input alm array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alm</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">__map2alm_spin0__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.__map2alm_spin0__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id9" title="Link to this definition"></a></dt>
+<dd><p>A helper function to perform the adjoint spherical harmonic transform for spin-0 fields.
+Parameters:
+———–
+m : np.ndarray</p>
+<blockquote>
+<div><p>The input map array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">alm2map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.alm2map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id10" title="Link to this definition"></a></dt>
+<dd><p>Perform the forward spherical harmonic transform.
+Parameters:
+———–
+alm : np.ndarray</p>
+<blockquote>
+<div><p>The input alm array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alm</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id11">
+<span class="sig-name descname"><span class="pre">map2alm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.map2alm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id11" title="Link to this definition"></a></dt>
+<dd><p>Perform the adjoint spherical harmonic transform.
+Parameters:
+———–
+m : np.ndarray</p>
+<blockquote>
+<div><p>The input map array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id12">
+<span class="sig-name descname"><span class="pre">smoothing_alms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.smoothing_alms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id12" title="Link to this definition"></a></dt>
+<dd><p>Smooth the alm array.
+Parameters:
+———–
+alms : np.ndarray</p>
+<blockquote>
+<div><p>The input alm array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>fwhm<span class="classifier">float</span></dt><dd><p>The full width at half maximum of the beam.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alms</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>fwhm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id13">
+<span class="sig-name descname"><span class="pre">smoothing_maps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.smoothing_maps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id13" title="Link to this definition"></a></dt>
+<dd><p>Smooth the map array.
+Parameters:
+———–
+map : np.ndarray</p>
+<blockquote>
+<div><p>The input map array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>fwhm<span class="classifier">float</span></dt><dd><p>The full width at half maximum of the beam.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>map</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>fwhm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id14">
+<span class="sig-name descname"><span class="pre">smoothing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nthreads</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cobi/sht.html#HealpixDUCC.smoothing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id14" title="Link to this definition"></a></dt>
+<dd><p>Smooth the Map or alm.
+Parameters:
+———–
+data : np.ndarray</p>
+<blockquote>
+<div><p>The input data array.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lmax<span class="classifier">int</span></dt><dd><p>Maximum l.</p>
+</dd>
+<dt>fwhm<span class="classifier">float</span></dt><dd><p>The full width at half maximum of the beam.</p>
+</dd>
+<dt>nthreads<span class="classifier">int</span></dt><dd><p>Number of threads to use.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>)</p></li>
+<li><p><strong>lmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>fwhm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+<li><p><strong>nthreads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="spectra.html" class="btn btn-neutral float-left" title="Spectra Computation Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="utils.html" class="btn btn-neutral float-right" title="Utilities Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024-2025, Anto Idicherian Lonappan.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
