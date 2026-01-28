@@ -302,7 +302,7 @@ If you use COBI in your research, please cite:
 
 ## Related Publications
 
-- Diego-Palazuelos, P., et al. (2023). "Cosmic Birefringence from the Planck Data Release 4"
+- Diego-Palazuelos, P., et al. (2022). "Cosmic Birefringence from the Planck Data Release 4"
 - Minami, Y., & Komatsu, E. (2020). "New Extraction of the Cosmic Birefringence from the Planck 2018 Polarization Data"
 
 ## Contributing
@@ -324,8 +324,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contributors
 
-- **Patricia Diego-Palazuelos** - Universidad de Cantabria
-- **Carlos Hervías-Caimapo** - Universidad de Cantabria
+- **Patricia Diego-Palazuelos** - Max Planck Institute for Astrophysics
+- **Carlos Hervías-Caimapo** - Pontificia Universidad Católica de Chile
 
 ## Acknowledgments
 
