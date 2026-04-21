@@ -67,24 +67,19 @@ import healpy as hp
 from pixell import enmap
 from pixell.reproject import map2healpix
 from typing import Dict, Optional, Any, Union, List, Tuple
-from so_models_v3 import SO_Noise_Calculator_Public_v3_1_1 as so_models
+from so_models_v3 import SO_Noise_Calculator_Public_v3_1_2 as so_models
 
 from cobi import mpi
 from cobi.utils import Logger, change_coord
 
 #atm_noise or atm_corr, same for the noise map as well
 
-def NoiseSpectra(sensitivity_mode, fsky, lmax, atm_noise, telescope, aso=False):
-    if aso:
-        assert telescope == "LAT", "ASO noise model is only available for LAT telescope."
+def NoiseSpectra(sensitivity_mode, fsky, lmax, atm_noise, telescope):
     match telescope:
         case "LAT":
-            if aso:
-                teles = so_models.SOLatV3point1(sensitivity_mode,N_tubes=[1, 8, 4],survey_years=9, el=50)
-            else:
-                teles = so_models.SOLatV3point1(sensitivity_mode, el=50)
+            teles = so_models.SOLatV3point1(sensitivity_mode=sensitivity_mode,N_tubes=[1*1.8, 4*3, 2*3],survey_efficiency=0.2 * 1.0)
         case "SAT":
-            teles = so_models.SOSatV3point1(sensitivity_mode)
+            teles = so_models.SOSatV3point1(sensitivity_mode=sensitivity_mode,N_tubes=[8.0, 36.5, 10.0],survey_years=1.0,one_over_f_mode=1,survey_efficiency=0.2*1)
     
     corr_pairs = [(0,1),(2,3),(4,5)]
     
@@ -211,7 +206,6 @@ class Noise:
                  sim = 'NC',
                  atm_noise: bool = False, 
                  nsplits: int = 2,
-                 aso: bool = False,
                  ext_sims: bool = False,
                  sim_config: Optional[Dict[str, Any]] = None,
                  verbose: bool = True,
@@ -231,9 +225,9 @@ class Noise:
         self.sensitivity_mode = 2
         self.atm_noise        = atm_noise
         self.nsplits          = nsplits
-        self.telescope = telescope
+        self.telescope       = telescope
         self.ext_sims         = ext_sims
-        self.Nell             = NoiseSpectra(self.sensitivity_mode, fsky, self.lmax, self.atm_noise, telescope, aso)
+        self.Nell             = NoiseSpectra(self.sensitivity_mode, fsky, self.lmax, self.atm_noise, telescope)
         self.sim = sim
         assert sim in ['NC', 'TOD'], "Invalid simulation type. Choose from 'NC' or 'TOD'."
         

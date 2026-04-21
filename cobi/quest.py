@@ -1497,26 +1497,26 @@ class CrossQEv1:
     """
     Cross-only quadratic estimator for cosmic birefringence,
     implementing Eq. 38 of Madhavacheril et al. (2020).
-
+ 
     Requires 4 splits with independent noise.
     Uses the O(m^2) algorithm from Section 3.2 of the paper.
     """
-
+ 
     def __init__(self, filter, lmin: int, lmax: int, recon_lmax: int,
                  nsims_mf=100, nlb=10, lmax_bin=1024):
         assert filter.sky.nsplits == 4, "CrossQE requires 4 splits."
-
+ 
         self.basedir = os.path.join(filter.sky.libdir, 'qecross_v1')
         self.recdir = os.path.join(self.basedir, f'reco_min{lmin}_max{lmax}_rmax{recon_lmax}')
         self.n0dir = os.path.join(self.basedir, f'rdn0_min{lmin}_max{lmax}_rmax{recon_lmax}')
         self.mdir = os.path.join(self.basedir, f'misc_min{lmin}_max{lmax}_rmax{recon_lmax}')
-
+ 
         if mpi.rank == 0:
             os.makedirs(self.basedir, exist_ok=True)
             os.makedirs(self.recdir, exist_ok=True)
             os.makedirs(self.n0dir, exist_ok=True)
             os.makedirs(self.mdir, exist_ok=True)
-
+ 
         self.filter = filter
         self.lmin = lmin
         self.lmax = lmax
@@ -1524,73 +1524,87 @@ class CrossQEv1:
         self.cl_len = filter.cl_len
         self.lmax_bin = lmax_bin
         self.m = 4  # number of splits
-
+ 
         self.sim_config = filter.sky.cmb.sim_config
         if self.sim_config is None:
             raise ValueError("sim_config must be set.")
-
+ 
         set1 = self.sim_config['set1']
         reuse_last = self.sim_config['reuse_last']
-
+ 
         self.stat_index = np.arange(0, set1 - nsims_mf)
         self.mf_index = np.arange(set1 - nsims_mf, set1)
         self.vary_index = np.arange(set1 - reuse_last, set1)
         self.const_index = np.arange(set1, set1 + reuse_last)
         self.null_index = np.arange(set1 + reuse_last, set1 + 2 * reuse_last)
-
+ 
         self.binner = nmt.NmtBin.from_lmax_linear(lmax_bin, nlb)
         self.b = self.binner.get_effective_ells()
         self.nlb = nlb
-
-        # CHANGED: Use a SINGLE coadd-level normalization for all pairs.
-        # This is the key prescription from Eq. 21 of the paper: filter all
-        # splits identically to the coadd. The normalization must therefore
-        # be computed from the coadd-level total spectra (signal + coadd noise),
-        # NOT from per-split noise levels.
-        self.norm = self._compute_coadd_norm()
-
+ 
+        # CHANGED: Use a SINGLE normalization for all pairs.
+        # Since splits are filtered with per-split noise (Option B), we compute
+        # the norm from the average of per-split observed spectra across all 4 splits.
+        # This is an approximation — the exact paper prescription (Eq. 21) would
+        # require re-filtering all splits with the coadd noise.
+        # If split noise levels are roughly comparable, this is a good approximation.
+        self.norm = self._compute_avg_split_norm()
+ 
     @property
     def cl_aa(self):
         return self.filter.sky.cmb.cl_aa()[:self.recon_lmax + 1]
-
-    def _compute_coadd_norm(self):
+ 
+    def _compute_avg_split_norm(self):
         """
-        CHANGED: Replaced precompute_pair_norms + precompute_split_ocl
-        with a single coadd-level normalization identical to what the
-        normal QE class uses. This ensures all phi^(ij) share the same
-        normalization, which is required for the combinatorial cancellation
-        in Eq. 38 to work correctly.
+        CHANGED: Compute a single normalization by averaging the per-split
+        noise levels across all 4 splits.
+ 
+        Since cinv_EB filters each split with its own noise, the effective
+        total power seen by the filter for split s is:
+            ocl_E^s = Cl_EE_lensed + <N_EE_split_s>
+            ocl_B^s = Cl_BB_lensed + <N_BB_split_s>
+ 
+        We average these across splits to get a single representative
+        total power, then compute one normalization from that.
+        This is the best single-norm approximation when per-split filtering
+        is used but split noise levels are similar.
         """
         fname = os.path.join(
             self.basedir,
-            f'norm_coadd_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}.pkl'
+            f'norm_avgsplit_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}.pkl'
         )
         if os.path.isfile(fname):
             return pl.load(open(fname, 'rb'))
-
-        # Compute coadd-level observed spectra: Cl_theory + <N_coadd>
-        ocl_len = self.cl_len.copy()
-        ne_list, nb_list = [], []
-        for i in tqdm(self.stat_index, desc='Computing coadd OCL for CrossQE'):
-            # split=0 means coadd noise
-            e, b = self.filter.sky.HILC_obsEB(i, ret='nl')
-            ne_list.append(e[:self.lmax + 1] / Tcmb**2)
-            nb_list.append(b[:self.lmax + 1] / Tcmb**2)
-        ne = np.array(ne_list).mean(axis=0)
-        nb = np.array(nb_list).mean(axis=0)
-        ocl_len[1, :self.lmax + 1] += ne
-        ocl_len[2, :self.lmax + 1] += nb
-
+ 
+        splits = [1, 2, 3, 4]
+ 
+        # Average noise over sims AND over splits
+        ne_avg = np.zeros(self.lmax + 1, dtype=np.float64)
+        nb_avg = np.zeros(self.lmax + 1, dtype=np.float64)
+        count = 0
+        for s in splits:
+            for i in tqdm(self.stat_index, desc=f'Computing OCL split={s}'):
+                ne, nb = self.filter.sky.HILC_obsEB(i, ret='nl', split=s)
+                ne_avg += ne[:self.lmax + 1] / Tcmb**2
+                nb_avg += nb[:self.lmax + 1] / Tcmb**2
+                count += 1
+        ne_avg /= count
+        nb_avg /= count
+ 
+        # Total observed spectra = lensed theory + average split noise
+        oclE = self.cl_len[1, :self.lmax + 1] + ne_avg
+        oclB = self.cl_len[2, :self.lmax + 1] + nb_avg
+ 
         norm = cs.norm_quad.qeb(
             'rot', self.recon_lmax, self.lmin, self.lmax,
             self.cl_len[1, :self.lmax + 1],
-            ocl_len[1, :self.lmax + 1],
-            ocl_len[2, :self.lmax + 1]
+            oclE,
+            oclB
         )[0]
-
+ 
         pl.dump(norm, open(fname, 'wb'))
         return norm
-
+ 
     def _raw_qlm(self, E, B):
         """
         Unnormalized QE reconstruction from a pair of filtered E, B alms.
@@ -1601,24 +1615,24 @@ class CrossQEv1:
             E[:self.lmax + 1, :self.lmax + 1],
             B[:self.lmax + 1, :self.lmax + 1]
         )
-
+ 
     def _get_split_EB(self, idx, split):
         """Get C-inv filtered E, B for a given sim index and split number."""
         return self.filter.cinv_EB(idx, split=split)
-
+ 
     def _phi_ij(self, idx, si, sj):
         """
         CHANGED: Compute the symmetrized split-pair reconstruction phi^(ij)
         using Eq. 24 of the paper, with the SINGLE coadd normalization.
-
+ 
         phi^(ij) = (1/2) * A * [g(X_i, Y_j) + g(X_j, Y_i)]
-
+ 
         For birefringence EB estimator:
         phi^(ij) = (1/2) * norm * [Q(E_i, B_j) + Q(E_j, B_i)]
-
+ 
         For diagonal terms (si == sj):
         phi^(ii) = norm * Q(E_i, B_i)   [the symmetrization is trivial]
-
+ 
         The original code used per-pair normalizations computed from
         per-split noise levels. This broke the combinatorial identity.
         """
@@ -1631,20 +1645,20 @@ class CrossQEv1:
             alm_EiBj = self._raw_qlm(Ei, Bj)
             alm_EjBi = self._raw_qlm(Ej, Bi)
             return 0.5 * (alm_EiBj + alm_EjBi) * self.norm[:, None]
-
+ 
     def four_split_phi(self, idx):
         """
         CHANGED: Completely rewritten to follow the so-lenspipe implementation.
-
+ 
         Computes all the intermediate quantities needed for Eq. 38:
           - phi^(ij) for all i,j (including diagonals)
           - phi_hat = (1/m^2) sum_{ij} phi^(ij)    (full coadd reconstruction)
           - phi^x = phi_hat - (1/m^2) sum_i phi^(ii)  (cross coadd, no diags)
           - phi^(i) = (1/m) sum_j phi^(ij)           (per-split marginals)
           - phi^(i)x = phi^(i) - (1/m) phi^(ii)      (per-split cross)
-
+ 
         Returns a dict with all quantities needed by split_phi_to_cl.
-
+ 
         The original code only computed phi for disjoint pairs and averaged
         them at the map level, which does not implement Eq. 38.
         """
@@ -1654,10 +1668,10 @@ class CrossQEv1:
         )
         if os.path.isfile(fname):
             return pl.load(open(fname, 'rb'))
-
+ 
         m = self.m
         splits = [1, 2, 3, 4]
-
+ 
         # Compute all 16 phi^(ij) — but use symmetry: phi^(ij) = phi^(ji)
         phi = {}
         for i in splits:
@@ -1666,54 +1680,54 @@ class CrossQEv1:
                     phi[(i, j)] = phi[(j, i)]  # symmetry
                 else:
                     phi[(i, j)] = self._phi_ij(idx, i, j)
-
+ 
         # phi_hat = (1/m^2) * sum_{ij} phi^(ij)   — the full coadd estimator
         phi_hat = sum(phi[(i, j)] for i in splits for j in splits) / m**2
-
+ 
         # phi^x = phi_hat - (1/m^2) sum_i phi^(ii)  — cross coadd
         phi_diag_sum = sum(phi[(i, i)] for i in splits)
         phi_X = phi_hat - phi_diag_sum / m**2
-
+ 
         # phi^(i) = (1/m) sum_j phi^(ij)   — per-split marginal
         phi_i = {}
         for i in splits:
             phi_i[i] = sum(phi[(i, j)] for j in splits) / m
-
+ 
         # phi^(i)x = phi^(i) - (1/m) phi^(ii)  — per-split cross
         phi_ix = {}
         for i in splits:
             phi_ix[i] = phi_i[i] - phi[(i, i)] / m
-
+ 
         # Collect the unique cross-pair reconstructions for the tg3 term
         cross_pairs = {}
         for i in splits:
             for j in splits:
                 if i < j:
                     cross_pairs[(i, j)] = phi[(i, j)]
-
+ 
         result = {
             'phi_X': phi_X,           # cross coadd
             'phi_ix': phi_ix,         # dict: split -> per-split cross
             'cross_pairs': cross_pairs,  # dict: (i,j) -> phi^(ij) for i<j
         }
-
+ 
         pl.dump(result, open(fname, 'wb'))
         return result
-
+ 
     def split_phi_to_cl(self, xy, uv=None):
         """
         CHANGED: Completely new method implementing Eq. 38.
-
+ 
         Computes the cross-only power spectrum:
             C_L^x(XY, UV) = 1/[m(m-1)(m-2)(m-3)] * [
                 m^4 * C_L(phi_X, phi_X')
               - 4*m^2 * sum_i C_L(phi_ix, phi_ix')
               + 4 * sum_{i<j} C_L(phi_ij, phi_ij')
             ]
-
+ 
         This is the O(m^2) algorithm from Section 3.2 of the paper.
         Follows the so-lenspipe split_phi_to_cl function exactly.
-
+ 
         Args:
             xy: dict from four_split_phi (first reconstruction, e.g. data)
             uv: dict from four_split_phi (second reconstruction, for cross).
@@ -1721,31 +1735,31 @@ class CrossQEv1:
         """
         if uv is None:
             uv = xy
-
+ 
         m = self.m
         fsky = self.filter.fsky
-
+ 
         # Term 1: m^4 * C_L(phi^x, phi'^x)
         tg1 = m**4 * cs.utils.alm2cl(self.recon_lmax, xy['phi_X'], uv['phi_X']) / fsky
-
+ 
         # Term 2: -4*m^2 * sum_i C_L(phi^(i)x, phi'^(i)x)
         tg2 = np.zeros(self.recon_lmax + 1)
         for i in [1, 2, 3, 4]:
             tg2 += cs.utils.alm2cl(self.recon_lmax, xy['phi_ix'][i], uv['phi_ix'][i]) / fsky
         tg2 *= -4 * m**2
-
+ 
         # Term 3: +4 * sum_{i<j} C_L(phi^(ij), phi'^(ij))
         tg3 = np.zeros(self.recon_lmax + 1)
         for (i, j) in xy['cross_pairs']:
             tg3 += cs.utils.alm2cl(self.recon_lmax, xy['cross_pairs'][(i, j)],
                                     uv['cross_pairs'][(i, j)]) / fsky
         tg3 *= 4
-
+ 
         # Eq. 38
         cl_cross = (tg1 + tg2 + tg3) / (m * (m - 1) * (m - 2) * (m - 3))
-
+ 
         return cl_cross
-
+ 
     def qlm(self, idx):
         """
         CHANGED: This now returns the cross-coadd map phi^x for mean-field etc.
@@ -1754,7 +1768,7 @@ class CrossQEv1:
         """
         result = self.four_split_phi(idx)
         return result['phi_X']
-
+ 
     def qcl(self, idx, n0=None, mf=False, nlens=False, n1=False, binned=False):
         """
         CHANGED: The power spectrum is now computed via split_phi_to_cl (Eq. 38)
@@ -1762,7 +1776,7 @@ class CrossQEv1:
         """
         result = self.four_split_phi(idx)
         cl = self.split_phi_to_cl(result)
-
+ 
         if n0 is None:
             N0 = np.zeros_like(cl)
         elif n0 == 'norm':
@@ -1773,20 +1787,20 @@ class CrossQEv1:
             N0 = self.RDN0(idx)
         else:
             raise ValueError("n0 must be 'norm', 'rdn0', or 'mcn0'")
-
+ 
         cl = cl - N0
-
+ 
         if mf:
             cl = cl - self.mean_field_cl()
         if nlens:
             cl = cl - self.Nlens()
         if n1:
             cl = cl - self.N1()
-
+ 
         if binned:
             return self.binner.bin_cell(cl[:self.lmax_bin + 1])
         return cl
-
+ 
     def mean_field_sim(self, idx):
         """
         CHANGED: Mean field per-sim is now just the cross-coadd map phi^x.
@@ -1800,19 +1814,19 @@ class CrossQEv1:
         )
         if os.path.isfile(fname):
             return pl.load(open(fname, "rb"))
-
+ 
         phi_X = self.qlm(idx)
-
+ 
         pl.dump(phi_X, open(fname, "wb"))
         return phi_X
-
+ 
     def mean_field(self):
         """Mean field: average of phi^x over mf_index sims."""
         m = []
         for idx in tqdm(self.mf_index, desc='Computing cross-only mean field'):
             m.append(self.mean_field_sim(idx))
         return np.mean(m, axis=0)
-
+ 
     def mean_field_cl(self):
         fname = os.path.join(
             self.mdir,
@@ -1821,20 +1835,25 @@ class CrossQEv1:
         )
         if os.path.isfile(fname):
             return pl.load(open(fname, 'rb'))
-
+ 
         mf = self.mean_field()
         mfcl = cs.utils.alm2cl(self.recon_lmax, mf) / self.filter.fsky
         pl.dump(mfcl, open(fname, 'wb'))
         return mfcl
-
+ 
     def N0_sim(self, idx, which='vary'):
         """
         CHANGED: N0 for the cross-only estimator.
-
+ 
         Uses Eq. 38 applied to reconstructions where E and B come from
         DIFFERENT simulations (to get disconnected/Gaussian piece only).
-        Split E from sim idx1 with split B from sim idx2, then assemble
-        via split_phi_to_cl.
+        
+        For each split pair (i,j), the symmetrized estimator is:
+            phi^(ij) = (1/2) * norm * [Q(E_i^sim1, B_j^sim2) + Q(E_j^sim1, B_i^sim2)]
+        
+        Note: for i != j in the data case, we had 4 terms for full symmetrization
+        over both split indices AND E/B leg assignment. For N0 with two sims,
+        the symmetrization is: swap which sim provides E vs B for each split.
         """
         if which == 'stat':
             index_range = self.stat_index
@@ -1847,80 +1866,86 @@ class CrossQEv1:
             label = 'const'
         else:
             raise ValueError("which must be 'stat', 'vary', or 'const'")
-
+ 
         assert idx in index_range
         min_idx, max_idx = min(index_range), max(index_range)
         idx1 = idx
         idx2 = min_idx if idx == max_idx else idx + 1
-
+ 
         fname = os.path.join(self.n0dir, f"N0_{label}_{self.filter.fsky:.2f}_{idx:04d}.pkl")
         if os.path.isfile(fname):
             return pl.load(open(fname, 'rb'))
-
+ 
         m = self.m
         splits = [1, 2, 3, 4]
-
-        # Build phi^(ij) from E_split(idx1) x B_split(idx2) and vice versa
-        # symmetrized as in the coadd case
+ 
+        # Pre-cache all split E,B for both sims
+        EB1 = {}  # sim idx1
+        EB2 = {}  # sim idx2
+        for s in splits:
+            EB1[s] = self._get_split_EB(idx1, s)  # (E, B) tuple
+            EB2[s] = self._get_split_EB(idx2, s)
+ 
+        # Build phi^(ij) from E(sim1) x B(sim2) symmetrized over E<->B assignment
+        # phi^(ij) = 0.5 * norm * [Q(E_i^1, B_j^2) + Q(E_j^2, B_i^1)]
+        # For i != j, also need the (i,j) swap:
+        # phi^(ij) = 0.25 * norm * [Q(E_i^1, B_j^2) + Q(E_j^2, B_i^1)
+        #                          + Q(E_j^1, B_i^2) + Q(E_i^2, B_j^1)]
         phi = {}
         for i in splits:
-            Ei_1, Bi_1 = self._get_split_EB(idx1, i)
-            Ei_2, Bi_2 = self._get_split_EB(idx2, i)
             for j in splits:
                 if j < i:
-                    phi[(i, j)] = phi[(j, i)]
+                    phi[(i, j)] = phi[(j, i)]  # symmetry
                     continue
-                Ej_1, Bj_1 = self._get_split_EB(idx1, j)
-                Ej_2, Bj_2 = self._get_split_EB(idx2, j)
-
-                # E from sim1, B from sim2
-                alm_a = self._raw_qlm(Ei_1, Bj_2)
-                # E from sim2, B from sim1
-                alm_b = self._raw_qlm(Ej_2, Bi_1)
-
+ 
+                Ei_1, Bi_1 = EB1[i]
+                Ej_2, Bj_2 = EB2[j]
+ 
+                alm_a = self._raw_qlm(Ei_1, Bj_2)   # E_i^sim1, B_j^sim2
+                alm_b = self._raw_qlm(Ej_2, Bi_1)   # E_j^sim2, B_i^sim1
+ 
                 if i == j:
                     phi[(i, j)] = 0.5 * (alm_a + alm_b) * self.norm[:, None]
                 else:
-                    Ej_1, Bj_1 = self._get_split_EB(idx1, j)
-                    Ej_2, Bj_2 = self._get_split_EB(idx2, j)
-                    # Also need Q(E_j^1, B_i^2) and Q(E_i^2, B_j^1) for symmetrization
-                    alm_c = self._raw_qlm(Ej_1, Bi_2)
-                    alm_d = self._raw_qlm(Ei_2, Bj_1)
+                    Ej_1, Bj_1 = EB1[j]
+                    Ei_2, Bi_2 = EB2[i]
+                    alm_c = self._raw_qlm(Ej_1, Bi_2)   # E_j^sim1, B_i^sim2
+                    alm_d = self._raw_qlm(Ei_2, Bj_1)   # E_i^sim2, B_j^sim1
                     phi[(i, j)] = 0.25 * (alm_a + alm_b + alm_c + alm_d) * self.norm[:, None]
-
-        # Assemble intermediate quantities
+ 
+        # Assemble intermediate quantities (same as four_split_phi)
         phi_hat = sum(phi[(i, j)] for i in splits for j in splits) / m**2
         phi_diag_sum = sum(phi[(i, i)] for i in splits)
         phi_X = phi_hat - phi_diag_sum / m**2
-
+ 
         phi_ix = {}
         for i in splits:
             phi_i = sum(phi[(i, j)] for j in splits) / m
             phi_ix[i] = phi_i - phi[(i, i)] / m
-
+ 
         cross_pairs = {}
         for i in splits:
             for j in splits:
                 if i < j:
                     cross_pairs[(i, j)] = phi[(i, j)]
-
+ 
         n0_result = {
             'phi_X': phi_X,
             'phi_ix': phi_ix,
             'cross_pairs': cross_pairs,
         }
-
+ 
         n0cl = self.split_phi_to_cl(n0_result)
-
+ 
         pl.dump(n0cl, open(fname, 'wb'))
         return n0cl
-
+ 
     def MCN0(self, which='vary'):
         """Monte Carlo N0: average N0_sim over the relevant index range."""
         fname = os.path.join(self.basedir, f'MCN0_cross_{which}_fsky{self.filter.fsky:.2f}.pkl')
         if os.path.isfile(fname):
             return pl.load(open(fname, 'rb'))
-
+ 
         if which == 'stat':
             index = self.stat_index
         elif which == 'vary':
@@ -1929,14 +1954,14 @@ class CrossQEv1:
             index = self.const_index
         else:
             raise ValueError("which must be 'stat', 'vary', or 'const'")
-
+ 
         n0_list = []
         for idx in tqdm(index, desc=f'Computing cross MCN0 ({which})'):
             n0_list.append(self.N0_sim(idx, which=which))
         mcn0 = np.array(n0_list).mean(axis=0)
         pl.dump(mcn0, open(fname, 'wb'))
         return mcn0
-
+ 
     def N1(self, binned=False):
         """N1 = MCN0('const') - MCN0('vary')"""
         fname = os.path.join(self.basedir, f'N1_cross_fsky{self.filter.fsky:.2f}.pkl')
@@ -1948,7 +1973,7 @@ class CrossQEv1:
         if binned:
             return self.binner.bin_cell(n1[:self.lmax_bin + 1])
         return n1
-
+ 
     def Nlens(self, MCN0=True, binned=False):
         """Lensing bias from null sims."""
         fname = os.path.join(self.basedir, f'Nlens_cross_fsky{self.filter.fsky:.2f}_mcn0{MCN0}.pkl')
@@ -1965,19 +1990,19 @@ class CrossQEv1:
             else:
                 nlens = avg_qcl - self.norm
             pl.dump(nlens, open(fname, 'wb'))
-
+ 
         if binned:
             return self.binner.bin_cell(nlens[:self.lmax_bin + 1])
         return nlens
-
+ 
     def RDN0(self, idx):
         """
         CHANGED: Realization-dependent N0 for the cross-only estimator.
-
+ 
         Implements Eq. 43 of the paper: apply the C^x algorithm (Eq. 38)
         to each of the 4-point data/sim combinations from the standard
         RDN0 formula (Eq. 17), then average over sim realizations.
-
+ 
         For each MC iteration with sims s1, s2:
             RDN0 = <C^x(d,s1) + C^x(s1,d) - C^x(s1,s2) - C^x(s2,s1)>
         where C^x(a,b) means: E legs from 'a', B legs from 'b'.
@@ -1985,27 +2010,27 @@ class CrossQEv1:
         fname = os.path.join(self.n0dir, f"RDN0_cross_{self.filter.fsky:.2f}_{idx:04d}.pkl")
         if os.path.isfile(fname):
             return pl.load(open(fname, 'rb'))
-
+ 
         myidx = self.stat_index.copy()
         m = self.m
         splits = [1, 2, 3, 4]
-
+ 
         # Get data splits
         data_EB = {}
         for s in splits:
             data_EB[s] = self._get_split_EB(idx, s)
-
+ 
         mean_rdn0 = []
         for mc in tqdm(range(100), desc=f'RDN0 cross for sim {idx}'):
             i1 = myidx[mc % len(myidx)]
             i2 = myidx[(mc + 1) % len(myidx)]
-
+ 
             sim1_EB = {}
             sim2_EB = {}
             for s in splits:
                 sim1_EB[s] = self._get_split_EB(i1, s)
                 sim2_EB[s] = self._get_split_EB(i2, s)
-
+ 
             # Build 4 sets of phi^(ij): (d,s1), (s1,d), (s1,s2), (s2,s1)
             # For each, we need E from first, B from second
             def build_split_result(E_source, B_source):
@@ -2017,7 +2042,7 @@ class CrossQEv1:
                             phi[(si, sj)] = phi[(sj, si)]
                             continue
                         Bj = B_source[sj][1]  # B alm
-
+ 
                         alm_a = self._raw_qlm(Ei, Bj)
                         if si == sj:
                             Ej = E_source[sj][0]
@@ -2029,25 +2054,25 @@ class CrossQEv1:
                             Bi = B_source[si][1]
                             alm_b = self._raw_qlm(Ej, Bi)
                             phi[(si, sj)] = 0.5 * (alm_a + alm_b) * self.norm[:, None]
-
+ 
                 # Assemble
                 phi_hat = sum(phi[(si, sj)] for si in splits for sj in splits) / m**2
                 phi_diag = sum(phi[(si, si)] for si in splits)
                 phi_X = phi_hat - phi_diag / m**2
-
+ 
                 phi_ix = {}
                 for si in splits:
                     phi_si = sum(phi[(si, sj)] for sj in splits) / m
                     phi_ix[si] = phi_si - phi[(si, si)] / m
-
+ 
                 cross_pairs = {}
                 for si in splits:
                     for sj in splits:
                         if si < sj:
                             cross_pairs[(si, sj)] = phi[(si, sj)]
-
+ 
                 return {'phi_X': phi_X, 'phi_ix': phi_ix, 'cross_pairs': cross_pairs}
-
+ 
             # (d, s1): E from data, B from sim1
             res_ds1 = build_split_result(
                 {s: (data_EB[s][0], data_EB[s][1]) for s in splits},
@@ -2068,19 +2093,19 @@ class CrossQEv1:
                 {s: (sim2_EB[s][0], sim2_EB[s][1]) for s in splits},
                 {s: (sim1_EB[s][0], sim1_EB[s][1]) for s in splits}
             )
-
+ 
             # RDN0 per iteration: Eq. 43
             cl_ds1 = self.split_phi_to_cl(res_ds1)
             cl_s1d = self.split_phi_to_cl(res_s1d)
             cl_s1s2 = self.split_phi_to_cl(res_s1s2)
             cl_s2s1 = self.split_phi_to_cl(res_s2s1)
-
+ 
             mean_rdn0.append(cl_ds1 + cl_s1d - cl_s1s2 - cl_s2s1)
-
+ 
         rdn0 = np.mean(mean_rdn0, axis=0)
         pl.dump(rdn0, open(fname, 'wb'))
         return rdn0
-
+ 
     def qcl_stat(self, n0=None, mf=False, nlens=False, n1=False, binned=True):
         """Power spectra for all stat_index simulations."""
         st = ''
@@ -2100,7 +2125,7 @@ class CrossQEv1:
             st += '_nlens'
         if n1:
             st += '_n1'
-
+ 
         fname = os.path.join(
             self.basedir,
             f'qcl_cross_min{self.lmin}_max{self.lmax}_rmax{self.recon_lmax}'
@@ -2108,7 +2133,7 @@ class CrossQEv1:
         )
         if os.path.isfile(fname):
             return pl.load(open(fname, 'rb'))
-
+ 
         cl = []
         for i in tqdm(self.stat_index, desc='Computing cross cl statistics'):
             cl.append(self.qcl(i, n0=n0, mf=mf, nlens=nlens, n1=n1, binned=binned))
