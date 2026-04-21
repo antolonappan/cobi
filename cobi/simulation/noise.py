@@ -141,8 +141,8 @@ class Noise:
         HEALPix resolution.
     lmax : int
         Maximum multipole (3*nside - 1).
-    sensitivity_mode : int
-        SO sensitivity mode (2 = baseline).
+    sensitivity_mode : str
+        SO sensitivity mode ('baseline' or other modes).
     atm_noise : bool
         Whether atmospheric noise is included.
     Nell : dict
@@ -208,6 +208,7 @@ class Noise:
                  nsplits: int = 2,
                  ext_sims: bool = False,
                  sim_config: Optional[Dict[str, Any]] = None,
+                 sensitivity: Optional[str] = 'baseline',
                  verbose: bool = True,
                  ) -> None:
         """
@@ -222,7 +223,7 @@ class Noise:
         """
         self.nside            = nside
         self.lmax             = 3 * nside - 1
-        self.sensitivity_mode = 2
+        self.sensitivity_mode = sensitivity
         self.atm_noise        = atm_noise
         self.nsplits          = nsplits
         self.telescope       = telescope
@@ -236,6 +237,7 @@ class Noise:
             assert telescope == 'LAT', "ext_sims is only available for LAT telescope."
 
         self.logger           = Logger(self.__class__.__name__, verbose)
+        self.logger.log(f"Noise Model: sensitivity mode '{sensitivity}'.")
         self.sim_config = sim_config
         if self.sim == 'NC':
             if self.atm_noise:

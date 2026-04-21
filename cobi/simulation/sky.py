@@ -253,7 +253,7 @@ class SkySimulation:
         alpha_err: float = 0.0,
         sim_config: Optional[dict] = None,
         noise_model: str = "NC",
-        aso: bool = False,
+        noise_sensitivity: str = 'baseline',
         atm_noise: bool = True,
         nsplits: int = 2,
         gal_cut: int = 0,
@@ -276,7 +276,7 @@ class SkySimulation:
         fldname += f"_{nsplits}ns" 
         fldname += "_lens" if lensing else "_gauss"
         fldname += f"_{noise_model.lower()}nm"
-        fldname += "_aso" if aso else ""
+        fldname += f"_{noise_sensitivity}"
         if cb_model == 'iso':
             fldname += f"_b{str(beta).replace('.','p')}"
         elif cb_model == 'iso_td':
@@ -318,9 +318,14 @@ class SkySimulation:
         self.tube = tube
         self.gal_cut = gal_cut
         self.mask, self.fsky = self.__set_mask_fsky__(libdir)
+        if self.__class__.__name__[:3] == "SAT":
+            fsky = 0.1
+        elif self.__class__.__name__[:3] == "LAT":
+            fsky = 0.61
+        else:
+            raise ValueError("Unknown class name. Expected 'SAT' or 'LAT'.")
         self.noise_model = noise_model
-        self.noise = Noise(nside, self.fsky, self.__class__.__name__[:3], noise_model, atm_noise, nsplits, aso, verbose=self.verbose)
-        self.aso = aso
+        self.noise = Noise(nside, fsky, self.__class__.__name__[:3], noise_model, atm_noise, nsplits, verbose=self.verbose, sensitivity=noise_sensitivity)
         self.config = {}
         for split in range(nsplits):
             for band in range(len(self.freqs)):
@@ -625,7 +630,7 @@ class LATsky(SkySimulation):
         alpha_err: float = 0.0,
         sim_config: Optional[dict] = None,
         noise_model: str = "NC",
-        aso: bool = False,
+        noise_sensitivity: str = 'baseline',
         atm_noise: bool = True,
         nsplits: int = 2,
         gal_cut: int = 0,
@@ -653,7 +658,7 @@ class LATsky(SkySimulation):
             alpha_err = alpha_err,
             sim_config = sim_config,
             noise_model = noise_model,
-            aso = aso,
+            noise_sensitivity = noise_sensitivity,
             atm_noise = atm_noise,
             nsplits = nsplits,
             gal_cut = gal_cut,
@@ -686,6 +691,7 @@ class SATsky(SkySimulation):
         alpha_err: float = 0.0,
         sim_config: Optional[dict] = None,
         noise_model: str = "NC",
+        noise_sensitivity: str = 'baseline',
         atm_noise: bool = True,
         nsplits: int = 2,
         gal_cut: int = 0,
@@ -713,6 +719,7 @@ class SATsky(SkySimulation):
             alpha_err = alpha_err,
             sim_config = sim_config,
             noise_model = noise_model,
+            noise_sensitivity = noise_sensitivity,
             atm_noise = atm_noise,
             nsplits = nsplits,
             gal_cut = gal_cut,
@@ -745,7 +752,7 @@ class LATskyC(SkySimulation):
         alpha_err: float = 0.0,
         sim_config: Optional[dict] = None,
         noise_model: str = "NC",
-        aso: bool = False,
+        noise_sensitivity: str = 'baseline',
         atm_noise: bool = True,
         nsplits: int = 2,
         gal_cut: int = 0,
@@ -772,7 +779,7 @@ class LATskyC(SkySimulation):
             alpha_err = alpha_err,
             sim_config = sim_config,
             noise_model = noise_model,
-            aso = aso,
+            noise_sensitivity = noise_sensitivity,
             atm_noise = atm_noise,
             nsplits = nsplits,
             gal_cut = gal_cut,
@@ -804,6 +811,7 @@ class SATskyC(SkySimulation):
         alpha_err: float = 0.0,
         sim_config: Optional[dict] = None,
         noise_model: str = "NC",
+        noise_sensitivity: str = 'baseline',
         atm_noise: bool = True,
         nsplits: int = 2,
         gal_cut: int = 0,
@@ -830,6 +838,7 @@ class SATskyC(SkySimulation):
             alpha_err = alpha_err,
             sim_config = sim_config,
             noise_model = noise_model,
+            noise_sensitivity = noise_sensitivity,
             atm_noise = atm_noise,
             nsplits = nsplits,
             gal_cut = gal_cut,

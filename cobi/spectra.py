@@ -1367,11 +1367,7 @@ class SpectraCross:
         laerr = lat.alpha_err
         saerr = sat.alpha_err if not self.lat_only else 0.0
         
-        if self.lat.aso:
-            aso_suffix = '_aso'
-        else:
-            aso_suffix = '' 
-        suffix = f"LatOnly_laerr{str(laerr).replace('.','p')}{aso_suffix}" if self.lat_only else f"laerr{str(laerr).replace('.','p')}_saerr{str(saerr).replace('.','p')}{aso_suffix}"
+        suffix = f"LatOnly_laerr{str(laerr).replace('.','p')}" if self.lat_only else f"laerr{str(laerr).replace('.','p')}_saerr{str(saerr).replace('.','p')}"
         self.libdir = os.path.join(libdir,f"SpectraCross_s{str(lat.cmb.beta).replace('.','p')}_n{self.nside}_b{self.binwidth}_g{self.galcut}_a{str(self.aposcale).replace('.','p')}_l{self.lmax}_{suffix}")
         self.specdir = os.path.join(self.libdir,'spectra')
         os.makedirs(self.libdir, exist_ok=True)
