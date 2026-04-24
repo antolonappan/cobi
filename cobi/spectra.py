@@ -1368,7 +1368,10 @@ class SpectraCross:
         saerr = sat.alpha_err if not self.lat_only else 0.0
         
         suffix = f"LatOnly_laerr{str(laerr).replace('.','p')}" if self.lat_only else f"laerr{str(laerr).replace('.','p')}_saerr{str(saerr).replace('.','p')}"
-        self.libdir = os.path.join(libdir,f"SpectraCross_s{str(lat.cmb.beta).replace('.','p')}_n{self.nside}_b{self.binwidth}_g{self.galcut}_a{str(self.aposcale).replace('.','p')}_l{self.lmax}_{suffix}")
+        if sat is not None:
+            assert lat.noise.sensitivity_mode == sat.noise.sensitivity_mode, "LAT and SAT sensitivity modes must match"
+        sens_mode = lat.noise.sensitivity_mode
+        self.libdir = os.path.join(libdir,f"SpectraCross_{sens_mode}_s{str(lat.cmb.beta).replace('.','p')}_n{self.nside}_b{self.binwidth}_g{self.galcut}_a{str(self.aposcale).replace('.','p')}_l{self.lmax}_{suffix}")
         self.specdir = os.path.join(self.libdir,'spectra')
         os.makedirs(self.libdir, exist_ok=True)
         os.makedirs(self.specdir, exist_ok=True)

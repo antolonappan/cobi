@@ -551,8 +551,6 @@ class Sat4LatCross(BaseSat4LatCross):
                  fit_per_split: bool = True,
                  spectra_selection: str = 'all',
                  num_sims: int = 100,
-                 fit_dust: bool = False,
-                 dust_alpha: float = -2.4,
                  verbose: bool = False) -> None:
         """
         Initialize calibration analysis for birefringence angle fitting.
@@ -566,17 +564,10 @@ class Sat4LatCross(BaseSat4LatCross):
             fit_per_split: Whether to fit per split or per frequency
             spectra_selection: Which spectra to include ('all', 'auto_only', 'cross_only')
             num_sims: Number of simulations for mean/std calculation
-            fit_dust: Whether to include a dust foreground power-law with amplitude A_dust
-            dust_alpha: Fixed spectral index of the dust power law (default: -2.4)
             verbose: Whether to enable verbose output
         """
         super().__init__(spec_cross, sat_err, sat_lrange, lat_lrange,
                          fit_per_split, spectra_selection, 'CalibrationAnalysis', num_sims,verbose)
-        self.fit_dust = fit_dust
-        self.dust_alpha = dust_alpha
-        # unique frequency bands sorted (e.g. ['93','145']), one A_dust each
-        self._dust_freqs = sorted(set(t.split('_')[1].split('-')[0] for t in self.maptags))
-        self._n_dust = len(self._dust_freqs) if fit_dust else 0
         self.cl_len = CMB(spec_cross.libdir, spec_cross.nside, beta=beta_fid).get_lensed_spectra(dl=False)
         if fit_per_split:
             self.__pnames__  = [f"a_{t}" for t in self.maptags] + ['beta']
@@ -584,9 +575,6 @@ class Sat4LatCross(BaseSat4LatCross):
         else:
             self.__pnames__  = [f"a_{f}" for f in self.freq_bases] + ['beta']
             self.__plabels__ = [_format_alpha_label(f) for f in self.freq_bases] + [r"\beta"]
-        if self.fit_dust:
-            self.__pnames__  += [f'A_dust_{f}' for f in self._dust_freqs]
-            self.__plabels__ += [rf'A_{{\rm dust,{f}}}' for f in self._dust_freqs]
 
     def theory(self, theta: np.ndarray) -> np.ndarray:
         """
@@ -599,30 +587,18 @@ class Sat4LatCross(BaseSat4LatCross):
         # Unpack angles
         # α_i = per-map miscalibration
         # β   = global cosmic birefringence
-        n_d = self._n_dust
-        if self.fit_dust:
-            dust_amps = dict(zip(self._dust_freqs, theta[-n_d:]))
-            beta_idx = -(n_d + 1)
-        else:
-            beta_idx = -1
-
         if self.fit_per_split:
-            alphas = theta[:beta_idx]
+            alphas = theta[:-1]
         else:
             base_a = {b: theta[i] for i, b in enumerate(self.freq_bases)}
             alphas = np.array([base_a[t.rsplit('-', 1)[0]] for t in self.maptags])
-        beta = theta[beta_idx]
+        beta = theta[-1]
 
         # Get Cℓ^EE and Cℓ^BB
         cl_ee = self.cl_len["ee"][:self.Lmax+1]
         cl_bb = self.cl_len["bb"][:self.Lmax+1]
 
         model = np.zeros_like(self.mean_spec)
-
-        if self.fit_dust:
-            ell_b = self.binner.get_effective_ells()
-            ell_shape = 2.0 * np.pi * (ell_b / 80.0) ** (self.dust_alpha + 2.0) / (ell_b * (ell_b + 1.0))
-            map_freqs = [t.split('_')[1].split('-')[0] for t in self.maptags]
 
         for i in range(len(self.maptags)):          # E_i
             for j in range(len(self.maptags)):      # B_j
@@ -637,22 +613,12 @@ class Sat4LatCross(BaseSat4LatCross):
                 )
 
                 model[i, j] = self.binner.bin_cell(term)
-                if self.fit_dust:
-                    A_ij = np.sqrt(dust_amps[map_freqs[i]] * dust_amps[map_freqs[j]])
-                    model[i, j] += A_ij * ell_shape
 
         return model
 
 
     def lnprior(self, theta: np.ndarray) -> float:
-        n_d = self._n_dust
-        if self.fit_dust:
-            dust_vals = theta[-n_d:]
-            if np.any(dust_vals <= 0) or np.any(dust_vals > 1e-1):
-                return -np.inf
-            alphas, beta = theta[:-(n_d + 1)], theta[-(n_d + 1)]
-        else:
-            alphas, beta = theta[:-1], theta[-1]
+        alphas, beta = theta[:-1], theta[-1]
         if np.any(np.abs(alphas) > 0.5) or not (-0.5 < beta < 0.5):
             return -np.inf
         sat_idx = [i for i, t in enumerate(self.maptags if self.fit_per_split else self.freq_bases) if t.startswith('SAT')]
@@ -700,8 +666,6 @@ class Sat4LatCross_AmplitudeFit(BaseSat4LatCross):
                  alpha_lat_prior: str = 'gaussian',
                  fix_alpha: bool = False,
                  num_sims: int = 100,
-                 fit_dust: bool = False,
-                 dust_alpha: float = -2.4,
                  verbose: bool = False) -> None:
         """
         Initialize calibration analysis for amplitude parameter fitting.
@@ -719,19 +683,12 @@ class Sat4LatCross_AmplitudeFit(BaseSat4LatCross):
             alpha_lat_prior: Prior type for LAT alpha parameters ('gaussian' or 'flat')
             fix_alpha: Whether to fix alpha parameters (calibration angles) to zero
             num_sims: Number of simulations for mean/std calculation
-            fit_dust: Whether to include a dust foreground power-law with amplitude A_dust
-            dust_alpha: Fixed spectral index of the dust power law (default: -2.4)
             verbose: Whether to enable verbose output
         """
         self.sim_idx = sim_idx
         self.fix_alpha = fix_alpha
-        self.fit_dust = fit_dust
-        self.dust_alpha = dust_alpha
         suffix = f'CalibrationAnalysis_AmpFit_{temp_model}_{temp_value}_sim{sim_idx}'
         super().__init__(spec_cross, sat_err, sat_lrange, lat_lrange, fit_per_split, spectra_selection, suffix,num_sims, verbose)
-        # maptags available after super().__init__
-        self._dust_freqs = sorted(set(t.split('_')[1].split('-')[0] for t in self.maptags))
-        self._n_dust = len(self._dust_freqs) if fit_dust else 0
 
         if temp_model == 'iso':
             cmb = CMB(spec_cross.libdir, spec_cross.nside, beta=temp_value, verbose=verbose)
@@ -756,10 +713,6 @@ class Sat4LatCross_AmplitudeFit(BaseSat4LatCross):
             else:
                 self.__pnames__  = [f"a_{f}" for f in self.freq_bases] + ['A_EB']
                 self.__plabels__ = [_format_alpha_label(f) for f in self.freq_bases] + [r"A_{EB}"]
-        if self.fit_dust:
-            self.__pnames__  += [f'A_dust_{f}' for f in self._dust_freqs]
-            self.__plabels__ += [rf'A_{{\rm dust,{f}}}' for f in self._dust_freqs]
-
         self.alpha_lat_prior = alpha_lat_prior
         assert self.alpha_lat_prior in ['gaussian','flat'], "alpha_lat_prior must be 'gaussian' or 'flat'"
         if fit_per_split:
@@ -854,29 +807,19 @@ class Sat4LatCross_AmplitudeFit(BaseSat4LatCross):
                         sat_count += 1
                 return np.array([base_alphas[t.rsplit('-', 1)[0]] for t in self.maptags])
         elif self.fit_per_split:
-            return theta[:-(self._n_dust + 1)] if self.fit_dust else theta[:-1]
+            return theta[:-1]
         else:
             base_a = {b: theta[i] for i, b in enumerate(self.freq_bases)}
             return np.array([base_a[t.rsplit('-', 1)[0]] for t in self.maptags])
 
     def theory(self, theta: np.ndarray) -> np.ndarray:
         alphas = self._get_alphas(theta)
-        n_d = self._n_dust
-        if self.fit_dust:
-            dust_amps = dict(zip(self._dust_freqs, theta[-n_d:]))
-            A_EB = theta[-(n_d + 1)] if not self.fix_alpha else theta[0]
-        else:
-            A_EB = theta[-1] if not self.fix_alpha else theta[0]
+        A_EB = theta[-1] if not self.fix_alpha else theta[0]
 
         cl_ee = self.cl_len["ee"][:self.Lmax+1]
         cl_bb = self.cl_len["bb"][:self.Lmax+1]
 
         model = np.zeros_like(self.mean_spec)
-
-        if self.fit_dust:
-            ell_b = self.binner.get_effective_ells()
-            ell_shape = 2.0 * np.pi * (ell_b / 80.0) ** (self.dust_alpha + 2.0) / (ell_b * (ell_b + 1.0))
-            map_freqs = [t.split('_')[1].split('-')[0] for t in self.maptags]
 
         for i in range(len(self.maptags)):
             for j in range(len(self.maptags)):
@@ -894,30 +837,18 @@ class Sat4LatCross_AmplitudeFit(BaseSat4LatCross):
                     self.binner.bin_cell(term_unbinned)
                     + (np.cos(2*ai + 2*aj) * self.binned_template / A_EB)
                 )
-                if self.fit_dust:
-                    A_ij = np.sqrt(dust_amps[map_freqs[i]] * dust_amps[map_freqs[j]])
-                    model[i, j] += A_ij * ell_shape
 
         return model
 
 
     def lnprior(self, theta: np.ndarray) -> float:
-        n_d = self._n_dust
-        if self.fit_dust:
-            dust_vals = theta[-n_d:]
-            if np.any(dust_vals <= 0) or np.any(dust_vals > 1e-1):
-                return -np.inf
-
         if self.fix_alpha:
             A_EB = theta[0]
             if not (0 < A_EB < 2):
                 return -np.inf
             return 0.0  # No prior on alphas since they're fixed to zero
 
-        if self.fit_dust:
-            alphas, A_EB = theta[:-(n_d + 1)], theta[-(n_d + 1)]
-        else:
-            alphas, A_EB = theta[:-1], theta[-1]
+        alphas, A_EB = theta[:-1], theta[-1]
         if np.any(np.abs(alphas) > 0.5) or not (-1 < A_EB < 3):
             return -np.inf
 
@@ -963,8 +894,6 @@ class LatCross(BaseSat4LatCross):
                  fit_per_split: bool = True,
                  spectra_selection: str = 'all',
                  num_sims: int = 100,
-                 fit_dust: bool = False,
-                 dust_alpha: float = -2.4,
                  verbose: bool = False) -> None:
         """
         Initialize LAT-only calibration analysis for birefringence angle fitting.
@@ -977,8 +906,6 @@ class LatCross(BaseSat4LatCross):
             fit_per_split: Whether to fit per split or per frequency
             spectra_selection: Which spectra to include ('all', 'auto_only', 'cross_only')
             num_sims: Number of simulations for mean/std calculation
-            fit_dust: Whether to include a dust foreground power-law with amplitude A_dust
-            dust_alpha: Fixed spectral index of the dust power law (default: -2.4)
             verbose: Whether to enable verbose output
         """
         # Verify spec_cross is in LAT-only mode
@@ -996,10 +923,6 @@ class LatCross(BaseSat4LatCross):
                          verbose=verbose)
 
         self.lat_err = lat_err
-        self.fit_dust = fit_dust
-        self.dust_alpha = dust_alpha
-        self._dust_freqs = sorted(set(t.split('_')[1].split('-')[0] for t in self.maptags))
-        self._n_dust = len(self._dust_freqs) if fit_dust else 0
         self.cl_len = CMB(spec_cross.libdir, spec_cross.nside, beta=beta_fid).get_lensed_spectra(dl=False)
 
         # Verify all maps are LAT maps (redundant check after lat_only assertion, but kept for clarity)
@@ -1012,9 +935,6 @@ class LatCross(BaseSat4LatCross):
         else:
             self.__pnames__  = [f"a_{f}" for f in self.freq_bases] + ['beta']
             self.__plabels__ = [_format_alpha_label(f) for f in self.freq_bases] + [r"\beta"]
-        if self.fit_dust:
-            self.__pnames__  += [f'A_dust_{f}' for f in self._dust_freqs]
-            self.__plabels__ += [rf'A_{{\rm dust,{f}}}' for f in self._dust_freqs]
 
     def theory(self, theta: np.ndarray) -> np.ndarray:
         """
@@ -1022,37 +942,21 @@ class LatCross(BaseSat4LatCross):
         using the exact birefringence + miscalibration formula:
             C_ell^{E_iB_j} = cos(2α_i+2β)sin(2α_j+2β)C_EE
                             - sin(2α_i+2β)cos(2α_j+2β)C_BB
-        Optionally adds a per-frequency dust power law: sqrt(A_i*A_j)*(ell/80)^dust_alpha
         """
-        # Unpack angles
-        n_d = self._n_dust
-        if self.fit_dust:
-            dust_amps = dict(zip(self._dust_freqs, theta[-n_d:]))
-            beta_idx = -(n_d + 1)
-        else:
-            beta_idx = -1
-
         if self.fit_per_split:
-            alphas = theta[:beta_idx]
+            alphas = theta[:-1]
         else:
             base_a = {b: theta[i] for i, b in enumerate(self.freq_bases)}
             alphas = np.array([base_a[t.rsplit('-', 1)[0]] for t in self.maptags])
-        beta = theta[beta_idx]
+        beta = theta[-1]
 
-        # Get Cℓ^EE and Cℓ^BB
         cl_ee = self.cl_len["ee"][:self.Lmax+1]
         cl_bb = self.cl_len["bb"][:self.Lmax+1]
 
         model = np.zeros_like(self.mean_spec)
 
-        if self.fit_dust:
-            ell_b = self.binner.get_effective_ells()
-            ell_shape = 2.0 * np.pi * (ell_b / 80.0) ** (self.dust_alpha + 2.0) / (ell_b * (ell_b + 1.0))
-            map_freqs = [t.split('_')[1].split('-')[0] for t in self.maptags]
-
         for i in range(len(self.maptags)):          # E_i
             for j in range(len(self.maptags)):      # B_j
-                # angles in radians
                 ai = np.deg2rad(alphas[i])
                 aj = np.deg2rad(alphas[j])
                 b  = np.deg2rad(beta)
@@ -1063,9 +967,6 @@ class LatCross(BaseSat4LatCross):
                 )
 
                 model[i, j] = self.binner.bin_cell(term)
-                if self.fit_dust:
-                    A_ij = np.sqrt(dust_amps[map_freqs[i]] * dust_amps[map_freqs[j]])
-                    model[i, j] += A_ij * ell_shape
 
         return model
 
@@ -1074,14 +975,7 @@ class LatCross(BaseSat4LatCross):
         Calculate log prior for LAT-only analysis.
         Uses Gaussian prior on all alphas with LAT calibration error.
         """
-        n_d = self._n_dust
-        if self.fit_dust:
-            dust_vals = theta[-n_d:]
-            if np.any(dust_vals <= 0) or np.any(dust_vals > 1e-3):
-                return -np.inf
-            alphas, beta = theta[:-(n_d + 1)], theta[-(n_d + 1)]
-        else:
-            alphas, beta = theta[:-1], theta[-1]
+        alphas, beta = theta[:-1], theta[-1]
         if np.any(np.abs(alphas) > 0.5) or not (-0.5 < beta < 0.5):
             return -np.inf
 
