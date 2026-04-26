@@ -288,10 +288,12 @@ class SkySimulation:
         
         fldname += f"_d{dust_model}s{sync_model}"
         fldname += f"_g{gal_cut}" if gal_cut > 0 else ""
+   
         if isinstance(alpha, (list, np.ndarray)):
             fldname += f"_a"  ''.join('n' + f"{abs(num):g}".replace(".", "") if num < 0 else f"{num:g}".replace(".", "") for num in alpha).replace('0','')
         else:
             fldname += f"_a{str(alpha).replace('.','p')}"
+
         fldname += f"_ae{str(alpha_err).replace('.','p')}" if alpha_err > 0 else ""
         fldname += fldname_suffix
 

@@ -17,5 +17,6 @@ conda activate cb
 cd /global/homes/l/lonappan/workspace/cobi/jobs/iso
 export OMP_NUM_THREADS=4
 
-#mpirun -np $SLURM_NTASKS python cal.py
-mpirun -np $SLURM_NTASKS python latonly.py
+
+#mpirun -np $SLURM_NTASKS python calibration.py config/b0p3_goal_C3_gc90_d10s5.yaml --savemap
+mpirun -np $SLURM_NTASKS python calibration.py config/b0p3_goal_C3_gc90_d10s5.yaml --spectra
