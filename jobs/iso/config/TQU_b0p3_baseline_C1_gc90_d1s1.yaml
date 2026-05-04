@@ -7,3 +7,5 @@ sync_model: 1
 noise_sensitivity: baseline
 galcut: 90
 temperature: true
+nside : 1024
+which : TB
