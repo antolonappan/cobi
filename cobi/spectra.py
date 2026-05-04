@@ -1348,6 +1348,8 @@ class SpectraCross:
                 raise ValueError("LAT and SAT nside must be the same")
             if lat.cmb.beta != sat.cmb.beta:
                 raise ValueError("LAT and SAT cmb beta must be the same")
+            if lat.temperature != sat.temperature:
+                raise ValueError("LAT and SAT temperature settings must match")
         
         self.nside = lat.nside
         self.binwidth = binwidth
@@ -1363,6 +1365,7 @@ class SpectraCross:
         
         self.freqs = lat.freqs
         self.nsplits = lat.nsplits
+        self.has_temperature = lat.temperature
         self.__create_maptags__()
         laerr = lat.alpha_err
         saerr = sat.alpha_err if not self.lat_only else 0.0
@@ -1380,6 +1383,16 @@ class SpectraCross:
             self.__sat_workspace__ = self.__get_coupling_matrix__('SAT')
             self.__satlat_workspace__ = self.__get_coupling_matrix__('SATxLAT')
         self.__lat_workspace__ = self.__get_coupling_matrix__('LAT')
+
+        if self.has_temperature:
+            if not self.lat_only:
+                self.__sat_workspace_tb__ = self.__get_coupling_matrix_tb__('SAT')
+                self.__satlat_workspace_tb__ = self.__get_coupling_matrix_tb__('SATxLAT')
+            self.__lat_workspace_tb__ = self.__get_coupling_matrix_tb__('LAT')
+
+    def __require_temperature__(self) -> None:
+        if not self.has_temperature:
+            raise ValueError("TB spectra require temperature-enabled LAT/SAT skies")
 
     def __create_maptags__(self)-> None:
         latmaptags = [f'LAT_{f}' for f in self.freqs]
@@ -1458,6 +1471,27 @@ class SpectraCross:
             wrk.read_from(fname)
         return wrk
 
+    def __get_coupling_matrix_tb__(self, tel) -> nmt.NmtWorkspace:
+        wrk = nmt.NmtWorkspace()
+        fname = os.path.join(self.libdir, f'coupling_matrix_tb_{tel}.fits')
+        if not os.path.isfile(fname):
+            if tel == 'LAT':
+                mask = self.latmask
+            elif tel == 'SAT':
+                mask = self.satmask
+            elif tel == 'SATxLAT':
+                mask = self.satlatmask
+            else:
+                raise ValueError(f"Unknown telescope: {tel}")
+            mask_s0 = nmt.NmtField(mask, [mask], lmax=self.lmax)          # spin-0 (T)
+            mask_s2 = nmt.NmtField(mask, [mask, mask], lmax=self.lmax)    # spin-2 (QU)
+            wrk.compute_coupling_matrix(mask_s0, mask_s2, self.binInfo)
+            del mask_s0, mask_s2
+            wrk.write_to(fname)
+        else:
+            wrk.read_from(fname)
+        return wrk
+
     def compute_master(self, tel:str, f_a: nmt.NmtField, f_b: nmt.NmtField) -> np.ndarray:
         cl_coupled   = nmt.compute_coupled_cell(f_a, f_b)
         if tel=='LAT':
@@ -1470,6 +1504,25 @@ class SpectraCross:
             if self.lat_only:
                 raise ValueError("SATxLAT workspace not available in LAT-only mode")
             workspace = self.__satlat_workspace__
+        else:
+            raise ValueError(f"Unknown telescope: {tel}")
+        cl_decoupled = workspace.decouple_cell(cl_coupled)
+        return cl_decoupled
+
+    def compute_master_tb(self, tel: str, f_T: nmt.NmtField, f_QU: nmt.NmtField) -> np.ndarray:
+        """Compute decoupled TB (and TE) spectra using spin-0 x spin-2 workspace."""
+        self.__require_temperature__()
+        cl_coupled = nmt.compute_coupled_cell(f_T, f_QU)
+        if tel == 'LAT':
+            workspace = self.__lat_workspace_tb__
+        elif tel == 'SAT':
+            if self.lat_only:
+                raise ValueError("SAT workspace not available in LAT-only mode")
+            workspace = self.__sat_workspace_tb__
+        elif tel == 'SATxLAT':
+            if self.lat_only:
+                raise ValueError("SATxLAT workspace not available in LAT-only mode")
+            workspace = self.__satlat_workspace_tb__
         else:
             raise ValueError(f"Unknown telescope: {tel}")
         cl_decoupled = workspace.decouple_cell(cl_coupled)
@@ -1488,6 +1541,21 @@ class SpectraCross:
         else:
             raise ValueError(f"Unknown telescope: {tel}")
         return qmap, umap, mask
+
+    def __get_TQU_maps__(self, idx: int, maptag: str) -> tuple:
+        self.__require_temperature__()
+        tel, freq = maptag.split('_')
+        if tel == 'LAT':
+            tmap, qmap, umap = self.lat.obsTQU(idx, freq)
+            mask = self.latmask
+        elif tel == 'SAT':
+            if self.lat_only:
+                raise ValueError(f"SAT maps requested but in LAT-only mode")
+            tmap, qmap, umap = self.sat.obsTQU(idx, freq)
+            mask = self.satmask
+        else:
+            raise ValueError(f"Unknown telescope: {tel}")
+        return tmap, qmap, umap, mask
     
     def __get_nmt_index__(self, which:str)-> tuple:
         if which=='EB':
@@ -1499,6 +1567,11 @@ class SpectraCross:
         elif which=='BB':
             ij = 3
             ji = 3
+        elif which=='TB':
+            # spin-0 x spin-2: compute_coupled_cell returns [TE, TB]
+            # ij = index for T_i x B_j, ji = index for T_j x B_i (same index, separate call)
+            ij = 1
+            ji = 1
         else:
             raise ValueError(f"Unknown spectra type: {which}")
         return ij, ji
@@ -1524,39 +1597,79 @@ class SpectraCross:
             return pl.load(open(fname,'rb'))
         else:
             matrix = np.zeros((len(self.maptags), len(self.maptags), self.binInfo.get_n_bands()))
-            for i in tqdm(range(len(self.maptags)), desc='Outer loop', position=0):
-                maptag_i = self.maptags[i]
-                qi, ui, maski = self.__get_QU_maps__(idx, maptag_i)
-                f_i = nmt.NmtField(maski, [qi*maski, ui*maski], lmax=self.lmax,masked_on_input=True)
-                del qi, ui, maski
+            if which == 'TB':
+                self.__require_temperature__()
+                # TB requires spin-0 (T) x spin-2 (QU) fields.
+                # matrix[i,j] = T_i x B_j; not symmetric, so fill both triangles.
+                for i in tqdm(range(len(self.maptags)), desc='Outer loop', position=0):
+                    maptag_i = self.maptags[i]
+                    ti, qi, ui, maski = self.__get_TQU_maps__(idx, maptag_i)
+                    f_Ti  = nmt.NmtField(maski, [ti*maski], lmax=self.lmax, masked_on_input=True)
+                    f_QUi = nmt.NmtField(maski, [qi*maski, ui*maski], lmax=self.lmax, masked_on_input=True)
+                    del ti, qi, ui, maski
 
-                for j in tqdm(range(i + 1), desc='Inner loop', position=1, leave=False):
-                    if i == j:
-                        f_j = f_i
-                        maptag_j = maptag_i
-                    else:
+                    for j in tqdm(range(i + 1), desc='Inner loop', position=1, leave=False):
                         maptag_j = self.maptags[j]
-                        qj, uj, maskj = self.__get_QU_maps__(idx, maptag_j)
-                        f_j = nmt.NmtField(maskj, [qj*maskj, uj*maskj], lmax=self.lmax,masked_on_input=True)
-                        del qj, uj, maskj
-                    if maptag_i.startswith('LAT') and maptag_j.startswith('LAT'):
-                        tel = 'LAT'
-                    elif maptag_i.startswith('SAT') and maptag_j.startswith('SAT'):
-                        if self.lat_only:
-                            raise ValueError("SAT-SAT correlation not available in LAT-only mode")
-                        tel = 'SAT'
-                    else:
-                        if self.lat_only:
-                            raise ValueError("LAT-SAT correlation not available in LAT-only mode")
-                        tel = 'SATxLAT'
-                    cl_decoupled = self.compute_master(tel, f_i, f_j)
-                    ij, ji = self.__get_nmt_index__(which)
-                    matrix[i, j, :] = cl_decoupled[ij]
-                    if i != j:
-                        matrix[j, i, :] = cl_decoupled[ji]
-                    del f_j
-                del f_i
-                gc.collect()
+                        if maptag_i.startswith('LAT') and maptag_j.startswith('LAT'):
+                            tel = 'LAT'
+                        elif maptag_i.startswith('SAT') and maptag_j.startswith('SAT'):
+                            if self.lat_only:
+                                raise ValueError("SAT-SAT correlation not available in LAT-only mode")
+                            tel = 'SAT'
+                        else:
+                            if self.lat_only:
+                                raise ValueError("LAT-SAT correlation not available in LAT-only mode")
+                            tel = 'SATxLAT'
+
+                        if i == j:
+                            cl = self.compute_master_tb(tel, f_Ti, f_QUi)
+                            matrix[i, i, :] = cl[1]  # TB auto
+                        else:
+                            tj, qj, uj, maskj = self.__get_TQU_maps__(idx, maptag_j)
+                            f_Tj  = nmt.NmtField(maskj, [tj*maskj], lmax=self.lmax, masked_on_input=True)
+                            f_QUj = nmt.NmtField(maskj, [qj*maskj, uj*maskj], lmax=self.lmax, masked_on_input=True)
+                            del tj, qj, uj, maskj
+                            cl_ij = self.compute_master_tb(tel, f_Ti,  f_QUj)  # T_i x B_j
+                            cl_ji = self.compute_master_tb(tel, f_Tj,  f_QUi)  # T_j x B_i
+                            matrix[i, j, :] = cl_ij[1]
+                            matrix[j, i, :] = cl_ji[1]
+                            del f_Tj, f_QUj
+                    del f_Ti, f_QUi
+                    gc.collect()
+            else:
+                for i in tqdm(range(len(self.maptags)), desc='Outer loop', position=0):
+                    maptag_i = self.maptags[i]
+                    qi, ui, maski = self.__get_QU_maps__(idx, maptag_i)
+                    f_i = nmt.NmtField(maski, [qi*maski, ui*maski], lmax=self.lmax,masked_on_input=True)
+                    del qi, ui, maski
+
+                    for j in tqdm(range(i + 1), desc='Inner loop', position=1, leave=False):
+                        if i == j:
+                            f_j = f_i
+                            maptag_j = maptag_i
+                        else:
+                            maptag_j = self.maptags[j]
+                            qj, uj, maskj = self.__get_QU_maps__(idx, maptag_j)
+                            f_j = nmt.NmtField(maskj, [qj*maskj, uj*maskj], lmax=self.lmax,masked_on_input=True)
+                            del qj, uj, maskj
+                        if maptag_i.startswith('LAT') and maptag_j.startswith('LAT'):
+                            tel = 'LAT'
+                        elif maptag_i.startswith('SAT') and maptag_j.startswith('SAT'):
+                            if self.lat_only:
+                                raise ValueError("SAT-SAT correlation not available in LAT-only mode")
+                            tel = 'SAT'
+                        else:
+                            if self.lat_only:
+                                raise ValueError("LAT-SAT correlation not available in LAT-only mode")
+                            tel = 'SATxLAT'
+                        cl_decoupled = self.compute_master(tel, f_i, f_j)
+                        ij, ji = self.__get_nmt_index__(which)
+                        matrix[i, j, :] = cl_decoupled[ij]
+                        if i != j:
+                            matrix[j, i, :] = cl_decoupled[ji]
+                        del f_j
+                    del f_i
+                    gc.collect()
             pl.dump(matrix, open(fname,'wb'))
             return matrix
         

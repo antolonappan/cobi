@@ -76,7 +76,7 @@ import os
 import pickle as pl
 from tqdm import tqdm
 from cobi import mpi
-from typing import Dict, Union, List, Optional
+from typing import Dict, Union, List, Optional, cast
 
 from cobi.simulation import CMB, Foreground, Mask, Noise
 from cobi.utils import Logger, inrad
@@ -261,6 +261,7 @@ class SkySimulation:
         deconv_maps: bool = False,
         fldname_suffix: str = "",
         sht_backend: str = "healpy",
+        temperature: bool = False,
         verbose: bool = True,
     ):
         """
@@ -290,7 +291,8 @@ class SkySimulation:
         fldname += f"_g{gal_cut}" if gal_cut > 0 else ""
    
         if isinstance(alpha, (list, np.ndarray)):
-            fldname += f"_a"  ''.join('n' + f"{abs(num):g}".replace(".", "") if num < 0 else f"{num:g}".replace(".", "") for num in alpha).replace('0','')
+            alpha_values = list(cast(Union[List[float], np.ndarray], alpha))
+            fldname += f"_a"  ''.join('n' + f"{abs(num):g}".replace(".", "") if num < 0 else f"{num:g}".replace(".", "") for num in alpha_values).replace('0','')
         else:
             fldname += f"_a{str(alpha).replace('.','p')}"
 
@@ -310,7 +312,8 @@ class SkySimulation:
         self.Acb = Acb
         self.cb_method = cb_model
         self.beta = beta
-        self.cmb = CMB(libdir, nside, cb_model, beta, mass, Acb, lensing, sim_config, verbose=self.verbose)
+        self.temperature = temperature
+        self.cmb = CMB(libdir, nside, cb_model, beta, mass, Acb, lensing, temperature, sim_config, verbose=self.verbose)
         self.foreground = Foreground(libdir, nside, dust_model, sync_model, bandpass, verbose=False)
         self.dust_model = dust_model
         self.sync_model = sync_model
@@ -334,10 +337,11 @@ class SkySimulation:
                 self.config[f'{self.freqs[band]}-{split+1}'] = {"fwhm": self.fwhm[band], "opt. tube": self.tube[band]}
 
         if isinstance(alpha, (list, np.ndarray)):
-            assert self.freqs is not None and len(alpha) == len(
+            alpha_values = list(cast(Union[List[float], np.ndarray], alpha))
+            assert self.freqs is not None and len(alpha_values) == len(
                 self.freqs
             ), "Length of alpha list must match the number of frequency bands."
-            for band, a in enumerate(alpha):
+            for band, a in enumerate(alpha_values):
                 for split in range(self.nsplits):
                     self.config[f'{self.freqs[band]}-{split+1}']["alpha"] = a
         else:
@@ -363,12 +367,30 @@ class SkySimulation:
         maskobj = Mask(libdir, self.nside, self.__class__.__name__[:3], gal_cut=self.gal_cut, verbose=self.verbose)
         return maskobj.mask, maskobj.fsky
 
-    def signalOnlyQU(self, idx: int, band: str) -> np.ndarray:
+    def signalOnlyMap(self, idx: int, band: str, include_temperature: Optional[bool] = None) -> np.ndarray:
         band = band[:band.index('-')]
-        cmbQU = np.array(self.cmb.get_cb_lensed_QU(idx))
-        dustQU = self.foreground.dustQU(band)
-        syncQU = self.foreground.syncQU(band)
-        return cmbQU + dustQU + syncQU
+        want_temperature = self.temperature if include_temperature is None else include_temperature
+        cmb_map = np.array(self.cmb.get_cb_lensed_map(idx, include_temperature=want_temperature))
+        dust_qu = self.foreground.dustQU(band)
+        sync_qu = self.foreground.syncQU(band)
+
+        if want_temperature:
+            dust_t = self.foreground.dustT(band)
+            sync_t = self.foreground.syncT(band)
+            fg_map = np.array([
+                dust_t + sync_t,
+                dust_qu[0] + sync_qu[0],
+                dust_qu[1] + sync_qu[1],
+            ])
+            return cmb_map + fg_map
+
+        return cmb_map + dust_qu + sync_qu
+
+    def signalOnlyQU(self, idx: int, band: str) -> np.ndarray:
+        return self.signalOnlyMap(idx, band, include_temperature=False)
+
+    def signalOnlyTQU(self, idx: int, band: str) -> np.ndarray:
+        return self.signalOnlyMap(idx, band, include_temperature=True)
     
     def get_alpha(self, idx: int, band: str):
         """
@@ -422,26 +444,63 @@ class SkySimulation:
         else:
             return hp.alm2map_spin([Elm, Blm], self.nside, 2, lmax=self.cmb.lmax)*self.mask
 
-    def obsQUfname(self, idx: int, band: str) -> str:
+    def obsMapwAlpha(
+        self,
+        idx: int,
+        band: str,
+        fwhm: float,
+        alpha: float,
+        apply_tranf: bool = True,
+        include_temperature: Optional[bool] = None,
+    ) -> np.ndarray:
+        want_temperature = self.temperature if include_temperature is None else include_temperature
+        if not want_temperature:
+            return self.obsQUwAlpha(idx, band, fwhm, alpha, apply_tranf=apply_tranf)
+
+        signal = self.signalOnlyTQU(idx, band) * self.mask
+        tlm, elm, blm = hp.map2alm(signal, lmax=self.cmb.lmax, pol=True)
+        elm_rot = (elm * np.cos(inrad(2 * alpha))) - (blm * np.sin(inrad(2 * alpha)))
+        blm_rot = (elm * np.sin(inrad(2 * alpha))) + (blm * np.cos(inrad(2 * alpha)))
+
+        if apply_tranf:
+            bl = hp.gauss_beam(inrad(fwhm / 60), lmax=self.cmb.lmax, pol=True)
+            pwf = np.array(hp.pixwin(self.nside, pol=True,))
+            hp.almxfl(tlm, bl[:, 0] * pwf[0, :], inplace=True)
+            hp.almxfl(elm_rot, bl[:, 1] * pwf[1, :], inplace=True)
+            hp.almxfl(blm_rot, bl[:, 2] * pwf[1, :], inplace=True)
+
+        maps = hp.alm2map([tlm, elm_rot, blm_rot], self.nside, lmax=self.cmb.lmax, pol=True)
+        return np.array(maps) * self.mask
+
+    def obsfname(self, idx: int, band: str, include_temperature: bool = False) -> str:
         alpha = self.config[band]["alpha"]
         fwhm = self.config[band]["fwhm"]
         tube = self.config[band]["opt. tube"]
-        fname = os.path.join(self.libdir,'obs', f"sims_a{str(alpha)}_f{fwhm}_t{tube}_b{band}_{idx:03d}.fits")
+        suffix = "_tqu" if include_temperature else ""
+        fname = os.path.join(self.libdir,'obs', f"sims_a{str(alpha)}_f{fwhm}_t{tube}_b{band}_{idx:03d}{suffix}.fits")
         return fname
 
-    
-    def SaveObsQUs(self, idx: int, apply_mask: bool = True, bands=None) -> None:
+    def obsQUfname(self, idx: int, band: str) -> str:
+        return self.obsfname(idx, band, include_temperature=False)
+
+    def SaveObsMaps(
+        self,
+        idx: int,
+        apply_mask: bool = True,
+        bands=None,
+        include_temperature: Optional[bool] = None,
+    ) -> None:
+        want_temperature = self.temperature if include_temperature is None else include_temperature
 
         def create_band_map(idx,band):
-            fname = self.obsQUfname(idx, band)
+            fname = self.obsfname(idx, band, include_temperature=want_temperature)
             if os.path.isfile(fname) and (bands is None):
                 return 0
             else:
                 fwhm = self.config[band]["fwhm"]
                 alpha = self.get_alpha(idx, band)
-                signal = self.obsQUwAlpha(idx, band, fwhm, alpha)
-                #noise = self.noise.atm_noise_maps_freq(idx, band)
-                noise = self.noise.noiseQU_freq(idx, band)
+                signal = self.obsMapwAlpha(idx, band, fwhm, alpha, include_temperature=want_temperature)
+                noise = self.noise.noiseTQU_freq(idx, band) if want_temperature else self.noise.noiseQU_freq(idx, band)
                 if len(noise) > 2:
                     nside = hp.get_nside(noise[0])
                 else:
@@ -452,8 +511,11 @@ class SkySimulation:
                 sky = signal + noise
                 del (signal, noise)
                 if self.deconv_maps:
-                    sky = deconvolveQU(sky, fwhm)
-                fname = self.obsQUfname(idx, band)
+                    if want_temperature:
+                        sky = np.array([sky[0], *deconvolveQU(sky[1:], fwhm)])
+                    else:
+                        sky = deconvolveQU(sky, fwhm)
+                fname = self.obsfname(idx, band, include_temperature=want_temperature)
                 hp.write_map(fname, sky * mask, dtype=np.float64,overwrite=(bands is not None)) # type: ignore
                 return 0
 
@@ -463,16 +525,26 @@ class SkySimulation:
         for band in tqdm(Bands, desc="Saving Observed QUs", unit="band"):
             maps = create_band_map(idx,band)
 
+    def SaveObsQUs(self, idx: int, apply_mask: bool = True, bands=None) -> None:
+        self.SaveObsMaps(idx, apply_mask=apply_mask, bands=bands, include_temperature=False)
+
 
 
 
     def obsQU(self, idx: int, band: str) -> np.ndarray:
-        fname = self.obsQUfname(idx, band)
+        fname = self.obsfname(idx, band, include_temperature=False)
         if os.path.isfile(fname):
             return hp.read_map(fname, field=[0, 1]) # type: ignore
         else:
             self.SaveObsQUs(idx)
             return hp.read_map(fname, field=[0, 1]) # type: ignore
+
+    def obsTQU(self, idx: int, band: str) -> np.ndarray:
+        fname = self.obsfname(idx, band, include_temperature=True)
+        if os.path.isfile(fname):
+            return hp.read_map(fname, field=(0, 1, 2)) # type: ignore
+        self.SaveObsMaps(idx, include_temperature=True)
+        return hp.read_map(fname, field=(0, 1, 2)) # type: ignore
     
     def checkObsQU(self, idx: int,overwrite=False,what='filesize',bands=False) -> bool:
         bands = list(self.config.keys())
@@ -557,9 +629,9 @@ class SkySimulation:
         
         if os.path.isfile(fnameS) and os.path.isfile(fnameN):
             if ret is None:
-                return hp.read_alm(fnameS, hdu=[1, 2]), hp.read_cl(fnameN)
+                return hp.read_alm(fnameS, hdu=[1, 2]), hp.read_cl(fnameN) # type: ignore[arg-type]
             elif ret == 'alm':
-                return hp.read_alm(fnameS, hdu=[1, 2])
+                return hp.read_alm(fnameS, hdu=[1, 2]) # type: ignore[arg-type]
             elif ret == 'nl':
                 return hp.read_cl(fnameN)
             else:
@@ -578,8 +650,10 @@ class SkySimulation:
                     elm, blm = hp.map2alm_spin(QU, 2, lmax=self.cmb.lmax)
                     nelm,nblm = hp.map2alm_spin([noise[0],noise[1]], 2, lmax=self.cmb.lmax)  
                 else:
-                    elm, blm = self.hp.map2alm(QU, lmax=self.lmax, nthreads=NCPUS)
-                    nelm,nblm = self.hp.map2alm(noise,lmax=self.lmax, nthreads=NCPUS)
+                    assert self.hp is not None
+                    thread_count = 1 if NCPUS is None else NCPUS
+                    elm, blm = self.hp.map2alm(QU, lmax=self.cmb.lmax, nthreads=thread_count)
+                    nelm,nblm = self.hp.map2alm(noise,lmax=self.cmb.lmax, nthreads=thread_count)
                 bl = hp.gauss_beam(inrad(fwhm / 60), lmax=self.cmb.lmax, pol=True)
                 pwf = np.array(hp.pixwin(self.nside, pol=True,))
                 transfe = bl[:, 1] * pwf[1, :]
@@ -640,6 +714,7 @@ class LATsky(SkySimulation):
         deconv_maps: bool = False,
         fldname_suffix: str = "",
         sht_backend: str = "healpy",
+        temperature: bool = False,
         verbose: bool = True,
     ):
         super().__init__(
@@ -668,6 +743,7 @@ class LATsky(SkySimulation):
             deconv_maps = deconv_maps,
             fldname_suffix = fldname_suffix,
             sht_backend = sht_backend,
+            temperature = temperature,
             verbose = verbose,
         )
 
@@ -701,6 +777,7 @@ class SATsky(SkySimulation):
         deconv_maps: bool = False,
         fldname_suffix: str = "",
         sht_backend: str = "healpy",
+        temperature: bool = False,
         verbose: bool = True,
     ):
         super().__init__(
@@ -729,6 +806,7 @@ class SATsky(SkySimulation):
             deconv_maps = deconv_maps,
             fldname_suffix = fldname_suffix,
             sht_backend = sht_backend,
+            temperature = temperature,
             verbose = verbose,
         )
 
@@ -761,8 +839,10 @@ class LATskyC(SkySimulation):
         hilc_bins: int = 10,
         deconv_maps: bool = False,
         fldname_suffix: str = "",
+        temperature: bool = False,
         verbose: bool = True,
     ):
+        alpha_value: Union[float, List[float]] = 0.0 if alpha is None else alpha
         super().__init__(
             libdir = libdir,
             nside = nside,
@@ -777,7 +857,7 @@ class LATskyC(SkySimulation):
             dust_model = dust_model,
             sync_model = sync_model,
             bandpass = bandpass,
-            alpha = alpha,
+            alpha = alpha_value,
             alpha_err = alpha_err,
             sim_config = sim_config,
             noise_model = noise_model,
@@ -788,6 +868,7 @@ class LATskyC(SkySimulation):
             hilc_bins = hilc_bins,
             deconv_maps = deconv_maps,
             fldname_suffix = fldname_suffix,
+            temperature = temperature,
             verbose = verbose,
         )
 
@@ -820,6 +901,7 @@ class SATskyC(SkySimulation):
         hilc_bins: int = 10,
         deconv_maps: bool = False,
         fldname_suffix: str = "",
+        temperature: bool = False,
         verbose: bool = True,
     ):
         super().__init__(
@@ -847,5 +929,6 @@ class SATskyC(SkySimulation):
             hilc_bins = hilc_bins,
             deconv_maps = deconv_maps,
             fldname_suffix = fldname_suffix,
+            temperature = temperature,
             verbose = verbose,
         )

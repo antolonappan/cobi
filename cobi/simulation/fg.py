@@ -223,6 +223,43 @@ class Foreground:
             self.bp_profile = None
             self.logger.log("Bandpass integration is disabled", level="info")
 
+    def __foreground_fname__(self, component: str, band: str, suffix: str) -> str:
+        name = (
+            f"{component}{suffix}_N{self.nside}_f{band}.fits"
+            if not self.bandpass
+            else f"{component}{suffix}_N{self.nside}_f{band}_bp.fits"
+        )
+        return os.path.join(self.libdir, name)
+
+    def __foreground_emission__(self, preset: str, band: str) -> np.ndarray:
+        sky = pysm3.Sky(nside=self.nside, preset_strings=[preset])
+        if self.bandpass:
+            if self.bp_profile is None:
+                raise ValueError("Bandpass profile is not initialized.")
+            nu, weights = self.bp_profile.get_profile(band)
+            nu = nu * u.GHz # type: ignore
+            maps = sky.get_emission(nu, weights)
+            maps *= pysm3.utils.bandpass_unit_conversion(nu, weights=weights, output_unit=u.uK_CMB)
+        else:
+            maps = sky.get_emission(int(band) * u.GHz) # type: ignore
+            maps = maps.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(int(band) * u.GHz)) # type: ignore
+        return np.asarray(maps.value)
+
+    def __component_tqu__(self, component: str, preset: str, band: str) -> np.ndarray:
+        full_fname = self.__foreground_fname__(component, band, "TQU")
+        if os.path.isfile(full_fname):
+            return np.asarray(hp.read_map(full_fname, field=(0, 1, 2))) # type: ignore
+
+        self.logger.log(f"Generating {component} T/Q/U maps for band {band}", level="info")
+        maps = self.__foreground_emission__(preset, band)
+        if mpi.rank == 0:
+            hp.write_map(full_fname, maps, dtype=np.float64) # type: ignore
+            legacy_qu_fname = self.__foreground_fname__(component, band, "QU")
+            if not os.path.isfile(legacy_qu_fname):
+                hp.write_map(legacy_qu_fname, maps[1:], dtype=np.float64) # type: ignore
+        mpi.barrier()
+        return maps
+
     def dustQU(self, band: str) -> np.ndarray:
         """
         Generates or retrieves the Q and U Stokes parameters for dust emission at a given frequency band.
@@ -233,39 +270,21 @@ class Foreground:
         Returns:
         np.ndarray: A NumPy array containing the Q and U maps.
         """
-        name = (
-            f"dustQU_N{self.nside}_f{band}.fits"
-            if not self.bandpass
-            else f"dustQU_N{self.nside}_f{band}_bp.fits"
-        )
-        fname = os.path.join(self.libdir, name)
+        fname = self.__foreground_fname__("dust", band, "QU")
 
         if os.path.isfile(fname):
             self.logger.log(f"Loading dust Q and U maps for band {band}", level="info")
             return hp.read_map(fname, field=[0, 1]) # type: ignore
-        
-        else:
-            self.logger.log(f"Generating dust Q and U maps for band {band}", level="info")
-            sky = pysm3.Sky(
-                nside=self.nside, preset_strings=[f"d{int(self.dust_model)}"]
-            )
-            if self.bandpass:
-                if self.bp_profile is not None:
-                    nu, weights = self.bp_profile.get_profile(band)
-                else:
-                    raise ValueError("Bandpass profile is not initialized.")
-                nu = nu * u.GHz # type: ignore
-                maps = sky.get_emission(nu, weights)
-                maps *= pysm3.utils.bandpass_unit_conversion(nu, weights=weights, output_unit=u.uK_CMB)
-            else:
-                maps = sky.get_emission(int(band) * u.GHz) # type: ignore
-                maps = maps.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(int(band) * u.GHz)) # type: ignore
 
-            if mpi.rank == 0:
-                hp.write_map(fname, maps[1:], dtype=np.float64) # type: ignore
-            mpi.barrier()
+        return self.__component_tqu__("dust", f"d{int(self.dust_model)}", band)[1:]
 
-            return maps[1:].value
+    def dustT(self, band: str) -> np.ndarray:
+        legacy_t_fname = self.__foreground_fname__("dust", band, "T")
+        if os.path.isfile(legacy_t_fname):
+            self.logger.log(f"Loading dust temperature map for band {band}", level="info")
+            return hp.read_map(legacy_t_fname) # type: ignore
+
+        return self.__component_tqu__("dust", f"d{int(self.dust_model)}", band)[0]
 
     def syncQU(self, band: str) -> np.ndarray:
         """
@@ -277,38 +296,21 @@ class Foreground:
         Returns:
         np.ndarray: A NumPy array containing the Q and U maps.
         """
-        name = (
-            f"syncQU_N{self.nside}_f{band}.fits"
-            if not self.bandpass
-            else f"syncQU_N{self.nside}_f{band}_bp.fits"
-        )
-        fname = os.path.join(self.libdir, name)
+        fname = self.__foreground_fname__("sync", band, "QU")
 
         if os.path.isfile(fname):
             self.logger.log(f"Loading synchrotron Q and U maps for band {band}", level="info")
             return hp.read_map(fname, field=[0, 1]) # type: ignore
-        else:
-            self.logger.log(f"Generating synchrotron Q and U maps for band {band}", level="info")
-            sky = pysm3.Sky(
-                nside=self.nside, preset_strings=[f"s{int(self.sync_model)}"]
-            )
-            if self.bandpass:
-                if self.bp_profile is not None:
-                    nu, weights = self.bp_profile.get_profile(band)
-                else:
-                    raise ValueError("Bandpass profile is not initialized.")
-                nu = nu * u.GHz # type: ignore
-                maps = sky.get_emission(nu, weights)
-                maps *= pysm3.utils.bandpass_unit_conversion(nu, weights=weights, output_unit=u.uK_CMB)
-            else:
-                maps = sky.get_emission(int(band) * u.GHz) # type: ignore
-                maps = maps.to(u.uK_CMB, equivalencies=u.cmb_equivalencies(int(band) * u.GHz)) # type: ignore
 
-            if mpi.rank == 0:
-                hp.write_map(fname, maps[1:], dtype=np.float64) # type: ignore
-            mpi.barrier()
+        return self.__component_tqu__("sync", f"s{int(self.sync_model)}", band)[1:]
 
-            return maps[1:].value
+    def syncT(self, band: str) -> np.ndarray:
+        legacy_t_fname = self.__foreground_fname__("sync", band, "T")
+        if os.path.isfile(legacy_t_fname):
+            self.logger.log(f"Loading synchrotron temperature map for band {band}", level="info")
+            return hp.read_map(legacy_t_fname) # type: ignore
+
+        return self.__component_tqu__("sync", f"s{int(self.sync_model)}", band)[0]
 
 
 class HILC:

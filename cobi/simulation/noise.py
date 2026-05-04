@@ -84,10 +84,11 @@ def NoiseSpectra(sensitivity_mode, fsky, lmax, atm_noise, telescope):
     corr_pairs = [(0,1),(2,3),(4,5)]
     
     ell, N_ell_LA_T_full,N_ell_LA_P_full = teles.get_noise_curves(fsky, lmax, 1, full_covar=True, deconv_beam=False)
-    del N_ell_LA_T_full
     bands = teles.get_bands().astype(int)
     Nbands = len(bands)
     N_ell_LA_P  = N_ell_LA_P_full[range(Nbands),range(Nbands)] #type: ignore
+    # SAT returns None for T curves; derive T = P / 2  (since σ_P = sqrt(2)*σ_T → N_T = N_P/2)
+    N_ell_LA_T  = N_ell_LA_T_full[range(Nbands),range(Nbands)] if N_ell_LA_T_full is not None else N_ell_LA_P / 2 #type: ignore
     N_ell_LA_Px = [N_ell_LA_P_full[i,j] for i,j in corr_pairs] #type: ignore
     Nell_dict = {}
     Nell_dict["ell"] = ell
@@ -95,13 +96,16 @@ def NoiseSpectra(sensitivity_mode, fsky, lmax, atm_noise, telescope):
         for i in range(3):
             for j in range(3):
                 if j < 2:
+                    Nell_dict[f"T{bands[i*2+j]}"] = N_ell_LA_T[i*2+j]
                     Nell_dict[f"{bands[i*2+j]}"] = N_ell_LA_P[i*2+j]
                 else:
                     k = i*2+j
                     Nell_dict[f"{bands[k-2]}x{bands[k-1]}"] = N_ell_LA_Px[i]
     else:
         WN = np.radians(teles.get_white_noise(fsky)**.5*np.sqrt(2) / 60)**2
+        WN_T = WN / 2  # σ_P = sqrt(2)*σ_T → N_T = N_P / 2
         for i in range(Nbands):
+            Nell_dict[f"T{bands[i]}"] = WN_T[i]*np.ones_like(ell)
             Nell_dict[f"{bands[i]}"] = WN[i]*np.ones_like(ell)
 
 
@@ -353,6 +357,10 @@ class Noise:
     def __white_noise__(self, band):
         n = hp.synfast(np.concatenate((np.zeros(2), self.Nell[band])), self.nside, lmax=self.lmax, pixwin=False)
         return n
+
+    def __white_noise_t__(self, band):
+        n = hp.synfast(np.concatenate((np.zeros(2), self.Nell[f"T{band}"])), self.nside, lmax=self.lmax, pixwin=False)
+        return n
         
     
     def white_noise_maps(self) -> np.ndarray: 
@@ -374,6 +382,17 @@ class Noise:
         band = freq.split('-')[0]
         n = self.__white_noise__(band)
         return n
+
+    def white_noise_t_maps_freq(self, freq: str) -> np.ndarray:
+        band = freq.split('-')[0]
+        return self.__white_noise_t__(band)
+
+    @property
+    def temperature_cholesky_elements(self) -> Dict[str, np.ndarray]:
+        return {
+            band: np.concatenate((np.zeros(2), np.sqrt(self.Nell[f"T{band}"])))
+            for band in ['27', '39', '93', '145', '225', '280']
+        }
     
     def atm_noise_maps_freq(self, idx: int, freq: str) -> np.ndarray:
         """
@@ -430,6 +449,18 @@ class Noise:
             return noise_map_cross(elm,flm,L65,L66)*np.sqrt(self.nsplits)
         else:
             raise ValueError(f"Invalid frequency band: {f}", "Choose from '27', '39', '93', '145', '225', '280'.")
+
+    def atm_noise_t_maps_freq(self, idx: int, freq: str) -> np.ndarray:
+        f = freq.split('-')[0]
+        split = int(freq.split('-')[-1])
+        seed_idx = self.__get_noise_seed_idx__(idx)
+        temp_cls = self.temperature_cholesky_elements
+        offset = {'27': 10, '39': 11, '93': 12, '145': 13, '225': 14, '280': 15}[f]
+
+        np.random.seed(self.__nseeds__[split][seed_idx] + offset)
+        alm = self.rand_alm
+        nlm = hp.almxfl(alm, temp_cls[f])
+        return hp.alm2map(nlm, self.nside, pixwin=False) * np.sqrt(self.nsplits)
             
 
 
@@ -511,6 +542,18 @@ class Noise:
             u = q
 
         return np.array([q, u])
+
+    def noiseTQU_NC_freq(self, idx: int, freq: str) -> np.ndarray:
+        if self.atm_noise:
+            t = self.atm_noise_t_maps_freq(idx, freq)
+            q = self.atm_noise_maps_freq(idx, freq)
+            u = q
+        else:
+            t = self.white_noise_t_maps_freq(freq)
+            q = self.white_noise_maps_freq(freq)
+            u = q
+
+        return np.array([t, q, u])
     
     def noiseQU_TOD_sat(self,idx: int) -> np.ndarray:
         sim_nsplits = 4
@@ -525,7 +568,7 @@ class Noise:
             for b in bands:
                 fbase = fbase_template.format(band=b, split=split+1, sim_no=sim_no)
                 fpath = f'{fdir}/{fbase}'
-                mm = hp.read_map(fpath, field=(1, 2))
+                mm = hp.read_map(fpath, field=(1, 2)) # type: ignore[arg-type]
                 mm = change_coord(mm)
                 N.append([mm[0],mm[1]])
         return np.array(N)*fac
@@ -591,6 +634,19 @@ class Noise:
         mm = change_coord(mm)
         N = np.array([mm[0],mm[1]])
         return N*fac
+
+    def noiseTQU_TOD_sat_band(self, idx: int, freq: str) -> np.ndarray:
+        band = freq.split('-')[0]
+        split = int(freq.split('-')[-1])
+        sim_nsplits = 4
+        fac = np.sqrt(self.nsplits) / np.sqrt(sim_nsplits)
+        sim_no = f'{idx:04}'
+        fdir = f'/global/cfs/cdirs/sobs/awg_bb/sims/BBSims/NOISE_20230531/goal_optimistic/{sim_no}'
+        fbase = f'SO_SAT_{band}_noise_split_{split}of4_{sim_no}_goal_optimistic_20230531.fits'
+        fpath = f'{fdir}/{fbase}'
+        mm = hp.read_map(fpath, field=(0, 1, 2)) #type: ignore
+        mm = change_coord(mm)
+        return np.array(mm) * fac
     
     def noiseQU_TOD_lat_band(self, idx: int, freq: str, debug: bool = False) -> np.ndarray:
         band = freq.split('-')[0]
@@ -648,6 +704,49 @@ class Noise:
         N = np.array([mm[0],mm[1]])
         return N*fac
 
+    def noiseTQU_TOD_lat_band(self, idx: int, freq: str, debug: bool = False) -> np.ndarray:
+        band = freq.split('-')[0]
+        split = int(freq.split('-')[-1])
+        sim_nsplits = 4
+        fdir = '/global/cfs/cdirs/sobs/v4_sims/mbs/mbs_s0015_20240504/sims'
+
+        if split < 1 or split > self.nsplits:
+            raise ValueError(f"Invalid split={split}. Must be between 1 and {self.nsplits} for nsplits={self.nsplits}")
+
+        model, band_name, j = {"27":['fdw_lf', 'lf_f030_lf_f040',0], 
+                               "39":['fdw_lf', 'lf_f030_lf_f040',1], 
+                               "93":['fdw_mf', 'mf_f090_mf_f150',0], 
+                               "145":['fdw_mf', 'mf_f090_mf_f150',1], 
+                               "225":['fdw_uhf', 'uhf_f230_uhf_f290',0], 
+                               "280":['fdw_uhf', 'uhf_f230_uhf_f290',1]}[band]
+
+        if self.ext_sims:
+            sims_per_original = sim_nsplits // self.nsplits
+            sim_num = idx // sims_per_original
+            split_group = idx % sims_per_original
+            actual_split = split_group * self.nsplits + (split - 1)
+            fac = np.sqrt(self.nsplits) / np.sqrt(sim_nsplits)
+            fbase = f'so_lat_mbs_mss0002_{model}_{band_name}_lmax5400_4way_set{actual_split}_noise_sim_map{sim_num:04}.fits'
+
+            if debug:
+                self.logger.log(f"[EXT_SIMS] idx={idx}, freq={freq} -> file_idx={sim_num:04}, file_split={actual_split}")
+                return None
+        else:
+            seed_idx = self.__get_noise_seed_idx__(idx)
+            fac = np.sqrt(self.nsplits) / np.sqrt(sim_nsplits)
+
+            if self.nsplits > 2:
+                fbase = f'so_lat_mbs_mss0002_{model}_{band_name}_lmax5400_4way_set{split-1}_noise_sim_map{seed_idx:04}.fits'
+            else:
+                fbase = f'so_lat_mbs_mss0002_{model}_{band_name}_lmax5400_2way_set{split}_noise_sim_map{seed_idx:04}.fits'
+
+        fpath = f'{fdir}/{fbase}'
+        n = enmap.read_map(fpath,sel=np.s_[j, 0])
+        mm = map2healpix(n, nside=2048)
+        mm = change_coord(mm)
+        del n
+        return np.array(mm) * fac
+
 
 
 
@@ -666,6 +765,13 @@ class Noise:
             return self.noiseQU_TOD_lat_band(idx, freq)
         else:
             raise ValueError(f"Invalid telescope: {self.telescope}", "Choose from 'LAT' or 'SAT'.")
+
+    def noiseTQU_TOD_freq(self, idx: int, freq: str) -> np.ndarray:
+        if self.telescope == 'SAT':
+            return self.noiseTQU_TOD_sat_band(idx, freq)
+        if self.telescope == 'LAT':
+            return self.noiseTQU_TOD_lat_band(idx, freq)
+        raise ValueError(f"Invalid telescope: {self.telescope}", "Choose from 'LAT' or 'SAT'.")
 
     
     def noiseQU(self, idx: Optional[int] = None) -> np.ndarray:
@@ -696,5 +802,12 @@ class Noise:
             return self.noiseQU_TOD_freq(idx, freq)
         else:
             raise ValueError(f"Invalid simulation type: {self.sim}", "Choose from 'NC' or 'TOD'.")
+
+    def noiseTQU_freq(self, idx: int, freq: str) -> np.ndarray:
+        if self.sim == 'NC':
+            return self.noiseTQU_NC_freq(idx, freq)
+        if self.sim == 'TOD':
+            return self.noiseTQU_TOD_freq(idx, freq)
+        raise ValueError(f"Invalid simulation type: {self.sim}", "Choose from 'NC' or 'TOD'.")
         
         
