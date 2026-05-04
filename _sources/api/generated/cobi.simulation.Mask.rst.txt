@@ -1,0 +1,22 @@
+﻿cobi.simulation.Mask
+====================
+
+.. currentmodule:: cobi.simulation
+
+.. autoclass:: Mask
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Mask.__init__
+   
+   
+
+   
+   
+   
