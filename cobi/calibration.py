@@ -23,6 +23,24 @@ from scipy.stats import chi2
 from scipy.optimize import minimize
 from cobi.spectra import SpectraCross
 
+def _oas_shrinkage(S: np.ndarray, n: int) -> np.ndarray:
+    """
+    Oracle Approximating Shrinkage estimator (Chen et al. 2010).
+
+    Finds the optimal convex combination of the sample covariance S and
+    a scaled identity that minimises the expected Frobenius loss.  Well-
+    conditioned for any n > 1, even when n << p.
+    """
+    p = S.shape[0]
+    tr_S  = np.trace(S)
+    tr_S2 = np.trace(S @ S)
+    mu       = tr_S / p
+    rho_num  = (1.0 - 2.0 / p) * tr_S2 + tr_S ** 2
+    rho_den  = (n + 1.0 - 2.0 / p) * (tr_S2 - tr_S ** 2 / p)
+    rho      = 1.0 if rho_den == 0 else min(1.0, rho_num / rho_den)
+    return (1.0 - rho) * S + rho * mu * np.eye(p)
+
+
 def _format_alpha_label(tag: str) -> str:
     """
     Format map tag like 'LAT_93-1' -> r'\\alpha_{LAT,93−1}'.
@@ -69,7 +87,7 @@ class BaseSat4LatCross(ABC):
         beam_arr: Beam transfer function array
     """
 
-    def __init__(self, 
+    def __init__(self,
                  spec_cross: 'SpectraCross',
                  sat_err: float,
                  sat_lrange: Tuple[Optional[int], Optional[int]] = (None, None),
@@ -78,7 +96,23 @@ class BaseSat4LatCross(ABC):
                  spectra_selection: str = 'all',
                  libdir_suffix: str = 'BaseSat4LatCross',
                  num_sims: int = 100,
-                 verbose: bool = False) -> None:
+                 verbose: bool = False,
+                 cov_mode: str = 'diagonal') -> None:
+        """
+        cov_mode controls how the data covariance is estimated:
+            'diagonal'   – per-bin variance from sims (default, always safe).
+            'block_diag' – one (n_bins × n_bins) block per (i,j) map pair,
+                           each block Hartlap-corrected.  Needs N_sims >> n_bins
+                           (not N_sims >> n_data).  Recommended when you want
+                           ell-ell correlations without full-matrix instability.
+            'shrinkage'  – full (n_data × n_data) covariance shrunk toward the
+                           identity via OAS.  Well-conditioned at any N_sims.
+            'full'       – raw sample covariance + Hartlap correction.
+                           Requires N_sims > n_data + 2; raises ValueError
+                           otherwise.
+        """
+        if cov_mode not in ('diagonal', 'block_diag', 'shrinkage', 'full'):
+            raise ValueError(f"cov_mode must be one of 'diagonal', 'block_diag', 'shrinkage', 'full'")
 
         self.logger = Logger(self.__class__.__name__, verbose=verbose)
         self.logger.log(f"Initializing {self.__class__.__name__}...", level="info")
@@ -93,6 +127,9 @@ class BaseSat4LatCross(ABC):
         self.spectra_selection = spectra_selection
         self.binner = spec_cross.binInfo
         self.Lmax = spec_cross.lmax
+        self.cov_mode = cov_mode
+        self.use_full_cov = (cov_mode != 'diagonal')
+        self._num_sims = num_sims
 
         # ---- Build map tags and frequency groups ----
         self.maptags: List[str] = spec_cross.maptags.copy()
@@ -108,11 +145,14 @@ class BaseSat4LatCross(ABC):
         self.std_spec: np.ndarray
         self.mean_spec, self.std_spec = self._calc_mean_std(num_sims=num_sims)
         self.beam_arr: np.ndarray = self._get_beam_arr()
-        
+
+        if self.use_full_cov:
+            self.cov, self.cov_inv, self.logdet_cov = self._calc_covariance(num_sims=num_sims)
+
         # Initialize parameter names and labels (to be set by subclasses)
         self.__pnames__: List[str] = []
         self.__plabels__: List[str] = []
-        
+
         self.logger.log(f"Initialized {self.__class__.__name__}.", level="info")
 
     # -------------------------------------------------------------------------
@@ -257,6 +297,102 @@ class BaseSat4LatCross(ABC):
                 beam[i, j] = self.binner.bin_cell(np.sqrt(b_i * b_j))
         return beam
 
+    def _calc_covariance(self, num_sims: int = 100) -> Tuple[np.ndarray, np.ndarray, float]:
+        """
+        Estimate and cache the data covariance under the likelihood mask.
+
+        The mode is controlled by ``self.cov_mode``:
+
+        * ``'block_diag'``: independent (n_bins × n_bins) blocks per (i,j) map
+          pair, each Hartlap-corrected.  Only needs N_sims >> n_bins_per_pair.
+        * ``'shrinkage'``: full covariance regularised by OAS shrinkage toward
+          the scaled identity.  Well-conditioned for any N_sims.
+        * ``'full'``: raw sample covariance + Hartlap.  Raises ValueError when
+          N_sims ≤ n_data + 2.
+
+        Returns
+        -------
+        (cov, cov_inv, logdet_cov)
+        """
+        fname = os.path.join(
+            self.libdir,
+            f'cov_{self.cov_mode}_{num_sims}sims'
+            f'_lmin{self.lat_lrange[0]}_lmax{self.lat_lrange[1]}'
+            f'_slmin{self.sat_lrange[0]}_slmax{self.sat_lrange[1]}'
+            f'_sel{self.spectra_selection}.pkl',
+        )
+        if os.path.exists(fname):
+            self.logger.log(f"Loading cached covariance ({self.cov_mode})...", level="info")
+            with open(fname, 'rb') as f:
+                return pl.load(f)
+
+        self.logger.log(
+            f"Computing covariance (mode='{self.cov_mode}') over {num_sims} sims...", level="info"
+        )
+        all_specs = self.__all_spectra__(num_sims=num_sims)   # (N, n_tags, n_tags, n_bins)
+        all_specs_bc = all_specs / self.beam_arr[None]        # beam-correct
+        mask = self.__likelihood_mask__
+        vecs = all_specs_bc[:, mask]                          # (N, n_data)
+        N, n_data = vecs.shape
+
+        self.logger.log(f"Covariance: N_sims={N}, n_data={n_data}", level="info")
+
+        if self.cov_mode == 'full':
+            if N <= n_data + 2:
+                raise ValueError(
+                    f"'full' covariance requires N_sims > n_data+2 = {n_data + 2}, "
+                    f"but only {N} sims available.  Use cov_mode='block_diag' or 'shrinkage'."
+                )
+            S = np.cov(vecs.T)
+            hartlap = (N - n_data - 2) / (N - 1)
+            self.logger.log(f"Hartlap factor: {hartlap:.4f}", level="info")
+            cov     = S
+            cov_inv = hartlap * np.linalg.inv(S)
+            _, logdet = np.linalg.slogdet(S)
+
+        elif self.cov_mode == 'shrinkage':
+            S   = np.cov(vecs.T)
+            cov = _oas_shrinkage(S, N)
+            self.logger.log(f"OAS shrinkage applied (N={N}, n_data={n_data})", level="info")
+            cov_inv   = np.linalg.inv(cov)
+            _, logdet = np.linalg.slogdet(cov)
+
+        elif self.cov_mode == 'block_diag':
+            # One Hartlap-corrected block per (i, j) map pair.
+            # Elements from the same pair are contiguous in the C-order
+            # flattening of the 3-D mask, so we can walk through vecs in order.
+            n_tags = mask.shape[0]
+            cov     = np.zeros((n_data, n_data))
+            cov_inv = np.zeros((n_data, n_data))
+            logdet  = 0.0
+            k = 0
+            for i in range(n_tags):
+                for j in range(n_tags):
+                    n_pair = int(np.sum(mask[i, j, :]))
+                    if n_pair == 0:
+                        continue
+                    pv = vecs[:, k: k + n_pair]           # (N, n_pair)
+                    S  = np.cov(pv.T) if n_pair > 1 else np.array([[float(np.var(pv, ddof=1))]])
+                    if N > n_pair + 2:
+                        hartlap = (N - n_pair - 2) / (N - 1)
+                    else:
+                        hartlap = 1.0
+                        self.logger.log(
+                            f"Block ({i},{j}): N ({N}) ≤ n_pair+2 ({n_pair+2}), Hartlap skipped.",
+                            level="warning",
+                        )
+                    cov[k: k + n_pair, k: k + n_pair]     = S
+                    cov_inv[k: k + n_pair, k: k + n_pair] = hartlap * np.linalg.inv(S)
+                    _, ld = np.linalg.slogdet(S)
+                    logdet += float(ld)
+                    k += n_pair
+        else:
+            raise ValueError(f"Unknown cov_mode '{self.cov_mode}'")
+
+        with open(fname, 'wb') as f:
+            pl.dump((cov, cov_inv, logdet), f)
+        return cov, cov_inv, logdet
+
     # -------------------------------------------------------------------------
     # Shared Likelihood & MCMC
     # -------------------------------------------------------------------------
@@ -264,58 +400,109 @@ class BaseSat4LatCross(ABC):
     def chisq(self, theta: np.ndarray) -> float:
         """
         Calculate chi-squared statistic for given parameters.
-        
-        Args:
-            theta: Parameter vector
-            
-        Returns:
-            Chi-squared value
+
+        When use_full_cov=True uses the full inverse covariance matrix;
+        otherwise uses diagonal (per-bin) variances.
         """
         model = self.theory(theta)
-        data, err = self.mean_spec / self.beam_arr, self.std_spec / self.beam_arr
-        err = np.where(err == 0, np.inf, err)
-        chi2 = ((data - model) / err) ** 2
-        return np.sum(chi2[self.__likelihood_mask__])
+        data = self.mean_spec / self.beam_arr
+        if self.use_full_cov:
+            delta = (data - model)[self.__likelihood_mask__]
+            return float(delta @ self.cov_inv @ delta)
+        else:
+            err = self.std_spec / self.beam_arr
+            err = np.where(err == 0, np.inf, err)
+            return np.sum(((data - model) / err) ** 2 * self.__likelihood_mask__)
 
     def ln_likelihood(self, theta: np.ndarray) -> float:
         """Calculate log likelihood for given parameters."""
-        return -0.5 * self.chisq(theta)
+        chisq_val = self.chisq(theta)
+        if self.use_full_cov:
+            n_data = int(np.sum(self.__likelihood_mask__))
+            return -0.5 * (chisq_val + self.logdet_cov + n_data * np.log(2 * np.pi))
+        return -0.5 * chisq_val
 
     def ln_prob(self, theta: np.ndarray) -> float:
         """Calculate log posterior probability for given parameters."""
         lp = self.lnprior(theta)
         return -np.inf if not np.isfinite(lp) else lp + self.ln_likelihood(theta)
 
-    def run_mcmc(self, nwalkers: int = 32, nsamples: int = 2000, rerun: bool = False, 
-                 fiducial_params: Optional[np.ndarray] = None, fname: Optional[str] = None) -> np.ndarray:
+    def run_mcmc(self, nwalkers: int = 32, nsamples: int = 2000, rerun: bool = False,
+                 fiducial_params: Optional[np.ndarray] = None, fname: Optional[str] = None,
+                 burnin: int = 200, thin: int = 20) -> np.ndarray:
+        """
+        Run (or extend/resume) MCMC using an emcee HDF5 backend.
+
+        The backend file grows as you call run_mcmc with larger nsamples —
+        no samples are ever discarded from disk.  burnin and thin only affect
+        what is *returned*; you can change them freely without re-running.
+
+        Args:
+            nwalkers:  Number of walkers.
+            nsamples:  Target total number of steps stored in the backend.
+                       If the backend already has >= nsamples steps, the chain
+                       is returned immediately.  If it has fewer, only the
+                       remaining steps are run (extending the existing chain).
+            rerun:     If True, wipe the backend and start from scratch.
+            fiducial_params: Starting point for walkers (required on first run;
+                       ignored when resuming an existing chain).
+            fname:     Override the auto-generated backend path (.h5 file).
+            burnin:    Steps to discard from the front when returning the chain.
+            thin:      Thinning factor applied when returning the chain.
+        """
+        ndim = len(self.__pnames__)
 
         if fname is None:
-            fname = os.path.join(self.libdir,
-                f"samples_cross_{nwalkers}_{nsamples}_fitper_{self.fit_per_split}_ndim_{len(self.__pnames__)}_lmin{self.lat_lrange[0]}_lmax{self.lat_lrange[1]}_slmin{self.sat_lrange[0]}_slmax{self.sat_lrange[1]}.pkl"
-                )
-        if os.path.exists(fname) and not rerun:
-            self.logger.log(f"Loading cached samples: {fname}", level="info")
-            with open(fname, 'rb') as f:
-                loaded_samples = pl.load(f)
-                return np.array(loaded_samples)
-        ndim = len(self.__pnames__)
-        if fiducial_params is not None:
-            if len(fiducial_params) != ndim:
-                raise ValueError(f"fiducial_params length {len(fiducial_params)} does not match ndim {ndim}")
+            cov_tag = f"_{self.cov_mode}" if self.use_full_cov else ""
+            fname = os.path.join(
+                self.libdir,
+                f"chain_{nwalkers}w_fitper{self.fit_per_split}_ndim{ndim}"
+                f"_lmin{self.lat_lrange[0]}_lmax{self.lat_lrange[1]}"
+                f"_slmin{self.sat_lrange[0]}_slmax{self.sat_lrange[1]}{cov_tag}.h5",
+            )
+
+        backend = emcee.backends.HDFBackend(fname)
+
+        if rerun:
+            backend.reset(nwalkers, ndim)
+
+        already_run = backend.initialized and backend.iteration > 0
+
+        if already_run and backend.iteration >= nsamples:
+            self.logger.log(
+                f"Returning cached chain ({backend.iteration} steps, burnin={burnin}, thin={thin})",
+                level="info",
+            )
+            return backend.get_chain(discard=burnin, thin=thin, flat=True)
+
+        if already_run:
+            initial_state = None
+            remaining = nsamples - backend.iteration
+            self.logger.log(
+                f"Extending chain: {backend.iteration} → {nsamples} steps", level="info"
+            )
         else:
-            fiducial_params = np.zeros(ndim)
-        pos = fiducial_params + 1e-3 * np.random.randn(nwalkers, ndim)
-        sampler = emcee.EnsembleSampler(nwalkers, ndim, self.ln_prob, threads=8)
-        sampler.run_mcmc(pos, nsamples, progress=True)
-        flat_samples = sampler.get_chain(discard=200, thin=20, flat=True)
-        with open(fname, 'wb') as f:
-            pl.dump(flat_samples, f)
-        return np.array(flat_samples)
+            if fiducial_params is not None:
+                if len(fiducial_params) != ndim:
+                    raise ValueError(
+                        f"fiducial_params length {len(fiducial_params)} does not match ndim {ndim}"
+                    )
+            else:
+                fiducial_params = np.zeros(ndim)
+            initial_state = fiducial_params + 1e-3 * np.random.randn(nwalkers, ndim)
+            remaining = nsamples
+
+        sampler = emcee.EnsembleSampler(nwalkers, ndim, self.ln_prob, backend=backend)
+        sampler.run_mcmc(initial_state, remaining, progress=True)
+        return sampler.get_chain(discard=burnin, thin=thin, flat=True)
 
     def getdist_samples(self, nwalkers: int, nsamples: int, rerun: bool = False,
                         fiducial_params: Optional[np.ndarray] = None,
-                        label: Optional[str] = None) -> MCSamples:
-        samples = self.run_mcmc(nwalkers, nsamples, rerun=rerun, fiducial_params=fiducial_params)
+                        label: Optional[str] = None,
+                        burnin: int = 200, thin: int = 20) -> MCSamples:
+        samples = self.run_mcmc(nwalkers, nsamples, rerun=rerun,
+                                fiducial_params=fiducial_params,
+                                burnin=burnin, thin=thin)
         return MCSamples(samples=samples, names=self.__pnames__, labels=self.__plabels__, label=label)
 
     # -------------------------------------------------------------------------
@@ -323,8 +510,9 @@ class BaseSat4LatCross(ABC):
     # -------------------------------------------------------------------------
 
     def plot_posteriors(self, nwalkers: int, nsamples: int, rerun: bool = False, label: Optional[str] = None,
-                        fiducial_params: Optional[np.ndarray] = None):
-        samples = self.getdist_samples(nwalkers, nsamples, rerun=rerun, label=label, fiducial_params=fiducial_params)
+                        fiducial_params: Optional[np.ndarray] = None, burnin: int = 200, thin: int = 20):
+        samples = self.getdist_samples(nwalkers, nsamples, rerun=rerun, label=label,
+                                       fiducial_params=fiducial_params, burnin=burnin, thin=thin)
         g = plots.get_subplot_plotter()
         g.triangle_plot([samples], filled=True, title_limit=1)
         return g
@@ -551,7 +739,8 @@ class Sat4LatCross(BaseSat4LatCross):
                  fit_per_split: bool = True,
                  spectra_selection: str = 'all',
                  num_sims: int = 100,
-                 verbose: bool = False) -> None:
+                 verbose: bool = False,
+                 cov_mode: str = 'diagonal') -> None:
         """
         Initialize calibration analysis for birefringence angle fitting.
 
@@ -565,9 +754,11 @@ class Sat4LatCross(BaseSat4LatCross):
             spectra_selection: Which spectra to include ('all', 'auto_only', 'cross_only')
             num_sims: Number of simulations for mean/std calculation
             verbose: Whether to enable verbose output
+            cov_mode: Covariance mode ('diagonal', 'block_diag', 'shrinkage', 'full')
         """
         super().__init__(spec_cross, sat_err, sat_lrange, lat_lrange,
-                         fit_per_split, spectra_selection, 'CalibrationAnalysis', num_sims,verbose)
+                         fit_per_split, spectra_selection, 'CalibrationAnalysis', num_sims, verbose,
+                         cov_mode=cov_mode)
         self.cl_len = CMB(spec_cross.libdir, spec_cross.nside, beta=beta_fid).get_lensed_spectra(dl=False)
         if fit_per_split:
             self.__pnames__  = [f"a_{t}" for t in self.maptags] + ['beta']
@@ -639,6 +830,338 @@ class Sat4LatCross(BaseSat4LatCross):
 # =============== SUBCLASS 2: AMPLITUDE FIT ==================
 # ============================================================
 
+
+# ============================================================
+# ============ SUBCLASS 4: FG AMPLITUDE + BETA FIT ===========
+# ============================================================
+
+class Sat4LatCross_FGFit(BaseSat4LatCross):
+    """
+    Calibration model fitting for birefringence angle β with shared per-frequency
+    foreground amplitude parameters.
+
+    Fits calibration angles (alphas), the cosmic birefringence angle β, and
+    per-frequency foreground scaling amplitudes (A_fg) using EB cross-spectra.
+    Here frequency means only the band value (e.g. ``93``, ``145``), shared
+    across LAT and SAT.
+    Foreground EB templates are computed as full-sky power spectra from the
+    saved dust Q/U maps and then binned with the same binner.
+
+    Before initialisation the class verifies that LAT and SAT were simulated
+    with the same dust model; a ``ValueError`` is raised otherwise.
+
+    Attributes
+    ----------
+    cl_len : dict
+        Lensed CMB power spectra dictionary.
+    freq_values : List[str]
+        Unique frequency values extracted from map tags (e.g. ``['93', '145']``).
+    fg_templates_binned : np.ndarray
+        Binned foreground EB templates, shape ``(n_freq_values, n_freq_values, n_bins)``.
+    """
+
+    def __init__(self,
+                 spec_cross: 'SpectraCross',
+                 sat_err: float,
+                 beta_fid: float,
+                 sat_lrange: Tuple[Optional[int], Optional[int]] = (None, None),
+                 lat_lrange: Tuple[Optional[int], Optional[int]] = (None, None),
+                 fit_per_split: bool = True,
+                 spectra_selection: str = 'all',
+                 num_sims: int = 100,
+                 verbose: bool = False,
+                 cov_mode: str = 'diagonal',
+                 fg_model: str = 'geometric',
+                 A_fg_max: float = 2.0) -> None:
+        """
+        Initialise calibration analysis with foreground amplitude fitting.
+
+        Args:
+            spec_cross: Cross-spectrum calculation object.
+            sat_err: Satellite calibration angle prior width (degrees).
+            beta_fid: Fiducial birefringence angle used to build the CMB template.
+            sat_lrange: Satellite ell range for fitting ``(lmin, lmax)``.
+            lat_lrange: LAT ell range for fitting ``(lmin, lmax)``.
+            fit_per_split: Fit one alpha per split-map (True) or per frequency (False).
+            spectra_selection: Which spectra to include: ``'all'``, ``'auto_only'``,
+                or ``'cross_only'``.
+            num_sims: Number of simulations used for mean/std estimation.
+            verbose: Enable verbose logging.
+            cov_mode: Covariance mode ('diagonal', 'block_diag', 'shrinkage', 'full').
+            fg_model: Foreground amplitude parametrisation.
+                ``'geometric'``: one amplitude per frequency; cross-frequency
+                scaling via geometric mean ``sqrt(A_i * A_j)``.
+                ``'per_pair'``: one independent amplitude per unique (freq_i, freq_j)
+                pair — more robust, no factorizability assumption.
+            A_fg_max: Hard upper bound (in absolute value) for all A_fg parameters.
+                Flat prior on ``(-A_fg_max, A_fg_max)``.
+
+        Raises
+        ------
+        ValueError
+            If LAT and SAT use different dust foreground models.
+        """
+        if fg_model not in ('geometric', 'per_pair'):
+            raise ValueError(f"fg_model must be 'geometric' or 'per_pair', got '{fg_model}'")
+
+        # Foreground consistency must be checked before super().__init__ loads data.
+        self._check_fg_consistency(spec_cross)
+
+        super().__init__(spec_cross, sat_err, sat_lrange, lat_lrange,
+                         fit_per_split, spectra_selection,
+                         'CalibrationAnalysis_FGFit', num_sims, verbose,
+                         cov_mode=cov_mode)
+
+        self.fg_model = fg_model
+        self.A_fg_max = A_fg_max
+
+        self.cl_len = CMB(spec_cross.libdir, spec_cross.nside,
+                          beta=beta_fid).get_lensed_spectra(dl=False)
+
+        # Frequency values shared between LAT and SAT (e.g. '93', '145').
+        self.freq_values: List[str] = sorted({b.split('_', 1)[1] for b in self.freq_bases})
+
+        # Compute (or load) binned foreground templates.
+        self.fg_templates_binned: np.ndarray = self._get_fg_templates()
+
+        # Unique ordered pairs for per_pair model.
+        freq_idx = {nu: k for k, nu in enumerate(self.freq_values)}
+        self._fg_pairs: List[Tuple[str, str]] = [
+            (fi, fj)
+            for i, fi in enumerate(self.freq_values)
+            for j, fj in enumerate(self.freq_values)
+            if j >= i
+        ]
+        self._freq_idx = freq_idx
+
+        # Build parameter names/labels: alphas + beta + A_fg parameters.
+        if fg_model == 'geometric':
+            fg_pnames  = [f"A_fg_{nu}" for nu in self.freq_values]
+            fg_plabels = [rf"A_{{fg,{nu}}}" for nu in self.freq_values]
+        else:  # per_pair
+            fg_pnames  = [f"A_fg_{fi}_{fj}" for fi, fj in self._fg_pairs]
+            fg_plabels = [rf"A_{{fg,{fi}\times{fj}}}" for fi, fj in self._fg_pairs]
+
+        if fit_per_split:
+            self.__pnames__  = [f"a_{t}" for t in self.maptags] + ['beta'] + fg_pnames
+            self.__plabels__ = ([_format_alpha_label(t) for t in self.maptags]
+                                + [r"\beta"] + fg_plabels)
+        else:
+            self.__pnames__  = [f"a_{f}" for f in self.freq_bases] + ['beta'] + fg_pnames
+            self.__plabels__ = ([_format_alpha_label(f) for f in self.freq_bases]
+                                + [r"\beta"] + fg_plabels)
+
+    # -------------------------------------------------------------------------
+    # Foreground helpers
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def _check_fg_consistency(spec_cross: 'SpectraCross') -> None:
+        """Raise ValueError if LAT and SAT use different dust foreground models."""
+        if spec_cross.lat_only:
+            return
+        if spec_cross.sat is None:
+            raise ValueError("Foreground fitting requires SAT maps when lat_only is False.")
+        lat_dust = spec_cross.lat.dust_model
+        sat_dust = spec_cross.sat.dust_model
+        if lat_dust != sat_dust:
+            raise ValueError(
+                f"LAT and SAT must use the same dust model for foreground fitting. "
+                f"Got LAT dust_model={lat_dust}, SAT dust_model={sat_dust}."
+            )
+
+    def _get_fg_templates(self) -> np.ndarray:
+        """
+        Compute (or load from cache) full-sky foreground EB template spectra.
+
+        For each pair ``(freq_i, freq_j)`` the method computes
+        ``C_ell^{E_i B_j}`` full-sky from dust Q/U maps and
+        bins the result with ``self.binner``.
+
+        Returns
+        -------
+        np.ndarray
+            Binned templates with shape ``(n_freq_values, n_freq_values, n_bins)``.
+        """
+        fname = os.path.join(self.libdir, 'fg_templates_binned_shared_freq_dustonly.pkl')
+        if os.path.exists(fname):
+            self.logger.log("Loading cached foreground EB templates...", level="info")
+            with open(fname, 'rb') as f:
+                return pl.load(f)
+
+        self.logger.log("Computing full-sky dust-only foreground EB templates...", level="info")
+        n_freqs = len(self.freq_values)
+
+        # Foreground is shared between LAT/SAT for the same frequency, so build
+        # one QU map per frequency using LAT foreground maps.
+        fg = self.spec_cross.lat.foreground
+        fg_qu: Dict[str, np.ndarray] = {}
+        for freq in self.freq_values:
+            dust_qu = fg.dustQU(str(freq))   # shape (2, npix): [Q, U]
+            fg_qu[freq] = dust_qu
+
+        # Precompute E/B alms once per frequency map, then use alm2cl for
+        # all auto/cross combinations. This is significantly faster than
+        # repeated map->spectrum transforms inside the pair loop.
+        npix = fg_qu[self.freq_values[0]].shape[-1]
+        nside = hp.npix2nside(npix)
+        lmax_hp = min(self.Lmax, 3 * nside - 1)
+
+        ealms: Dict[str, np.ndarray] = {}
+        balms: Dict[str, np.ndarray] = {}
+        for freq in tqdm(self.freq_values, desc='FG map2alm (shared freq)', leave=False):
+            qmap = fg_qu[freq][0]
+            umap = fg_qu[freq][1]
+            _, ealm, balm = hp.map2alm([np.zeros(npix), qmap, umap], lmax=lmax_hp, pol=True)
+            ealms[freq] = ealm
+            balms[freq] = balm
+
+        unbinned = np.zeros((n_freqs, n_freqs, self.Lmax + 1))
+        for i, fi in tqdm(enumerate(self.freq_values), total=n_freqs, desc='FG EB auto/cross', leave=False):
+            for j, fj in enumerate(self.freq_values):
+                cl_eb = hp.alm2cl(ealms[fi], balms[fj], lmax=lmax_hp)
+                ell_len = min(cl_eb.shape[-1], self.Lmax + 1)
+                unbinned[i, j, :ell_len] = cl_eb[:ell_len]
+
+        # Bin and cache.
+        n_bins = self.binner.get_n_bands()
+        binned = np.zeros((n_freqs, n_freqs, n_bins))
+        for i in range(n_freqs):
+            for j in range(n_freqs):
+                binned[i, j] = self.binner.bin_cell(unbinned[i, j])
+
+        with open(fname, 'wb') as f:
+            pl.dump(binned, f)
+        self.logger.log("Foreground EB templates computed and saved.", level="info")
+        return binned
+
+    # -------------------------------------------------------------------------
+    # Abstract method implementations
+    # -------------------------------------------------------------------------
+
+    def theory(self, theta: np.ndarray) -> np.ndarray:
+        """
+        Theoretical EB model including miscalibration, birefringence, and foregrounds.
+
+        .. math::
+
+            C_\\ell^{E_i B_j} = \\cos(2\\alpha_i+2\\beta)\\sin(2\\alpha_j+2\\beta)\\,C_{EE}
+                               - \\sin(2\\alpha_i+2\\beta)\\cos(2\\alpha_j+2\\beta)\\,C_{BB}
+                               + \\sqrt{A_{fg,i}A_{fg,j}}\\,C_\\ell^{fg,\\,E_i B_j}
+
+        Parameters are ordered as: ``[alphas..., beta, A_fg_per_frequency...]``.
+        """        # --- Unpack parameters ---
+        if self.fit_per_split:
+            n_alpha  = len(self.maptags)
+        else:
+            n_alpha  = len(self.freq_bases)
+
+        alphas_raw = theta[:n_alpha]
+        beta       = theta[n_alpha]
+        A_fg_arr   = theta[n_alpha + 1:]
+        n_fg_expected = len(self.freq_values) if self.fg_model == 'geometric' else len(self._fg_pairs)
+        if len(A_fg_arr) != n_fg_expected:
+            raise ValueError(
+                f"Expected {n_fg_expected} foreground amplitudes for fg_model='{self.fg_model}', "
+                f"got {len(A_fg_arr)}."
+            )
+
+        # For fit_per_split=False, expand alphas to per-maptag.
+        if self.fit_per_split:
+            alphas = alphas_raw
+        else:
+            base_a = {b: alphas_raw[k] for k, b in enumerate(self.freq_bases)}
+            alphas = np.array([base_a[t.rsplit('-', 1)[0]] for t in self.maptags])
+
+        freq_to_idx = self._freq_idx
+        cl_ee = self.cl_len["ee"][:self.Lmax + 1]
+        cl_bb = self.cl_len["bb"][:self.Lmax + 1]
+
+        # Build foreground amplitude lookup depending on model.
+        if self.fg_model == 'geometric':
+            freq_to_Afg = {nu: A_fg_arr[k] for k, nu in enumerate(self.freq_values)}
+        else:  # per_pair
+            pair_to_Afg = {pair: A_fg_arr[k] for k, pair in enumerate(self._fg_pairs)}
+
+        model = np.zeros_like(self.mean_spec)
+
+        for i in range(len(self.maptags)):
+            for j in range(len(self.maptags)):
+                ai = np.deg2rad(alphas[i])
+                aj = np.deg2rad(alphas[j])
+                b  = np.deg2rad(beta)
+
+                rot_term = (
+                    np.cos(2*ai + 2*b) * np.sin(2*aj + 2*b) * cl_ee
+                    - np.sin(2*ai + 2*b) * np.cos(2*aj + 2*b) * cl_bb
+                )
+
+                fi = self.maptags[i].rsplit('-', 1)[0].split('_', 1)[1]
+                fj = self.maptags[j].rsplit('-', 1)[0].split('_', 1)[1]
+                ki = freq_to_idx[fi]
+                kj = freq_to_idx[fj]
+
+                if self.fg_model == 'geometric':
+                    A_i, A_j = freq_to_Afg[fi], freq_to_Afg[fj]
+                    fg_contrib = np.sqrt(max(A_i * A_j, 0.0)) * self.fg_templates_binned[ki, kj]
+                else:  # per_pair — symmetric lookup
+                    key = (fi, fj) if freq_to_idx[fi] <= freq_to_idx[fj] else (fj, fi)
+                    fg_contrib = pair_to_Afg[key] * self.fg_templates_binned[ki, kj]
+
+                model[i, j] = self.binner.bin_cell(rot_term) + fg_contrib
+
+        return model
+
+    def lnprior(self, theta: np.ndarray) -> float:
+        """
+        Log prior probability.
+
+        - Gaussian prior on SAT alpha angles (width = ``sat_err``).
+        - Flat prior on beta in ``(-0.5, 0.5)`` degrees.
+        - Flat prior on each A_fg in ``(-A_fg_max, A_fg_max)``.
+          For ``fg_model='geometric'`` A_fg is clipped to ``[0, A_fg_max]``
+          because the geometric mean requires non-negative values.
+        - Hard bounds ``|alpha| < 0.5`` degrees for all angles.
+        """
+        if self.fit_per_split:
+            n_alpha = len(self.maptags)
+        else:
+            n_alpha = len(self.freq_bases)
+
+        alphas   = theta[:n_alpha]
+        beta     = theta[n_alpha]
+        A_fg_arr = theta[n_alpha + 1:]
+
+        n_fg_expected = len(self.freq_values) if self.fg_model == 'geometric' else len(self._fg_pairs)
+        if len(A_fg_arr) != n_fg_expected:
+            return -np.inf
+
+        if np.any(np.abs(alphas) > 0.5):
+            return -np.inf
+        if not (-0.5 < beta < 0.5):
+            return -np.inf
+
+        if self.fg_model == 'geometric':
+            # geometric mean requires non-negative amplitudes
+            if np.any(A_fg_arr < 0.0) or np.any(A_fg_arr > self.A_fg_max):
+                return -np.inf
+        else:  # per_pair allows negative (EB foreground can have either sign)
+            if np.any(np.abs(A_fg_arr) > self.A_fg_max):
+                return -np.inf
+
+        tags = self.maptags if self.fit_per_split else self.freq_bases
+        sat_idx = [k for k, t in enumerate(tags) if t.startswith('SAT')]
+        return float(
+            -0.5 * np.sum(
+                np.array(alphas)[sat_idx] ** 2 / self.sat_err ** 2
+                - np.log(self.sat_err * np.sqrt(2 * np.pi))
+            )
+        )
+
+    @property
+    def dof(self) -> int:
+        """Degrees of freedom: data points minus number of fitted parameters."""
+        return int(np.sum(self.__likelihood_mask__)) - len(self.__pnames__)
 class Sat4LatCross_AmplitudeFit(BaseSat4LatCross):
     """
     Calibration model fitting for amplitude parameter A_EB.
@@ -666,7 +1189,8 @@ class Sat4LatCross_AmplitudeFit(BaseSat4LatCross):
                  alpha_lat_prior: str = 'gaussian',
                  fix_alpha: bool = False,
                  num_sims: int = 100,
-                 verbose: bool = False) -> None:
+                 verbose: bool = False,
+                 cov_mode: str = 'diagonal') -> None:
         """
         Initialize calibration analysis for amplitude parameter fitting.
 
@@ -684,11 +1208,13 @@ class Sat4LatCross_AmplitudeFit(BaseSat4LatCross):
             fix_alpha: Whether to fix alpha parameters (calibration angles) to zero
             num_sims: Number of simulations for mean/std calculation
             verbose: Whether to enable verbose output
+            cov_mode: Covariance mode ('diagonal', 'block_diag', 'shrinkage', 'full')
         """
         self.sim_idx = sim_idx
         self.fix_alpha = fix_alpha
         suffix = f'CalibrationAnalysis_AmpFit_{temp_model}_{temp_value}_sim{sim_idx}'
-        super().__init__(spec_cross, sat_err, sat_lrange, lat_lrange, fit_per_split, spectra_selection, suffix,num_sims, verbose)
+        super().__init__(spec_cross, sat_err, sat_lrange, lat_lrange, fit_per_split, spectra_selection, suffix, num_sims, verbose,
+                         cov_mode=cov_mode)
 
         if temp_model == 'iso':
             cmb = CMB(spec_cross.libdir, spec_cross.nside, beta=temp_value, verbose=verbose)
@@ -894,7 +1420,8 @@ class LatCross(BaseSat4LatCross):
                  fit_per_split: bool = True,
                  spectra_selection: str = 'all',
                  num_sims: int = 100,
-                 verbose: bool = False) -> None:
+                 verbose: bool = False,
+                 cov_mode: str = 'diagonal') -> None:
         """
         Initialize LAT-only calibration analysis for birefringence angle fitting.
 
@@ -907,6 +1434,7 @@ class LatCross(BaseSat4LatCross):
             spectra_selection: Which spectra to include ('all', 'auto_only', 'cross_only')
             num_sims: Number of simulations for mean/std calculation
             verbose: Whether to enable verbose output
+            cov_mode: Covariance mode ('diagonal', 'block_diag', 'shrinkage', 'full')
         """
         # Verify spec_cross is in LAT-only mode
         assert hasattr(spec_cross, 'lat_only') and spec_cross.lat_only, \
@@ -920,7 +1448,8 @@ class LatCross(BaseSat4LatCross):
                          spectra_selection=spectra_selection,
                          libdir_suffix='LatCalibrationAnalysis',
                          num_sims=num_sims,
-                         verbose=verbose)
+                         verbose=verbose,
+                         cov_mode=cov_mode)
 
         self.lat_err = lat_err
         self.cl_len = CMB(spec_cross.libdir, spec_cross.nside, beta=beta_fid).get_lensed_spectra(dl=False)

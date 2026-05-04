@@ -98,3 +98,5 @@ For more details on the methodology, see the associated publications
 and documentation at https://cobi.readthedocs.io/
 """
 __version__ = "1.0"
+
+from cobi.config import load_config, DEFAULTS

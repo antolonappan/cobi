@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --qos=debug
 #SBATCH --constraint=cpu
-#SBATCH --account=mp107d
-#SBATCH --nodes=1
+#SBATCH --account=mp107e
+#SBATCH --nodes=4
 #SBATCH --ntasks=100
 ##SBATCH --cpus-per-task=1
 #SBATCH -J SOLAT

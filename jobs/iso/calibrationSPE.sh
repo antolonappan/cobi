@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --qos=debug
 #SBATCH --constraint=cpu
-#SBATCH --account=mp107d
-#SBATCH --nodes=2
+#SBATCH --account=mp107e
+#SBATCH --nodes=3
 #SBATCH --ntasks=50
 ##SBATCH --cpus-per-task=4
-#SBATCH -J SOLAT
-#SBATCH -o socal.out
-#SBATCH -e socal.err
+#SBATCH -J CALSPE
+#SBATCH -o calspe.out
+#SBATCH -e calspe.err
 #SBATCH --time=00:30:00
 #SBATCH --mail-type=begin,end,fail
 #SBATCH --mail-user=alonappan@ucsd.edu
@@ -17,6 +17,6 @@ conda activate cb
 cd /global/homes/l/lonappan/workspace/cobi/jobs/iso
 export OMP_NUM_THREADS=4
 
+CONFIG=config/b0p0_baseline_C3_gc90_d1s1.yaml
 
-#mpirun -np $SLURM_NTASKS python calibration.py config/b0p3_goal_C3_gc90_d10s5.yaml --savemap
-mpirun -np $SLURM_NTASKS python calibration.py config/b0p3_goal_C3_gc90_d10s5.yaml --spectra
+mpirun -np $SLURM_NTASKS python calibration.py $CONFIG --spectra

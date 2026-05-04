@@ -17,40 +17,18 @@ parser.add_argument('-specsync', action='store_true', help='Run the spectra and 
 parser.add_argument('-mle', action='store_true', help='Run the MLE')
 args = parser.parse_args()
 
-# Constants
-libdir = '/global/cfs/cdirs/sobs/cosmic_birefringence/v0'
+libdir = '/global/cfs/cdirs/sobs/cosmic_birefringence/COBIv1'
 nside = 2048
 cb_model = "iso"
-beta = 0.35
-
-#setting 1
-# alpha = 0
-# alpha_err = 0
-# bp = False
-# nm = 'NC'
-
-#setting 2
-# alpha = 0
-# alpha_err = 0.1
-# bp = False
-# nm = 'NC'
-
-#setting 3
-# alpha = [-0.1,-0.1,0.2,0.2,.15,.15]
-# alpha_err = 0.1
-# bp = False
-# nm = 'NC'
-
-#setting 4
+beta = 0.3
 alpha = [-0.1,-0.1,0.2,0.2,.15,.15]
-#alpha = 0
-alpha_err = 0.1
+alpha_err = 0.05
 bp = True
 nm = 'NC'
 
 
 # Initialize LATsky and Spectra
-lat = LATsky(libdir, nside, cb_model, beta, alpha=alpha, alpha_err=alpha_err, bandpass=bp,noise_model=nm)
+lat = LATsky(libdir, nside, cb_model, beta, alpha=alpha, alpha_err=alpha_err, bandpass=bp,noise_model=nm,noise_sensitivity='goal',nsplits=2)
 spec = Spectra(lat, libdir, cache=True, parallel=0,lmax=3000)
 
 start_i = 0
@@ -64,7 +42,7 @@ if args.sim:
 
 if args.checksim:
     for i in jobs[mpi.rank::mpi.size]:
-        lat.checkObsQU(i)
+        lat.checkObsQU(i,overwrite=True)
     mpi.barrier()
 
 if args.specobs:
@@ -83,11 +61,13 @@ if args.specsync:
     mpi.barrier()
 
 if args.mle:
-    fit = "Ad + beta + alpha"
+    #fit = "Ad + beta + alpha"
+    fit = "As + Ad + beta + alpha"
+    rm_same_tube = True
     binwidth = 10
-    bmin = 50
+    bmin = 100
     bmax = 3000
-    mle = MLE(libdir,spec,fit, alpha_per_split=False,rm_same_tube=True,binwidth=binwidth,bmin=bmin,bmax=bmax)
+    mle = MLE(libdir,spec,fit, alpha_per_split=False,rm_same_tube=rm_same_tube,binwidth=binwidth,bmin=bmin,bmax=bmax)
     for i in jobs[mpi.rank::mpi.size]:
         mle.estimate_angles(i)
     mpi.barrier()

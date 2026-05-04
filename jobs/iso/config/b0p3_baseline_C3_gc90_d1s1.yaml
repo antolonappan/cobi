@@ -1,0 +1,7 @@
+beta: 0.3
+alpha_lat_err: 0.05
+alpha_sat_err: 0.01
+dust_model: 1
+sync_model: 1
+noise_sensitivity: baseline
+galcut: 90
