@@ -65,7 +65,7 @@ class Spectra:
 		comdir     = os.path.join(common_dir, f"spectra_{self.nside}{'_d' if deconv else ''}_aposcale{str(aposcale).replace('.','p')}{'_pureB' if pureB else ''}" + fld_ext)
 		self.__set_dir__(libdiri, comdir)
 		
-		self.lmax     = 3500 #2 * self.lat.nside - 1
+		self.lmax     = 2 * self.lat.nside - 1
 		
 		self.temp_bp  = template_bandpass
 
